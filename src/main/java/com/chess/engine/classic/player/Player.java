@@ -2,14 +2,14 @@ package com.chess.engine.classic.player;
 
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.board.Move.MoveStatus;
 import com.chess.engine.classic.board.MoveTransition;
 import com.chess.engine.classic.pieces.King;
 import com.chess.engine.classic.pieces.Piece;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.chess.engine.classic.pieces.Piece.PieceType.KING;
@@ -37,7 +37,7 @@ public abstract class Player {
     }
 
     public boolean isInCheckMate() {
-       return this.isInCheck && !hasEscapeMoves();
+        return this.isInCheck && !hasEscapeMoves();
     }
 
     public boolean isInStaleMate() {
@@ -62,26 +62,55 @@ public abstract class Player {
 
     private King establishKing() {
         return (King) getActivePieces().stream()
-                                       .filter(piece -> piece.getPieceType() == KING)
-                                       .findAny()
-                                       .orElseThrow(RuntimeException::new);
+                .filter(piece -> piece.getPieceType() == KING)
+                .findAny()
+                .orElseThrow(RuntimeException::new);
     }
 
     private boolean hasEscapeMoves() {
         return this.legalMoves.stream()
-                              .anyMatch(move -> makeMove(move)
-                              .getMoveStatus().isDone());
+                .anyMatch(move -> makeMove(move)
+                        .getMoveStatus().isDone());
     }
 
     public Collection<Move> getLegalMoves() {
         return this.legalMoves;
     }
 
+    public Collection<Move> getLegalMoves(final MoveStatus moveStatus) {
+        return this.
+                getLegalMoves().
+                stream().
+                filter(m -> board.blackPlayer().makeMove(m).getMoveStatus() == moveStatus)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Move> getMove(final String moveSz) {
+        String[] sz = moveSz.split("[- ]");
+        if (sz.length != 2)
+            throw new RuntimeException("move incorrect: " + moveSz);
+        int start = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[0].toLowerCase(Locale.ROOT));
+        int end = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[1].toLowerCase(Locale.ROOT));
+        return this.getLegalMoves().stream().filter(
+                m -> m.getCurrentCoordinate() == start && m.getDestinationCoordinate() == end
+        ).findFirst();
+//        System.out.println("MOVE:"+ move);
+//        return this.getLegalMoves().stream().filter(
+//                m -> m.toString().equalsIgnoreCase(moveSz)
+//        ).findFirst();
+    }
+
+    public Board executeMove(final String moveSz) {
+        Optional<Move> move = this.getMove(moveSz);
+        MoveTransition moveTransition = this.makeMove(move.get());
+        return moveTransition.getToBoard();
+    }
+
     static Collection<Move> calculateAttacksOnTile(final int tile,
                                                    final Collection<Move> moves) {
         return moves.stream()
-                    .filter(move -> move.getDestinationCoordinate() == tile)
-                    .collect(collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
+                .filter(move -> move.getDestinationCoordinate() == tile)
+                .collect(collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     public MoveTransition makeMove(final Move move) {
@@ -99,10 +128,14 @@ public abstract class Player {
     }
 
     public abstract Collection<Piece> getActivePieces();
+
     public abstract Alliance getAlliance();
+
     public abstract Player getOpponent();
+
     protected abstract Collection<Move> calculateKingCastles(Collection<Move> playerLegals,
                                                              Collection<Move> opponentLegals);
+
     protected boolean hasCastleOpportunities() {
         return !this.isInCheck && !this.playerKing.isCastled() &&
                 (this.playerKing.isKingSideCastleCapable() || this.playerKing.isQueenSideCastleCapable());

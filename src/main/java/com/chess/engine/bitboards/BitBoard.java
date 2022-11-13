@@ -1,5 +1,7 @@
 package com.chess.engine.bitboards;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +27,7 @@ public class  BitBoard {
 	private static ChessBitSet whiteLegalLocations;
 	private static ChessBitSet blackLegalLocations;
 
+	@Getter
 	private final List<Move> boardLegalMoves;
 
 	private static final ChessBitSet FILE_A = new ChessBitSet();
