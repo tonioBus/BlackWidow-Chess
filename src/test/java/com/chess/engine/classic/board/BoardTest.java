@@ -1,5 +1,6 @@
 package com.chess.engine.classic.board;
 
+import com.chess.engine.classic.Alliance;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -55,5 +56,11 @@ class BoardTest {
         assertTrue(BoardUtils.isEndGame(board));
         assertTrue(board.blackPlayer().isInCheckMate());
         assertFalse(board.whitePlayer().isInCheckMate());
+    }
+
+    @Test
+    void testCreateBoard() {
+        Board board = Board.createBoard("a2,pb3,ke1", "pa5,b6,ke8", Alliance.WHITE);
+        log.info("board:\n{}", board);
     }
 }

@@ -8,6 +8,8 @@ import com.chess.engine.classic.player.Player;
 import com.chess.engine.classic.player.WhitePlayer;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,8 +39,7 @@ public final class Board {
         this.transitionMove = builder.transitionMove != null ? builder.transitionMove : MoveFactory.getNullMove();
     }
 
-    @Override
-    public String toString() {
+    public String toStringOrigin() {
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < BoardUtils.NUM_TILES; i++) {
             final String tileText = prettyPrint(this.boardConfig.get(i));
@@ -50,10 +51,40 @@ public final class Board {
         return builder.toString();
     }
 
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append("    ");
+        for (int x = 0; x < BoardUtils.NUM_TILES_PER_ROW; x++) {
+            sb.append("[" + (char) ('a' + x) + "] ");
+        }
+        sb.append("\n");
+        for (int y = BoardUtils.NUM_TILES_PER_ROW - 1; y >= 0; y--) {
+            sb.append(" " + (y + 1) + "  ");
+            for (int x = 0; x < BoardUtils.NUM_TILES_PER_ROW; x++) {
+                Piece piece = this.boardConfig.get((BoardUtils.NUM_TILES_PER_ROW - y - 1) * BoardUtils.NUM_TILES_PER_ROW + x);
+                if (piece != null) {
+                    sb.append(String.format("%s-%c ", piece.toString(), piece.getPieceAllegiance().isBlack() ? 'B' : 'W'));
+                } else {
+                    sb.append("--- ");
+                }
+            }
+            sb.append(" " + (y + 1) + "  ");
+            sb.append("\n");
+        }
+        sb.append("    ");
+        for (int x = 0; x < BoardUtils.NUM_TILES_PER_ROW; x++) {
+            sb.append("[" + (char) ('a' + x) + "] ");
+        }
+        sb.append("\n");
+        return sb.toString();
+    }
+
+
     private static String prettyPrint(final Piece piece) {
-        if(piece != null) {
+        if (piece != null) {
             return piece.getPieceAllegiance().isBlack() ?
-                   piece.toString().toLowerCase() : piece.toString();
+                    piece.toString().toLowerCase() : piece.toString();
         }
         return "-";
     }
@@ -68,12 +99,12 @@ public final class Board {
 
     public Collection<Piece> getAllPieces() {
         return Stream.concat(this.whitePieces.stream(),
-                             this.blackPieces.stream()).collect(Collectors.toList());
+                this.blackPieces.stream()).collect(Collectors.toList());
     }
 
     public Collection<Move> getAllLegalMoves() {
         return Stream.concat(this.whitePlayer.getLegalMoves().stream(),
-                             this.blackPlayer.getLegalMoves().stream()).collect(Collectors.toList());
+                this.blackPlayer.getLegalMoves().stream()).collect(Collectors.toList());
     }
 
     public WhitePlayer whitePlayer() {
@@ -102,6 +133,56 @@ public final class Board {
 
     public static Board createStandardBoard() {
         return STANDARD_BOARD;
+    }
+
+    private static final Pattern pieceAndPositionPattern = Pattern.compile("([pbnrqk]?)([a-h][1-8])(k?)(q?)");
+    public static Board createBoard(final String whitePieces,
+                                    final String blackPieces,
+                                    Alliance firstMove) {
+        final Builder builder = new Builder();
+        placePieces(builder, Alliance.WHITE, whitePieces);
+        placePieces(builder, Alliance.BLACK, blackPieces);
+        //white to move
+        builder.setMoveMaker(firstMove);
+        //build the board
+        return builder.build();
+    }
+
+    private static void placePieces(final Board.Builder builder, final Alliance alliance, final String pieces) {
+        Arrays.stream(pieces.toLowerCase().split("[;,]")).forEach(pieceAndPosition -> {
+            Matcher matcher = pieceAndPositionPattern.matcher(pieceAndPosition);
+            if(!matcher.matches())
+                throw new RuntimeException(String.format("pieces description incorrect: (%s)", pieces));
+            String piece = matcher.group(1);
+            String position = matcher.group(2);
+            String kingSideCastleCapable = matcher.group(3);
+            String queenSideCastleCapable = matcher.group(4);
+            int coordinate = BoardUtils.INSTANCE.getCoordinateAtPosition(position);
+            builder.setPiece(createPiece(piece, coordinate, alliance, kingSideCastleCapable.equals("k"), queenSideCastleCapable.equals("q")));
+        });
+    }
+
+    private static Piece createPiece(String piece,
+                                     int coordinate,
+                                     final Alliance alliance,
+                                     boolean kingSideCastleCapable,
+                                     boolean queenSideCastleCapable) {
+        switch(piece) {
+            case "":
+            case "p":
+                return new Pawn(alliance, coordinate);
+            case "b":
+                return new Bishop(alliance, coordinate);
+            case "n":
+                return new Knight(alliance, coordinate);
+            case "r":
+                return new Rook(alliance, coordinate);
+            case "q":
+                return new Queen(alliance, coordinate);
+            case "k":
+                return new King(alliance, coordinate, kingSideCastleCapable, queenSideCastleCapable);
+        }
+        throw new RuntimeException(String.format("Piece type not found %s", piece));
     }
 
     private static Board createStandardBoardImpl() {
@@ -148,14 +229,14 @@ public final class Board {
 
     private Collection<Move> calculateLegalMoves(final Collection<Piece> pieces) {
         return pieces.stream().flatMap(piece -> piece.calculateLegalMoves(this).stream())
-                      .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     private static Collection<Piece> calculateActivePieces(final Builder builder,
                                                            final Alliance alliance) {
         return builder.boardConfig.values().stream()
-               .filter(piece -> piece.getPieceAllegiance() == alliance)
-               .collect(Collectors.toList());
+                .filter(piece -> piece.getPieceAllegiance() == alliance)
+                .collect(Collectors.toList());
     }
 
     public static class Builder {
