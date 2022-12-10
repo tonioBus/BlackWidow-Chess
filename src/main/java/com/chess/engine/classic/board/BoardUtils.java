@@ -129,6 +129,17 @@ public enum  BoardUtils {
         return Collections.unmodifiableList(moveHistory);
     }
 
+    public static Optional<Move> getMove(final String moveSz, final Collection<Move> legalMoves) {
+        String[] sz = moveSz.split("[- ]");
+        if (sz.length != 2)
+            throw new RuntimeException("move incorrect: " + moveSz);
+        int start = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[0].toLowerCase(Locale.ROOT));
+        int end = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[1].toLowerCase(Locale.ROOT));
+        return legalMoves.stream().filter(
+                m -> m.getCurrentCoordinate() == start && m.getDestinationCoordinate() == end
+        ).findFirst();
+    }
+
     public static boolean isEndGame(final Board board) {
         return board.currentPlayer().isInCheckMate() ||
                board.currentPlayer().isInStaleMate();

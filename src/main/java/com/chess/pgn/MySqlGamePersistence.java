@@ -50,7 +50,7 @@ public class MySqlGamePersistence implements PGNPersistence {
     }
 
     @Override
-    public void persistGame(final Game game) {
+    public void persistGame(final GamePGN game) {
         executePersist(game);
     }
 
@@ -175,7 +175,7 @@ public class MySqlGamePersistence implements PGNPersistence {
         return maxId;
     }
 
-    private void executePersist(final Game game) {
+    private void executePersist(final GamePGN game) {
         try {
             final String gameSqlString = "INSERT INTO Game(id, outcome, moves) VALUES(?, ?, ?);";
             final PreparedStatement gameStatement = this.dbConnection.prepareStatement(gameSqlString);

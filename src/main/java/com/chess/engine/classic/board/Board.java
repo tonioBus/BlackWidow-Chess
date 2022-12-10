@@ -31,8 +31,8 @@ public final class Board {
         this.whitePieces = calculateActivePieces(builder, Alliance.WHITE);
         this.blackPieces = calculateActivePieces(builder, Alliance.BLACK);
         this.enPassantPawn = builder.enPassantPawn;
-        final Collection<Move> whiteStandardMoves = calculateLegalMoves(this.whitePieces);
-        final Collection<Move> blackStandardMoves = calculateLegalMoves(this.blackPieces);
+        final List<Move> whiteStandardMoves = calculateLegalMoves(this.whitePieces);
+        final List<Move> blackStandardMoves = calculateLegalMoves(this.blackPieces);
         this.whitePlayer = new WhitePlayer(this, whiteStandardMoves, blackStandardMoves);
         this.blackPlayer = new BlackPlayer(this, whiteStandardMoves, blackStandardMoves);
         this.currentPlayer = builder.nextMoveMaker.choosePlayerByAlliance(this.whitePlayer, this.blackPlayer);
@@ -227,7 +227,7 @@ public final class Board {
         return builder.build();
     }
 
-    private Collection<Move> calculateLegalMoves(final Collection<Piece> pieces) {
+    private List<Move> calculateLegalMoves(final Collection<Piece> pieces) {
         return pieces.stream().flatMap(piece -> piece.calculateLegalMoves(this).stream())
                 .collect(Collectors.toList());
     }

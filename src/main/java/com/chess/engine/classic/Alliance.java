@@ -169,6 +169,14 @@ public enum Alliance {
 
     public abstract Player choosePlayerByAlliance(final WhitePlayer whitePlayer, final BlackPlayer blackPlayer);
 
+    public Alliance complementary() {
+        switch(this) {
+            case WHITE: return BLACK;
+            case BLACK: return WHITE;
+        }
+        return null;
+    }
+
     private final static int[] WHITE_PAWN_PREFERRED_COORDINATES = {
             0,  0,  0,  0,  0,  0,  0,  0,
             75, 75, 75, 75, 75, 75, 75, 75,

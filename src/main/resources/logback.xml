@@ -1,0 +1,41 @@
+<configuration>
+
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n
+			</pattern>
+		</encoder>
+		<append>true</append>
+		<prudent>true</prudent>
+		<immediateFlush>true</immediateFlush>
+		<maxFlushTime>1</maxFlushTime>
+	</appender>
+
+	<!-- appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>chessTrain-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+			<maxFileSize>500MB</maxFileSize>
+			<maxHistory>6000</maxHistory>
+			<totalSizeCap>20GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%date %level [%thread] [%file:%line] %msg%n
+			</pattern>
+		</encoder>
+		<append>true</append>
+		<prudent>true</prudent>
+		<immediateFlush>true</immediateFlush>
+		<maxFlushTime>1</maxFlushTime>
+	</appender -->
+
+	<!-- logger name="FILE">
+		<appender-ref ref="FILE" />
+	</logger -->
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />
+	</root>
+</configuration>

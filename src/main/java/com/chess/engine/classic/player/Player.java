@@ -19,17 +19,17 @@ public abstract class Player {
 
     protected final Board board;
     protected final King playerKing;
-    protected final Collection<Move> legalMoves;
+    protected final List<Move> legalMoves;
     protected final boolean isInCheck;
 
     Player(final Board board,
-           final Collection<Move> playerLegals,
-           final Collection<Move> opponentLegals) {
+           final List<Move> playerLegals,
+           final List<Move> opponentLegals) {
         this.board = board;
         this.playerKing = establishKing();
         this.isInCheck = !calculateAttacksOnTile(this.playerKing.getPiecePosition(), opponentLegals).isEmpty();
         playerLegals.addAll(calculateKingCastles(playerLegals, opponentLegals));
-        this.legalMoves = Collections.unmodifiableCollection(playerLegals);
+        this.legalMoves = (List<Move>) Collections.unmodifiableCollection(playerLegals);
     }
 
     public boolean isInCheck() {
@@ -73,36 +73,29 @@ public abstract class Player {
                         .getMoveStatus().isDone());
     }
 
-    public Collection<Move> getLegalMoves() {
+    public List<Move> getLegalMoves() {
         return this.legalMoves;
     }
 
-    public Collection<Move> getLegalMoves(final MoveStatus moveStatus) {
+    public List<Move> getLegalMoves(final MoveStatus moveStatus) {
         return this.
                 getLegalMoves().
                 stream().
-                filter(m -> board.blackPlayer().makeMove(m).getMoveStatus() == moveStatus)
+                filter(m -> this.makeMove(m).getMoveStatus() == moveStatus)
                 .collect(Collectors.toList());
     }
 
     public Optional<Move> getMove(final String moveSz) {
-        String[] sz = moveSz.split("[- ]");
-        if (sz.length != 2)
-            throw new RuntimeException("move incorrect: " + moveSz);
-        int start = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[0].toLowerCase(Locale.ROOT));
-        int end = BoardUtils.INSTANCE.getCoordinateAtPosition(sz[1].toLowerCase(Locale.ROOT));
-        return this.getLegalMoves().stream().filter(
-                m -> m.getCurrentCoordinate() == start && m.getDestinationCoordinate() == end
-        ).findFirst();
-//        System.out.println("MOVE:"+ move);
-//        return this.getLegalMoves().stream().filter(
-//                m -> m.toString().equalsIgnoreCase(moveSz)
-//        ).findFirst();
+        return BoardUtils.INSTANCE.getMove(moveSz, this.getLegalMoves());
     }
 
     public Board executeMove(final String moveSz) {
         Optional<Move> move = this.getMove(moveSz);
-        MoveTransition moveTransition = this.makeMove(move.get());
+        return executeMove(move.get());
+    }
+
+    public Board executeMove(final Move move) {
+        MoveTransition moveTransition = this.makeMove(move);
         return moveTransition.getToBoard();
     }
 

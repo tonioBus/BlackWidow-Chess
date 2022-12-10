@@ -54,7 +54,7 @@ public class PGNUtilities {
                         gameTextBuilder.append(line.replace(outcome, "")).append(" ");
                         final String gameText = gameTextBuilder.toString().trim();
                         if(!gameText.isEmpty() && gameText.length() > 80) {
-                            final Game game = GameFactory.createGame(tagsBuilder.build(), gameText, outcome);
+                            final GamePGN game = GameFactory.createGame(tagsBuilder.build(), gameText, outcome);
                             System.out.println("(" +(++count)+") Finished parsing " +game+ " count = " + (++count));
                             if(game.isValid()) {
                                 MySqlGamePersistence.get().persistGame(game);

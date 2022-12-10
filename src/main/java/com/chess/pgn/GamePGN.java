@@ -2,15 +2,15 @@ package com.chess.pgn;
 
 import java.util.List;
 
-public abstract class Game implements Playable {
+public abstract class GamePGN implements Playable {
 
     protected final PGNGameTags tags;
     protected final List<String> moves;
     protected final String winner;
 
-    Game(final PGNGameTags tags,
-         final List<String> moves,
-         final String outcome) {
+    GamePGN(final PGNGameTags tags,
+            final List<String> moves,
+            final String outcome) {
         this.tags = tags;
         this.moves = moves;
         this.winner = calculateWinner(outcome);

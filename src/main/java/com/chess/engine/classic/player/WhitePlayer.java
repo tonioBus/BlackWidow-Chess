@@ -19,8 +19,8 @@ import static com.chess.engine.classic.pieces.Piece.PieceType.ROOK;
 public final class WhitePlayer extends Player {
 
     public WhitePlayer(final Board board,
-                       final Collection<Move> whiteStandardLegals,
-                       final Collection<Move> blackStandardLegals) {
+                       final List<Move> whiteStandardLegals,
+                       final List<Move> blackStandardLegals) {
         super(board, whiteStandardLegals, blackStandardLegals);
     }
 

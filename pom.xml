@@ -46,6 +46,57 @@
             <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/ca.umontreal.iro.simul/ssj -->
+        <dependency>
+            <groupId>ca.umontreal.iro.simul</groupId>
+            <artifactId>ssj</artifactId>
+            <version>3.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>info.leadinglight</groupId>
+            <artifactId>jdot</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <!-- DEEPLEARNING 4J -->
+        <dependency>
+            <groupId>guru.nidi</groupId>
+            <artifactId>graphviz-java</artifactId>
+            <version>0.18.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.deeplearning4j</groupId>
+            <artifactId>deeplearning4j-core</artifactId>
+            <version>${dl4j.version}</version>
+        </dependency>
+        <!-- CUDA -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-cuda-11.6-platform</artifactId>
+            <version>${nd4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>cuda-platform-redist</artifactId>
+            <version>11.6-8.3-1.5.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-cuda-11.6</artifactId>
+            <version>${nd4j.version}</version>
+            <classifier>windows-x86_64-cudnn</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-cuda-11.6</artifactId>
+            <version>${nd4j.version}</version>
+            <classifier>linux-x86_64-cudnn</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>tensorrt-platform-redist</artifactId>
+            <version>8.2-1.5.7</version>
+        </dependency>
+        <!-- END CUDA -->
 
         <!-- Test -->
         <dependency>
@@ -53,6 +104,11 @@
             <artifactId>junit-jupiter</artifactId>
             <version>5.9.0</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
         </dependency>
 
     </dependencies>

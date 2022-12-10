@@ -2,7 +2,7 @@ package com.chess.pgn;
 
 import java.util.Collections;
 
-public class InvalidGame extends Game {
+public class InvalidGame extends GamePGN {
 
     final String malformedGameText;
 

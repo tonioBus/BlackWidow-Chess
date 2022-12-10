@@ -3,7 +3,7 @@ package com.chess.pgn;
 import java.util.List;
 
 public class ValidGame
-        extends Game {
+        extends GamePGN {
 
     public ValidGame(final PGNGameTags tags,
                      List<String> moves,
