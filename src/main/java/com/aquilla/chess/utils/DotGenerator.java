@@ -26,11 +26,11 @@ public class DotGenerator {
     private DotGenerator() {
     }
 
-    public static String toString(MCTSNode node, int depthMax) {
+    public static String toString(final MCTSNode node, final int depthMax) {
         return toString(node, depthMax, false);
     }
 
-    public static String toString(MCTSNode node, int depthMax, boolean displayLeafNode) {
+    public static String toString(final MCTSNode node, final int depthMax, final boolean displayLeafNode) {
         DotGenerator.displayLeafNode = displayLeafNode;
         final DotGenerator dotGenerator = new DotGenerator();
         final Graph graph = dotGenerator.generate(node, depthMax);
@@ -47,7 +47,7 @@ public class DotGenerator {
      * 400731411 -> { 1995054261 } [ label="0.094828704992930" ]; 400731411 ->
      * 1788132713 [ label="0.094828704992930" ]; }
      */
-    private Graph generate(MCTSNode node, int depthMax) {
+    private Graph generate(final MCTSNode node, final int depthMax) {
         Graph g = new Graph("structs");
         // g.setRankDir(Rankdir.LR);
         generate(g, node, 0, depthMax);
@@ -69,13 +69,13 @@ public class DotGenerator {
         return sb.toString().trim();
     }
 
-    private int generate(Graph g, final MCTSNode node, int depth, int depthMax) {
+    private int generate(final Graph g, final MCTSNode node, final int depth, final int depthMax) {
         if (depth >= depthMax)
             return 0;
-        String szMove = node.getMove() == null ? "root" : node.getMove().toString();
+        String szMove = node.getMove() == null ? "root" : String.valueOf(node.getMove());
         Alliance color = node.getColorState();
         String core = String.format("Parent:%s | Init:%b | Prop:%b | %s | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
-                node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : node.getParent().getMove(),
+                node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
                 node.getCacheValue().isInitialised(),
                 node.getCacheValue().isPropagated(),
                 color == null ? "no color" : color.toString(), //

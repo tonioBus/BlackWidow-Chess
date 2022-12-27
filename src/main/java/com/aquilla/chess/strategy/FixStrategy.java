@@ -40,6 +40,15 @@ public class FixStrategy implements Strategy {
 
     @Override
     public String getName() {
-        return String.format("FixStrategy({}) nextMove:{}", alliance, nextMoveSz);
+        return toString();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s{nextMoveSz=%s,nextMove=%s,alliance=%s}",
+                this.getClass().getSimpleName(),
+                nextMoveSz,
+                nextMove,
+                alliance);
     }
 }

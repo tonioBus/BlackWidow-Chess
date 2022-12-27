@@ -73,29 +73,32 @@ public class Game {
         final Move fromMove;
     }
 
-    public Game copy(final FixMCTSTreeStrategy strategyWhite, final FixMCTSTreeStrategy strategyBlack) {
-        final Game game = Game.builder().board(this.board).build();
-        strategyWhite.copyLastInputs((FixMCTSTreeStrategy) this.getStrategyWhite());
-        strategyBlack.copyLastInputs((FixMCTSTreeStrategy) this.getStrategyBlack());
-        game.strategyWhite = strategyWhite;
-        game.strategyBlack = strategyBlack;
-        game.transitions.addAll(this.transitions);
-        game.lastMoves.addAll(this.lastMoves);
-        Alliance alliance = this.nextPlayer.getAlliance();
+    public Game copy(final Alliance alliance, final Strategy strategyWhite, final Strategy strategyBlack) {
+        final Game copyGame = Game.builder().board(this.board).build();
+        if( this.strategyWhite instanceof FixMCTSTreeStrategy && strategyWhite instanceof FixMCTSTreeStrategy)
+            ((FixMCTSTreeStrategy)strategyWhite).copyLastInputs((FixMCTSTreeStrategy) this.strategyWhite);
+        if( this.strategyBlack instanceof FixMCTSTreeStrategy && strategyBlack instanceof  FixMCTSTreeStrategy)
+            ((FixMCTSTreeStrategy)strategyBlack).copyLastInputs((FixMCTSTreeStrategy) this.strategyBlack);
+        copyGame.strategyWhite = strategyWhite;
+        copyGame.strategyBlack = strategyBlack;
+        copyGame.transitions.addAll(this.transitions);
+        copyGame.lastMoves.addAll(this.lastMoves);
         if (alliance.isWhite()) {
-            game.nextPlayer = this.board.whitePlayer();
-            game.nextStrategy = this.strategyWhite;
+            copyGame.nextPlayer = this.board.whitePlayer();
+            copyGame.nextStrategy = this.strategyWhite;
         } else {
-            game.nextPlayer = this.board.blackPlayer();
-            game.nextStrategy = this.strategyBlack;
+            copyGame.nextPlayer = this.board.blackPlayer();
+            copyGame.nextStrategy = this.strategyBlack;
         }
-        game.nbMoveNoAttackAndNoPawn = this.nbMoveNoAttackAndNoPawn;
-        game.status = this.calculateStatus();
-        return game;
+        copyGame.nbMoveNoAttackAndNoPawn = this.nbMoveNoAttackAndNoPawn;
+        copyGame.status = this.calculateStatus();
+        return copyGame;
     }
 
     public void setup(final Strategy strategyPlayerWhite,
                       final Strategy strategyPlayerBlack) {
+        assert(strategyPlayerWhite.getAlliance() ==  Alliance.WHITE);
+        assert(strategyPlayerBlack.getAlliance() ==  Alliance.BLACK);
         this.strategyWhite = strategyPlayerWhite;
         this.strategyBlack = strategyPlayerBlack;
         nextPlayer = board.whitePlayer();
@@ -104,7 +107,8 @@ public class Game {
 
     public GameStatus play() throws Exception {
         List<Move> moves = nextPlayer.getLegalMoves(Move.MoveStatus.DONE);
-        Move move = nextStrategy.play(this, this.lastMoves.get(0), moves);
+        Move moveOpponent = this.lastMoves.size() == 0 ? null : this.lastMoves.get(lastMoves.size()-1);
+        Move move = nextStrategy.play(this, moveOpponent, moves);
         if (move.isAttack() == false &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;
@@ -214,7 +218,7 @@ public class Game {
     public synchronized long hashCode(final Alliance color2play, final Move move) {
         final int nbStep = this.transitions.size();
         StringBuffer sb = new StringBuffer();
-        Board board = this.transitions.lastElement().board;
+        Board board = this.transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().board;
         LinkedList<Move> lastMoves = new LinkedList<>();
         lastMoves.addAll(this.lastMoves);
         if (move != null) {

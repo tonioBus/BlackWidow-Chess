@@ -77,10 +77,10 @@ public class InputsNNFactory {
      * @param move : null if we are training
      */
     public static void createInputs(final double[][][] inputs,
+                                    final FixMCTSTreeStrategy fixMCTSTreeStrategy,
                                     final Game game,
                                     final Alliance color2play) {
         int destinationOffset = 0;
-        final FixMCTSTreeStrategy fixMCTSTreeStrategy = (FixMCTSTreeStrategy)game.getStrategy(color2play);
         for (double[][][] lastInput : fixMCTSTreeStrategy.getLastInputs()) {
             System.arraycopy(lastInput, 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;

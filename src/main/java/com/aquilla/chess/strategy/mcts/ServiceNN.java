@@ -202,17 +202,26 @@ class ServiceNN {
      * @param isDirichlet
      * @param isRootNode
      */
-    protected synchronized void submit(long key, Move possibleMove, Alliance color2play, Game gameCopy, boolean isDirichlet, boolean isRootNode) {
+    protected synchronized void submit(final long key,
+                                       final Move possibleMove,
+                                       final Alliance color2play,
+                                       final Game gameCopy,
+                                       final boolean isDirichlet,
+                                       final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
         if (tmpCacheValues.containsKey(key)) return;
-        Alliance possibleMoveColor = possibleMove.getMovedPiece().getPieceAllegiance();
-        if (possibleMove != null && possibleMoveColor != color2play) {
-            log.error("Not identical color: move.color:{} color2play:{}", possibleMoveColor, color2play);
-            throw new RuntimeException("Color not Identical");
+        if (possibleMove != null) {
+            Alliance possibleMoveColor = possibleMove.getMovedPiece().getPieceAllegiance();
+            if (possibleMoveColor != color2play) {
+                log.error("Not identical color: move:{} color2play:{}", possibleMove, color2play);
+                throw new RuntimeException(String.format("Color not Identical, move:%s color:%s",
+                        possibleMove, color2play.toString()));
+            }
         }
         batchJobs2Commit.put(key, new InputForBatchJobs(
                 possibleMove,
                 color2play,
+                this.deepLearningAGZ.getFixMCTSTreeStrategy(),
                 gameCopy,
                 isDirichlet,
                 isRootNode));

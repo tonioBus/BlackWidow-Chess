@@ -12,7 +12,6 @@ import java.util.List;
 
 @Slf4j
 public class FixMCTSTreeStrategy extends FixStrategy {
-
     @Getter
     protected final CircularFifoQueue<double[][][]> lastInputs = new CircularFifoQueue<>(8);
 
@@ -44,6 +43,14 @@ public class FixMCTSTreeStrategy extends FixStrategy {
     public String getName() {
         return String.format("[%s %s nextMove:%s] ", alliance, this.getClass().getSimpleName(),
                 this.nextMoveSz);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s{%s,%d}",
+                this.getClass().getSimpleName(),
+                super.alliance,
+                lastInputs.size());
     }
 
 }

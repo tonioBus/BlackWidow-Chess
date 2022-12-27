@@ -29,7 +29,7 @@ public abstract class Player {
         this.playerKing = establishKing();
         this.isInCheck = !calculateAttacksOnTile(this.playerKing.getPiecePosition(), opponentLegals).isEmpty();
         playerLegals.addAll(calculateKingCastles(playerLegals, opponentLegals));
-        this.legalMoves = (List<Move>) Collections.unmodifiableCollection(playerLegals);
+        this.legalMoves = playerLegals;
     }
 
     public boolean isInCheck() {

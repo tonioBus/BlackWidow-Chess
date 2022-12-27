@@ -97,7 +97,7 @@ public class DeepLearningAGZ {
     }
 
     public Object getNetwork() {
-        return null; // FIXME nn.getNetwork();
+        return nn.getNetwork();
     }
 
     public void setUpdateLr(UpdateLr updateLr, int nbGames) {
@@ -155,7 +155,7 @@ public class DeepLearningAGZ {
             log.error("- {}",
                     cacheValues.getValues()
                             .stream()
-                            .map(v -> v.getNode().getMove().toString())
+                            .map(v -> v.getNode() != null ? String.valueOf(v.getNode().getMove()) : "v.getNode:null")
                             .collect(Collectors.joining("\n")));
             throw new RuntimeException(msg);
         }

@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquilla.chess.Game;
-import com.aquilla.chess.strategy.FixStrategy;
 import com.aquilla.chess.strategy.HungryStrategy;
 import com.aquilla.chess.strategy.RandomStrategy;
 import com.aquilla.chess.strategy.mcts.FixMCTSTreeStrategy;
@@ -27,7 +26,7 @@ class GameTest {
     public void testRandomPlayer(int seed) {
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        game.setup(new RandomStrategy(seed), new RandomStrategy(seed + 1));
+        game.setup(new RandomStrategy(Alliance.WHITE, seed), new RandomStrategy(Alliance.BLACK, seed + 1));
         try {
             while (game.play() == Game.GameStatus.IN_PROGRESS) ;
         } catch (Throwable t) {
@@ -54,7 +53,7 @@ class GameTest {
         @Override
         public Integer call() {
             log.info("[{}] BEGIN", label);
-            final Game gameCopy = gameOriginal.copy(new FixMCTSTreeStrategy(Alliance.WHITE), new FixMCTSTreeStrategy(Alliance.BLACK));
+            final Game gameCopy = gameOriginal.copy( Alliance.WHITE, new FixMCTSTreeStrategy(Alliance.WHITE), new FixMCTSTreeStrategy(Alliance.BLACK));
             if (!gameOriginal.isInitialPosition()) throw new RuntimeException("Not initial position");
             for (int i = 0; i < 100; i++) {
                 Collection<Move> moves = gameCopy.getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
@@ -72,7 +71,7 @@ class GameTest {
     void testCopyGameAndGetPossibleMoves(int nbThread) throws InterruptedException, ExecutionException {
         final Board board = Board.createStandardBoard();
         final Game gameOriginal = Game.builder().board(board).build();
-        gameOriginal.setup(new RandomStrategy(1), new RandomStrategy(2));
+        gameOriginal.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 2));
         ExecutorService WORKER_THREAD_POOL = Executors.newFixedThreadPool(128);
         ExecutorCompletionService<Integer> executorService = new ExecutorCompletionService<>(WORKER_THREAD_POOL);
         for (int i = 0; i < nbThread; i++) {
@@ -102,7 +101,7 @@ class GameTest {
     void testHashcode(int seed) throws Exception {
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        game.setup(new RandomStrategy(seed), new HungryStrategy(board.blackPlayer()));
+        game.setup(new RandomStrategy(Alliance.WHITE, seed), new HungryStrategy(Alliance.BLACK, board.blackPlayer()));
         Map<Long, Board> hashcodes = new HashMap<>();
         Game.GameStatus status;
         do {

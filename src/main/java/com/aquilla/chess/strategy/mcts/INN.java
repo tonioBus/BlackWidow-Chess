@@ -25,12 +25,12 @@ public interface INN {
     // 110: 0
     // 111: 1 -> edges detection
     final int FEATURES_PLANES = 112;
-    int PAWN_INDEX = 1;
+    int PAWN_INDEX = 0;
+    int KNIGHT_INDEX = 1;
     int BISHOP_INDEX = 2;
-    int KNIGHT_INDEX = 3;
-    int ROOK_INDEX = 4;
-    int QUEEN_INDEX = 5;
-    int KING_INDEX = 6;
+    int ROOK_INDEX = 3;
+    int QUEEN_INDEX = 4;
+    int KING_INDEX = 5;
 
     double getScore();
 

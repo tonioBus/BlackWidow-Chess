@@ -1,6 +1,8 @@
 package com.aquilla.chess.strategy.mcts;
 
 import com.aquilla.chess.Game;
+import com.aquilla.chess.strategy.FixStrategy;
+import com.aquilla.chess.strategy.Strategy;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
@@ -22,16 +24,17 @@ public class SearchWorker implements Callable<Integer> {
 
     private final int numThread;
 
-    private final int nbNumberSearchCalls;
+    private final int nbSubmit;
 
     protected final Statistic statistic;
     protected final DeepLearningAGZ deepLearning;
     // protected Game gameOriginal;
-    protected final Alliance color;
-    private final Game gameOriginal;
+    protected final Alliance colorStrategy;
+    // private final Game gameOriginal;
     protected final MCTSNode currentRoot;
-    protected FixMCTSTreeStrategy whiteStrategy;
-    protected FixMCTSTreeStrategy blackStrategy;
+    private final int nbStep;
+    // protected FixMCTSTreeStrategy whiteStrategy;
+    // protected FixMCTSTreeStrategy blackStrategy;
     protected final UpdateCpuct updateCpuct;
     protected final Dirichlet updateDirichlet;
     protected final Random rand;
@@ -44,45 +47,60 @@ public class SearchWorker implements Callable<Integer> {
     protected boolean isDirichlet;
 
     public SearchWorker(
+            final int nbStep,
             final int numThread,
-            final int nbNumberSearchCalls,
+            final int nbSubmit,
             final Statistic statistic,
             final DeepLearningAGZ deepLearning,
             final MCTSNode currentRoot,
             final Game gameOriginal,
-            final Alliance color,
+            final Alliance colorStrategy,
             final UpdateCpuct updateCpuct,
             final Dirichlet updateDirichlet,
             final Random rand) {
-        this.gameOriginal = gameOriginal;
+        this.nbStep = nbStep;
+        this.numThread = numThread;
+        this.nbSubmit = nbSubmit;
         this.statistic = statistic;
         this.currentRoot = currentRoot;
+        // this.gameOriginal = gameOriginal;
         this.deepLearning = deepLearning;
-        this.color = color;
+        this.colorStrategy = colorStrategy;
         this.updateCpuct = updateCpuct;
         this.updateDirichlet = updateDirichlet;
         this.rand = rand;
-        this.numThread = numThread;
-        this.nbNumberSearchCalls = nbNumberSearchCalls;
-        this.whiteStrategy = new FixMCTSTreeStrategy(Alliance.WHITE);
-        this.blackStrategy = new FixMCTSTreeStrategy(Alliance.BLACK);
-        game = gameOriginal.copy(whiteStrategy, blackStrategy);
-        gameOriginal.isInitialPosition();
-        game.isInitialPosition();
+        Strategy whiteStrategy = null, blackStrategy = null;
+        switch( colorStrategy) {
+            case WHITE:
+                whiteStrategy = new FixMCTSTreeStrategy(Alliance.WHITE);
+                blackStrategy = new FixStrategy(Alliance.BLACK);
+                break;
+            case BLACK:
+                whiteStrategy = new FixStrategy(Alliance.WHITE);
+                blackStrategy = new FixMCTSTreeStrategy(Alliance.BLACK);
+                break;
+        }
+        game = gameOriginal.copy(colorStrategy, whiteStrategy, blackStrategy);
+        assert(game.getStrategyWhite() instanceof FixStrategy);
+        assert(game.getStrategyBlack() instanceof FixStrategy);
+        assert(!(game.getStrategyWhite() instanceof MCTSStrategy));
+        assert(!(game.getStrategyBlack() instanceof MCTSStrategy));
+        // gameOriginal.isInitialPosition();
+        // game.isInitialPosition();
     }
 
     @Override
     public Integer call() throws Exception {
         Thread.currentThread().setName(String.format("Worker-%d", numThread));
-        gameOriginal.isInitialPosition();
+        // gameOriginal.isInitialPosition();
         final List<Move> selectNodesMoves = this.getPossibleMoves(game);
         cpuct = updateCpuct.update(game.getTransitions().size());
         SearchResult searchResult = search(currentRoot, selectNodesMoves, 0, true);
         if (searchResult == null) {
-            if (log.isDebugEnabled()) log.debug("END SEARCH: NULL");
+            if (log.isDebugEnabled()) log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
             if (log.isDebugEnabled())
-                log.debug("END SEARCH: {} <- {}", searchResult.getValue(), searchResult.getSource());
+                log.debug("[{}] END SEARCH: {} <- {}", nbStep, searchResult.getValue(), searchResult.getSource());
         }
         getStatistic().nbCalls++;
         return numThread;
@@ -170,7 +188,7 @@ public class SearchWorker implements Callable<Integer> {
             int visits = 0;
             child = opponentNode.findChild(possibleMove);
             if (log.isDebugEnabled())
-                log.debug("[{}]  FINDCHILD({}): child={}", nbNumberSearchCalls, possibleMove, child);
+                log.debug("[{}]  FINDCHILD({}): child={}", nbSubmit, possibleMove, child);
             if (child == null) {
                 label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", game.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
                 key = deepLearning.addState(game, label, possibleMove.getMovedPiece().getPieceAllegiance(), possibleMove, false, false, statistic);
@@ -227,11 +245,11 @@ public class SearchWorker implements Callable<Integer> {
         switch (gameStatus) {
             case CHESSMATE_BLACK:
             case CHESSMATE_WHITE:
-                if (simulatedPlayerColor == color) {
+                if (simulatedPlayerColor == colorStrategy) {
                     if (node.getState() != MCTSNode.State.WIN) {
                         String sequence = sequenceMoves(node);
                         if (log.isDebugEnabled())
-                            log.debug("#{} [{} - {}] moves:{} CURRENT COLOR WIN V1", depth, color, simulatedPlayerColor,
+                            log.debug("#{} [{} - {}] moves:{} CURRENT COLOR WIN V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
@@ -246,7 +264,7 @@ public class SearchWorker implements Callable<Integer> {
                     if (node.getState() != MCTSNode.State.LOOSE) {
                         String sequence = sequenceMoves(node);
                         if (log.isDebugEnabled())
-                            log.debug("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1", depth, color, simulatedPlayerColor,
+                            log.debug("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
@@ -277,7 +295,7 @@ public class SearchWorker implements Callable<Integer> {
         }
         if (node.getExpectedReward(false) != 0) {
             if (log.isDebugEnabled())
-                log.debug("#{} [{} - {}] move:{} {} RETURN: 0", depth, color, simulatedPlayerColor, selectedMove,
+                log.debug("#{} [{} - {}] move:{} {} RETURN: 0", depth, colorStrategy, simulatedPlayerColor, selectedMove,
                         gameStatus);
             removePropagation(node, simulatedPlayerColor, selectedMove);
             node.resetExpectedReward(DRAWN_VALUE);

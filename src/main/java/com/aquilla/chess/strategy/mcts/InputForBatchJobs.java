@@ -19,6 +19,7 @@ public class InputForBatchJobs {
 
     public InputForBatchJobs(final Move move,
                              final Alliance color2play,
+                             final FixMCTSTreeStrategy fixMCTSTreeStrategy,
                              final Game game,
                              final boolean isDirichlet,
                              final boolean isRootNode) {
@@ -27,12 +28,12 @@ public class InputForBatchJobs {
         this.game = game;
         this.isDirichlet = isDirichlet;
         this.isRootNode = isRootNode;
-        this.inputs = createInput(game);
+        this.inputs = createInput(fixMCTSTreeStrategy, game);
     }
 
-    private double[][][] createInput(final Game game) {
+    private double[][][] createInput(final FixMCTSTreeStrategy fixMCTSTreeStrategy, final Game game) {
         double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        InputsNNFactory.createInputs(inputs, game, color2play);
+        InputsNNFactory.createInputs(inputs, fixMCTSTreeStrategy, game, color2play);
         return inputs;
     }
 

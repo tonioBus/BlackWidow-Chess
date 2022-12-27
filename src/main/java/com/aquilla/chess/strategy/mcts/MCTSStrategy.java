@@ -1,12 +1,12 @@
 package com.aquilla.chess.strategy.mcts;
 
 import com.aquilla.chess.Game;
-import com.aquilla.chess.strategy.FixStrategy;
 import com.aquilla.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -19,6 +19,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private final Game game;
     private int nbStep = 0;
 
+    @Setter
     protected int nbThreads;
 
     @Getter
@@ -97,16 +98,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                      final Move moveOpponent,
                      final List<Move> moves) throws InterruptedException {
         Move move = mctsStep(moveOpponent, moves);
+        log.info("\n{}\n{}\n{}\n",
+                "##########################################################",
+                DotGenerator.toString(this.root, 5, true));
+        log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
-        log.info("{} nextPlay() -> {}", this, move);
         pushNNInput(game, move);
         return move;
-    }
-
-    @Override
-    public String getName() {
-        return String.format("[%s %S DL:%s Nodes:%d] ", alliance, this.getClass().getSimpleName(),
-                this.deepLearning.getFilename(), currentRootNode != null ? currentRootNode.getNumberAllSubNodes() : 0);
     }
 
     private MCTSNode setCurrentRootNode(final Move opponentMove) {
@@ -122,7 +120,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         MCTSNode opponentNode = this.currentRootNode.findChild(opponentMove);
         if (opponentNode == null) {
             long key;
-            key = deepLearning.addState(game, "PLAY:" + currentRootNode.getMove().toString(), alliance.complementary(), opponentMove, true, true, statistic);
+            key = deepLearning.addState(game, "PLAY:" + currentRootNode.getMove(), alliance.complementary(), opponentMove, true, true, statistic);
             opponentNode = MCTSNode.createNode(currentRootNode, opponentMove, key, deepLearning.getCacheValues().get(key));
         }
         this.currentRootNode = opponentNode;
@@ -140,6 +138,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         setCurrentRootNode(opponentMove);
         statistic.clear();
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
+                nbStep,
                 nbThreads,
                 this.timeMillisPerStep,
                 this.nbMaxSearchCalls,
@@ -189,7 +188,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public MCTSNode findBestRewardsWithLogVisits(final MCTSNode opponentNode) {
         if (this.game.isLogBoard()) {
             log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
-            log.warn("[{}] FINDBEST: {}", this.getAlliance(), DotGenerator.toString(opponentNode, 5));
+            log.warn("[{}] FINDBEST: {}", this.getAlliance(), DotGenerator.toString(opponentNode, 5, true));
         }
 
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
@@ -221,8 +220,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             ret = getRandomNodes(bestNodes);
-        } else
+        } else if (nbBests == 0) {
+            log.error("NO BEST NODES, opponentNode:{}", opponentNode.toString());
+            throw new RuntimeException("NO BEST NODES");
+        } else {
             ret = bestNodes.get(0);
+        }
         String state = "MEDIUM";
         int nbChilds = opponentNode.childNodes.size();
         if (nbBests == 1 && nbChilds >= 1)
@@ -249,11 +252,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return nodes.get(index);
     }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
-
     /**
      * @return the root
      */
@@ -267,4 +265,19 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.warn("change nb threads: {}", nbThreads);
         return this;
     }
+
+    @Override
+    public String getName() {
+        return String.format("%s{%s file:%s Childs:%d}",
+                this.getClass().getSimpleName(),
+                alliance,
+                this.deepLearning.getFilename(),
+                root != null ? root.getNumberAllSubNodes() : 0);
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
 }

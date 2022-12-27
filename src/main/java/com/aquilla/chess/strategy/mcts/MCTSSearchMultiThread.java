@@ -31,6 +31,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
     private final int buildOrder;
     private final Statistic statistic;
     private final int nbThreads;
+    private int nbStep;
 
     /**
      * @param deepLearning
@@ -41,6 +42,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
      * @param rand
      */
     public MCTSSearchMultiThread(
+            final int nbStep,
             final int nbThreads,
             final long timeMillisPerStep,
             final long nbMaxSearchCalls,
@@ -52,6 +54,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             final UpdateCpuct updateCpuct,
             final Dirichlet dirichlet,
             final Random rand) {
+        this.nbStep = nbStep;
         this.nbThreads = nbThreads;
         if (timeMillisPerStep < 0 && nbMaxSearchCalls < 0) {
             String msg = String.format("Can not choose the stop mechanism (timing and number of step < 0)");
@@ -85,7 +88,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         CacheValues.CacheValue rootValue = currentRoot.getCacheValue();
         if (rootValue != null) {
             rootValue.setNormalized(false);
-            log.info("RESET ROOT NORMALIZATION key: {}", currentRoot.getKey());
+            log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot.getKey());
             MCTSNode.resetBuildOrder();
         }
         int nbSubmit = this.currentRoot.getVisits();
@@ -94,9 +97,9 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         else nbWorks = Math.min(nbThreads, (int) nbMaxSearchCalls);
         if (nbWorks < 1) nbWorks = 1;
         for (int i = 0; i < nbWorks; i++) {
-            SearchWorker searchWorker = createSearchWalker(i, nbSubmit);
-            if (log.isDebugEnabled())
-                log.debug("[{}] CREATING TASK:{}", currentRoot.getVisits(), i);
+            SearchWorker searchWorker = createSearchWalker(nbStep, i, nbSubmit);
+            if (log.isInfoEnabled())
+                log.info("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getChilds().size());
             executorService.submit(searchWorker);
             nbSubmit++;
         }
@@ -105,14 +108,15 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             Future<Integer> future = executorService.take();
             if (future == null) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) WORKER_THREAD_POOL;
-                if (log.isDebugEnabled())
-                    log.debug("FUTURE is NULL. NB_THREAD:{} ", threadPoolExecutor.getActiveCount());
-                continue;
+                if (log.isErrorEnabled())
+                    log.error("FUTURE is NULL. NB_THREAD:{} ", threadPoolExecutor.getActiveCount());
+                throw new Error("future null !!!");
+                // continue;
             }
             try {
                 Integer nbSearchWalker = future.get();
-                if (log.isDebugEnabled())
-                    log.debug("[{}] IS DONE {}:{}", currentRoot.getVisits(), nbSearchWalker.intValue(), future.isDone());
+                if (log.isInfoEnabled())
+                    log.info("[{}] IS DONE {}:{} childs:{}", nbStep, nbSearchWalker.intValue(), future.isDone(), this.currentRoot.getChilds().size());
                 if (isEnding == false) {
                     boolean isContinue = false;
                     switch (this.stopMode) {
@@ -125,17 +129,18 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                     }
                     if (isContinue) {
                         SearchWorker searchWorker = createSearchWalker(
+                                nbStep,
                                 nbSearchWalker.intValue(),
                                 nbSubmit);
-                        if (log.isDebugEnabled())
-                            log.debug("[{}] CREATING new TASK:{}", currentRoot.getVisits(), nbSearchWalker.intValue());
+                        if (log.isInfoEnabled())
+                            log.info("[{}] CREATING new TASK:{} childs:{}", nbStep, nbSearchWalker.intValue(), this.currentRoot.getChilds().size());
                         executorService.submit(searchWorker);
                         nbSubmit++;
                     } else {
                         WORKER_THREAD_POOL.shutdown();
                         while (!WORKER_THREAD_POOL.awaitTermination(200, TimeUnit.MILLISECONDS)) ;
                         isEnding = true;
-                        if (log.isDebugEnabled()) log.debug("[{}] END OF SEARCH DETECTED", currentRoot.getVisits());
+                        if (log.isInfoEnabled()) log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChilds().size());
                     }
                 }
             } catch (InterruptedException e) {
@@ -156,11 +161,12 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         TIMING, NB_STEP
     }
 
-    private SearchWorker createSearchWalker(final int numThread, final int nbNumberSearchCalls) {
-        gameOriginal.isInitialPosition();
+    private SearchWorker createSearchWalker(final int nbStep, final int numThread, final int nbSubmit) {
+        // gameOriginal.isInitialPosition();
         final SearchWorker searchWorker = new SearchWorker(
+                nbStep,
                 numThread,
-                nbNumberSearchCalls,
+                nbSubmit,
                 statistic,
                 deepLearning,
                 currentRoot,
@@ -169,7 +175,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 updateCpuct,
                 updateDirichlet,
                 rand);
-        gameOriginal.isInitialPosition();
+        // gameOriginal.isInitialPosition();
         return searchWorker;
     }
 }

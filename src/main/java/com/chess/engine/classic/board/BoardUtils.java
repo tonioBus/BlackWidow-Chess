@@ -129,7 +129,7 @@ public enum  BoardUtils {
         return Collections.unmodifiableList(moveHistory);
     }
 
-    public static Optional<Move> getMove(final String moveSz, final Collection<Move> legalMoves) {
+    public static Optional<Move> getMove(final String moveSz, final List<Move> legalMoves) {
         String[] sz = moveSz.split("[- ]");
         if (sz.length != 2)
             throw new RuntimeException("move incorrect: " + moveSz);

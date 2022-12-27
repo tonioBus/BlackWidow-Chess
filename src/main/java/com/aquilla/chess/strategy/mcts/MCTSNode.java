@@ -1,5 +1,6 @@
 package com.aquilla.chess.strategy.mcts;
 
+import com.aquilla.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
@@ -249,8 +250,8 @@ public class MCTSNode implements Serializable {
 
     public void addChild(final MCTSNode node) {
         if (node.getParent() != this) {
-            // FIXME log.warn("node.parent: {}", DotGenerator.toString(node.getParent(), 10, true));
-            // FIXME log.warn("this: {}", DotGenerator.toString(this, 10, true));
+            log.warn("node.parent: {}", DotGenerator.toString(node.getParent(), 10, true));
+            log.warn("this: {}", DotGenerator.toString(this, 10, true));
             String msg = String.format("NODE-PARENT:%s <>\nCURRENT-PARENT: %s", node.getParent(), this);
             log.error(msg);
             throw new RuntimeException(msg);

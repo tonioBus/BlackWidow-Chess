@@ -1,9 +1,11 @@
 package com.aquilla.chess.strategy;
 
 import com.aquilla.chess.Game;
+import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.player.Player;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,8 +13,11 @@ import java.util.List;
 public class HungryStrategy implements Strategy {
 
     private final Player player;
+    @Getter
+    private final Alliance alliance;
 
-    public HungryStrategy(Player player) {
+    public HungryStrategy(final Alliance alliance, final Player player) {
+        this.alliance = alliance;
         this.player = player;
     }
 
