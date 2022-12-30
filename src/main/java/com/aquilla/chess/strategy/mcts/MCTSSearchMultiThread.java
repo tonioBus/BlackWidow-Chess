@@ -1,6 +1,5 @@
 package com.aquilla.chess.strategy.mcts;
 
-import com.aquilla.chess.Game;
 import com.chess.engine.classic.Alliance;
 import lombok.extern.slf4j.Slf4j;
 
@@ -97,10 +96,10 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         else nbWorks = Math.min(nbThreads, (int) nbMaxSearchCalls);
         if (nbWorks < 1) nbWorks = 1;
         for (int i = 0; i < nbWorks; i++) {
-            SearchWorker searchWorker = createSearchWalker(nbStep, i, nbSubmit);
+            MCTSSearchWalker MCTSSearchWalker = createSearchWalker(nbStep, i, nbSubmit);
             if (log.isInfoEnabled())
                 log.info("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getChilds().size());
-            executorService.submit(searchWorker);
+            executorService.submit(MCTSSearchWalker);
             nbSubmit++;
         }
         boolean isEnding = false;
@@ -128,13 +127,13 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                             break;
                     }
                     if (isContinue) {
-                        SearchWorker searchWorker = createSearchWalker(
+                        MCTSSearchWalker MCTSSearchWalker = createSearchWalker(
                                 nbStep,
                                 nbSearchWalker.intValue(),
                                 nbSubmit);
                         if (log.isInfoEnabled())
                             log.info("[{}] CREATING new TASK:{} childs:{}", nbStep, nbSearchWalker.intValue(), this.currentRoot.getChilds().size());
-                        executorService.submit(searchWorker);
+                        executorService.submit(MCTSSearchWalker);
                         nbSubmit++;
                     } else {
                         WORKER_THREAD_POOL.shutdown();
@@ -161,9 +160,9 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         TIMING, NB_STEP
     }
 
-    private SearchWorker createSearchWalker(final int nbStep, final int numThread, final int nbSubmit) {
+    private MCTSSearchWalker createSearchWalker(final int nbStep, final int numThread, final int nbSubmit) {
         // gameOriginal.isInitialPosition();
-        final SearchWorker searchWorker = new SearchWorker(
+        final MCTSSearchWalker MCTSSearchWalker = new MCTSSearchWalker(
                 nbStep,
                 numThread,
                 nbSubmit,
@@ -176,6 +175,6 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 updateDirichlet,
                 rand);
         // gameOriginal.isInitialPosition();
-        return searchWorker;
+        return MCTSSearchWalker;
     }
 }

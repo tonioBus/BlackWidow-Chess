@@ -1,7 +1,6 @@
 package com.aquilla.chess;
 
 import com.aquilla.chess.strategy.Strategy;
-import com.aquilla.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -9,7 +8,6 @@ import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.player.Player;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -135,7 +133,7 @@ public class Game {
 //        if(move.isCastlingMove()) {
 //
 //        } else {
-            sb.append(move.toString());
+        sb.append(move.toString());
 //        }
 //        switch (this.castling) {
 //            case NONE:
@@ -167,6 +165,10 @@ public class Game {
 
     public Board getLastBoard() {
         return transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().getBoard();
+    }
+
+    public Move getLastMove() {
+        return this.getMoves().get(this.getMoves().size() - 1);
     }
 
     @Builder(toBuilder = true)

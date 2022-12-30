@@ -230,6 +230,7 @@ public class MCTSNode implements Serializable {
         List<MCTSNode> ret = new ArrayList<>();
         if (this.state == state) ret.add(this);
         this.getChilds().forEach(child -> {
+            log.info("child:{} state:{}", child.move, child.state);
             ret.addAll(child.search(state));
         });
         return ret;

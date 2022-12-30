@@ -108,7 +108,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return move;
     }
 
-    private MCTSNode setCurrentRootNode(final Game game, final Move opponentMove) {
+    protected MCTSNode setCurrentRootNode(final Game game, final Move opponentMove) {
         deepLearning.clearAllCaches();
         this.mctsGame = new MCTSGame(game);
         if (currentRootNode == null) {
@@ -130,7 +130,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return currentRootNode;
     }
 
-    private Move mctsStep(final Move opponentMove,
+    protected Move mctsStep(final Move opponentMove,
                           final List<Move> currentMoves)
             throws InterruptedException {
         setCurrentRootNode(originalGame, opponentMove);

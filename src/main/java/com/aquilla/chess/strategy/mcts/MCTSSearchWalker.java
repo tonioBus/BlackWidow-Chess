@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Getter
-public class SearchWorker implements Callable<Integer> {
+public class MCTSSearchWalker implements Callable<Integer> {
     protected static final double WIN_LOOSE_VALUE = 1;
     private static final double DRAWN_VALUE = 0;
 
@@ -45,7 +45,7 @@ public class SearchWorker implements Callable<Integer> {
     protected double cpuct;
     protected boolean isDirichlet;
 
-    public SearchWorker(
+    public MCTSSearchWalker(
             final int nbStep,
             final int numThread,
             final int nbSubmit,
@@ -326,7 +326,7 @@ public class SearchWorker implements Callable<Integer> {
     }
 
     protected List<Move> getPossibleMoves(final Game game) {
-        List<Move> moves = game.getNextPlayer().getLegalMoves();
+        List<Move> moves = game.getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         getStatistic().nbPossibleMoves += moves.size();
         return moves;
     }

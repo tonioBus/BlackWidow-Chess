@@ -32,15 +32,15 @@ class DotGeneratorTest {
 
     @RepeatedTest(1)
     void testGenerate() throws Exception {
-        playMCTS(20);
+        playMCTS(5, 200);
     }
 
     @Test
     void testBegining() throws Exception {
-        playMCTS(5);
+        playMCTS(5, 50);
     }
 
-    void playMCTS(final int nbStepMax) throws Exception {
+    void playMCTS(final int nbStepMax, final int nbSearchCalls) throws Exception {
         final int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
@@ -52,7 +52,7 @@ class DotGeneratorTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(5);
+                .withNbMaxSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, 1000);
         game.setup(whiteStrategy, blackStrategy);
         int nbStep = 0;

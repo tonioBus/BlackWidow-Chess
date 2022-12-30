@@ -61,8 +61,7 @@ public class MCTSGame extends Game {
         }
         int nbMoves = game.getMoves().size();
         int start = nbMoves < 8 ? 0 : nbMoves - 8;
-        int stop = nbMoves;
-        for (int i = start; i < stop; i++) {
+        for (int i = start; i < nbMoves; i++) {
             lastMoves.add(game.getMoves().get(i));
         }
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
@@ -110,14 +109,23 @@ public class MCTSGame extends Game {
     }
 
     public String getHashCodeString(final Alliance color2play, final Move move) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Board board = this.transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().getBoard();
         if (move != null) {
-            board = move.execute();
+            try {
+                board = move.execute();
+            } catch (Exception e) {
+                log.error("[{}] move:{}", move.getMovedPiece().getPieceAllegiance(), move);
+                log.error("\n{}\n{}\n",
+                        "##########################################",
+                        board.toString()
+                );
+                throw e;
+            }
         }
         sb.append(board.toString());
         sb.append("\nM:");
-        sb.append(this.lastMoves.stream().map(m -> m.toString()).collect(Collectors.joining(",")));
+        sb.append(this.lastMoves.stream().map(Object::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
         sb.append(color2play);
         return sb.toString();
