@@ -1,6 +1,7 @@
 package com.aquilla.chess.strategy.mcts;
 
 import com.aquilla.chess.Game;
+import com.aquilla.chess.strategy.FixMCTSTreeStrategy;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -115,13 +116,13 @@ public class DeepLearningAGZ {
      * @param isDirichlet  true is we need to apply dirichlet to the root node
      * @return the key used to store the job and the related cacheValue
      */
-    public synchronized long addState(final Game gameCopy, final String label, final Alliance color2play, final Move possibleMove, boolean isRootNode, boolean isDirichlet, final Statistic statistic) {
+    public synchronized long addState(final MCTSGame gameCopy, final String label, final Alliance color2play, final Move possibleMove, boolean isRootNode, boolean isDirichlet, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addState", Thread.currentThread().getName());
         long key = gameCopy.hashCode(color2play, possibleMove);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
                 log.debug("[{}] CREATE CACHE VALUE:{} move:{} label:{}", color2play, key, possibleMove, label);
-            String lastMoves = gameCopy.getLastMoves().stream().map(move -> {
+            String lastMoves = gameCopy.getMoves().stream().map(move -> {
                 return move == null ? "-" : move.toString();
             }).collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
@@ -135,7 +136,7 @@ public class DeepLearningAGZ {
         return key;
     }
 
-    public synchronized long removeState(final Game gameCopy, final Alliance color2play, final Move possibleMove) {
+    public synchronized long removeState(final MCTSGame gameCopy, final Alliance color2play, final Move possibleMove) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN removeState", Thread.currentThread().getName());
         long key = gameCopy.hashCode(color2play, possibleMove);
         if (serviceNN.containsJob(key)) {
@@ -148,7 +149,7 @@ public class DeepLearningAGZ {
         return key;
     }
 
-    public CacheValues.CacheValue getBatchedValue(long key, Move possibleMove, final Statistic statistic) {
+    public CacheValues.CacheValue getBatchedValue(long key, final Move possibleMove, final Statistic statistic) {
         if (!cacheValues.containsKey(key)) {
             String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED MOVE:%s", key, possibleMove);
             log.error(msg);
@@ -163,7 +164,7 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(final Game gameCopy, final Alliance currentColor, long key, final List<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public double[] getBatchedPolicies(final MCTSGame gameCopy, final Alliance currentColor, long key, final List<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())

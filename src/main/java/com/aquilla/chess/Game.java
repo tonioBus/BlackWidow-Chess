@@ -1,7 +1,6 @@
 package com.aquilla.chess;
 
 import com.aquilla.chess.strategy.Strategy;
-import com.aquilla.chess.strategy.mcts.FixMCTSTreeStrategy;
 import com.aquilla.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -12,17 +11,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Vector;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
-@Builder(toBuilder = true)
 @Slf4j
 public class Game {
+
+    static public final String CASTLING_SHORT = "O-O";
+
+    static public final String CASTLING_LONG = "O-O-O";
 
     @Getter
     protected int nbMoveNoAttackAndNoPawn = 0;
@@ -33,7 +32,7 @@ public class Game {
     protected final Vector<GameTransition> transitions = new Vector<>();
 
     @Getter
-    protected final CircularFifoQueue<Move> lastMoves = new CircularFifoQueue<>(8);
+    protected final List<Move> moves = new ArrayList<>(127);
 
     @Getter
     protected Board board;
@@ -48,6 +47,22 @@ public class Game {
 
     @Getter
     protected Strategy strategyBlack;
+    @Getter
+    protected Move moveOpponent = null;
+
+    @Builder
+    public Game(Board board, Strategy strategyWhite, Strategy strategyBlack) {
+        this.board = board;
+        this.strategyWhite = strategyWhite;
+        this.strategyBlack = strategyBlack;
+    }
+
+    public Game() {
+    }
+
+    public Alliance getColor2play() {
+        return this.nextPlayer.getAlliance();
+    }
 
     public boolean isInitialPosition() {
         // TODO
@@ -62,8 +77,96 @@ public class Game {
         return true;
     }
 
-    public Object toPGN() {
-        return "toPGN()";
+    public String toPGN() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append(String.format("[Event \"%s\"]\n", "AquilaChess"));
+        sb.append(String.format("[Site \"%S\"]\n", "Mougins 06250"));
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        final String date = simpleDateFormat.format(new Date());
+        sb.append(String.format("[Date \"%s\"]\n", date));// "1992.11.04"));
+        sb.append(String.format("[Round \"%d\"]\n", this.moves.size()));
+        sb.append(String.format("[White \"%s\"]\n", strategyWhite.getClass().getSimpleName()));
+        sb.append(String.format("[Black \"%s\"]\n", strategyBlack.getClass().getSimpleName()));
+        String result = "*";
+        switch (this.status) {
+            case CHESSMATE_WHITE:
+                result = "1-0";
+                break;
+            case CHESSMATE_BLACK:
+                result = "0-1";
+                break;
+            case DRAW_50:
+            case DRAW_300:
+            case PAT:
+            case DRAW_3:
+            case DRAW_NOT_ENOUGH_PIECES:
+                result = "1/2-1/2";
+                break;
+        }
+        sb.append(String.format("[Result \"%s\"]\n", result)); // [Result "0-1"], [Result "1-0"], [Result "1/2-1/2"],
+        // [Result "*"]
+        movesToPGN(sb);
+        return sb.toString();
+    }
+
+    private void movesToPGN(final StringBuffer sb) {
+        int i = 1;
+        int nbCol = 0;
+
+        final ListIterator<Move> it = this.getMoves().listIterator();
+        while (it.hasNext()) {
+            nbCol += ("" + i).length() + 9;
+            if (nbCol > 70) {
+                nbCol = 0;
+                sb.append("\n");
+            }
+            if ((i & 1) == 1) {
+                sb.append((i / 2 + 1) + ".");
+            }
+            final Move move = it.next();
+            sb.append(toPGN(move));
+            sb.append(" ");
+            i++;
+        }
+    }
+
+    public String toPGN(final Move move) {
+        final StringBuffer sb = new StringBuffer();
+//        if(move.isCastlingMove()) {
+//
+//        } else {
+            sb.append(move.toString());
+//        }
+//        switch (this.castling) {
+//            case NONE:
+//                sb.append(piece.toPGN());
+//                if ((this.capturePiece != null && piece instanceof Pawn) || this.doubleDestination) {
+//                    sb.append(this.startLocation.coordAlgebrique());
+//                }
+//                if (this.capturePiece != null) {
+//                    sb.append("x");
+//                }
+//                sb.append(this.endLocation.coordAlgebrique());
+//                if (this.promotedPiece != null) {
+//                    sb.append("=");
+//                    sb.append(promotedPiece.toPGN());
+//                }
+//                if (this.isCheck()) {
+//                    sb.append("+");
+//                }
+//                break;
+//            case SHORT:
+//                sb.append(CASTLING_SHORT);
+//                break;
+//            case LONG:
+//                sb.append(CASTLING_LONG);
+//                break;
+//        }
+        return sb.toString();
+    }
+
+    public Board getLastBoard() {
+        return transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().getBoard();
     }
 
     @Builder(toBuilder = true)
@@ -73,32 +176,10 @@ public class Game {
         final Move fromMove;
     }
 
-    public Game copy(final Alliance alliance, final Strategy strategyWhite, final Strategy strategyBlack) {
-        final Game copyGame = Game.builder().board(this.board).build();
-        if( this.strategyWhite instanceof FixMCTSTreeStrategy && strategyWhite instanceof FixMCTSTreeStrategy)
-            ((FixMCTSTreeStrategy)strategyWhite).copyLastInputs((FixMCTSTreeStrategy) this.strategyWhite);
-        if( this.strategyBlack instanceof FixMCTSTreeStrategy && strategyBlack instanceof  FixMCTSTreeStrategy)
-            ((FixMCTSTreeStrategy)strategyBlack).copyLastInputs((FixMCTSTreeStrategy) this.strategyBlack);
-        copyGame.strategyWhite = strategyWhite;
-        copyGame.strategyBlack = strategyBlack;
-        copyGame.transitions.addAll(this.transitions);
-        copyGame.lastMoves.addAll(this.lastMoves);
-        if (alliance.isWhite()) {
-            copyGame.nextPlayer = this.board.whitePlayer();
-            copyGame.nextStrategy = this.strategyWhite;
-        } else {
-            copyGame.nextPlayer = this.board.blackPlayer();
-            copyGame.nextStrategy = this.strategyBlack;
-        }
-        copyGame.nbMoveNoAttackAndNoPawn = this.nbMoveNoAttackAndNoPawn;
-        copyGame.status = this.calculateStatus();
-        return copyGame;
-    }
-
     public void setup(final Strategy strategyPlayerWhite,
                       final Strategy strategyPlayerBlack) {
-        assert(strategyPlayerWhite.getAlliance() ==  Alliance.WHITE);
-        assert(strategyPlayerBlack.getAlliance() ==  Alliance.BLACK);
+        assert (strategyPlayerWhite.getAlliance() == Alliance.WHITE);
+        assert (strategyPlayerBlack.getAlliance() == Alliance.BLACK);
         this.strategyWhite = strategyPlayerWhite;
         this.strategyBlack = strategyPlayerBlack;
         nextPlayer = board.whitePlayer();
@@ -107,7 +188,6 @@ public class Game {
 
     public GameStatus play() throws Exception {
         List<Move> moves = nextPlayer.getLegalMoves(Move.MoveStatus.DONE);
-        Move moveOpponent = this.lastMoves.size() == 0 ? null : this.lastMoves.get(lastMoves.size()-1);
         Move move = nextStrategy.play(this, moveOpponent, moves);
         if (move.isAttack() == false &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
@@ -116,10 +196,11 @@ public class Game {
             this.nbMoveNoAttackAndNoPawn = 0;
         board = nextPlayer.executeMove(move);
         transitions.add(new GameTransition(board, move));
-        lastMoves.add(move);
         this.status = calculateStatus();
         this.nextPlayer = getPlayer(this.nextPlayer.getAlliance().complementary());
         this.nextStrategy = this.nextStrategy == this.strategyBlack ? this.strategyWhite : this.strategyBlack;
+        moveOpponent = move;
+        this.moves.add(move);
         return this.status;
     }
 
@@ -198,54 +279,6 @@ public class Game {
                 .collect(Collectors.joining(","))));
         sb.append(this.board);
         return sb.toString();
-    }
-
-    /**
-     * @return the game hashcode
-     */
-    public long hashCode(final Alliance alliance) {
-        return hashCode(alliance, null);
-    }
-
-    public synchronized long hashCode(@NonNull final Move move) {
-        final Alliance color2play = move.getMovedPiece().getPieceAllegiance();
-        return this.hashCode(color2play, move);
-    }
-
-    /**
-     * @return the game hashcode
-     */
-    public synchronized long hashCode(final Alliance color2play, final Move move) {
-        final int nbStep = this.transitions.size();
-        StringBuffer sb = new StringBuffer();
-        Board board = this.transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().board;
-        LinkedList<Move> lastMoves = new LinkedList<>();
-        lastMoves.addAll(this.lastMoves);
-        if (move != null) {
-            board = getPlayer(color2play).executeMove(move);
-            if (lastMoves.size() > 0) lastMoves.remove(0);
-            lastMoves.add(move);
-        }
-        sb.append(board.toString());
-        sb.append("\nM:");
-        sb.append(this.lastMoves.stream().map(m -> m.toString()).collect(Collectors.joining(",")));
-        sb.append("\nS:");
-        sb.append(nbStep);
-        sb.append("\nC:");
-        sb.append(color2play);
-        if (log.isDebugEnabled()) log.debug("HASH:{}", sb);
-        long ret = hash(sb.toString());
-        if (log.isDebugEnabled())
-            log.warn("HASHCODE-1({}) -> [{}] MOVE:{} nbMaxBits:{} - {}", nbStep, color2play, move, Utils.nbMaxBits(ret), ret);
-        return ret;
-    }
-
-    private long hash(String str) {
-        long hash = 5381;
-        for (byte b : str.getBytes()) {
-            hash = ((hash << 5) + hash) + b; /* hash * 33 + c */
-        }
-        return hash;
     }
 
 }

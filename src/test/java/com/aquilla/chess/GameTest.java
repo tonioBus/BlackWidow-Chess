@@ -1,9 +1,8 @@
-package com.aquila.chess;
+package com.aquilla.chess;
 
-import com.aquilla.chess.Game;
 import com.aquilla.chess.strategy.HungryStrategy;
 import com.aquilla.chess.strategy.RandomStrategy;
-import com.aquilla.chess.strategy.mcts.FixMCTSTreeStrategy;
+import com.aquilla.chess.strategy.mcts.MCTSGame;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -15,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -53,10 +53,11 @@ class GameTest {
         @Override
         public Integer call() {
             log.info("[{}] BEGIN", label);
-            final Game gameCopy = gameOriginal.copy( Alliance.WHITE, new FixMCTSTreeStrategy(Alliance.WHITE), new FixMCTSTreeStrategy(Alliance.BLACK));
+            final MCTSGame mctsGame = new MCTSGame(gameOriginal);
+            // final Game gameCopy = gameOriginal.copy( Alliance.WHITE, new FixMCTSTreeStrategy(Alliance.WHITE), new FixMCTSTreeStrategy(Alliance.BLACK));
             if (!gameOriginal.isInitialPosition()) throw new RuntimeException("Not initial position");
             for (int i = 0; i < 100; i++) {
-                Collection<Move> moves = gameCopy.getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                Collection<Move> moves = mctsGame.getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
                 assertEquals(20, moves.size());
                 gameOriginal.isInitialPosition();
                 if (!gameOriginal.isInitialPosition()) throw new RuntimeException("Not initial position");
@@ -96,32 +97,4 @@ class GameTest {
         gameOriginal.isInitialPosition();
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 3, 4, 5})
-    void testHashcode(int seed) throws Exception {
-        final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        game.setup(new RandomStrategy(Alliance.WHITE, seed), new HungryStrategy(Alliance.BLACK, board.blackPlayer()));
-        Map<Long, Board> hashcodes = new HashMap<>();
-        Game.GameStatus status;
-        do {
-            status = game.play();
-            Game.GameTransition gameTransition = game.getTransitions().lastElement();
-            long hashcode = game.hashCode(Alliance.WHITE, gameTransition.getFromMove());
-            assertEquals(hashcode, game.hashCode(Alliance.WHITE, gameTransition.getFromMove()));
-            if (hashcodes.containsKey(hashcode)) {
-                StringBuffer sb = new StringBuffer();
-                sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:\n", hashcode));
-                sb.append("OLD BOARD:%s\n");
-                sb.append(hashcodes.get(hashcode));
-                sb.append("NEW BOARD;\n");
-                sb.append(gameTransition.getBoard());
-                assertNotEquals(hashcode, hashcode, sb.toString());
-            }
-            hashcodes.put(hashcode, board);
-        } while (status == Game.GameStatus.IN_PROGRESS);
-        assertEquals(8, game.getLastMoves().size());
-        assertTrue(game.getTransitions().size() > 3);
-        log.info("NBSTEP:{} STATUS:{} GAME:\n{}", game.getTransitions().size(), status, game);
-    }
-}
+ }

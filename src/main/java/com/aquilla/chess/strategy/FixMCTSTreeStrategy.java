@@ -1,17 +1,18 @@
 package com.aquilla.chess.strategy;
 
 import com.aquilla.chess.Game;
+import com.aquilla.chess.strategy.mcts.InputsNNFactory;
+import com.aquilla.chess.strategy.mcts.MCTSGame;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public class FixStrategy implements Strategy {
+public class FixMCTSTreeStrategy implements Strategy {
 
     @Setter
     protected String nextMoveSz;
@@ -22,7 +23,7 @@ public class FixStrategy implements Strategy {
     @Getter
     protected final Alliance alliance;
 
-    public FixStrategy(final Alliance alliance) {
+    public FixMCTSTreeStrategy(final Alliance alliance) {
         this.alliance = alliance;
     }
 

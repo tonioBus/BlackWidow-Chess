@@ -1,4 +1,4 @@
-package com.aquila.chess;
+package com.aquilla.chess;
 
 import com.aquilla.chess.strategy.mcts.Coordinate2D;
 import com.chess.engine.classic.board.BoardUtils;

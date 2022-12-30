@@ -6,10 +6,11 @@ import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.player.Player;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 public class HungryStrategy implements Strategy {
 
     private final Player player;
@@ -42,6 +43,9 @@ public class HungryStrategy implements Strategy {
                 bestUnpositionMove = move;
             }
         }
+        log.info("\n{}\n[] {}:{}:bestAttackMove -> {}  bestUnpositionMove:{}",
+                "####################################################",
+                this.getName(), alliance, bestAttackMove, bestUnpositionMove);
         if (bestAttackMove != null) return bestAttackMove;
         return bestUnpositionMove;
     }

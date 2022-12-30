@@ -116,7 +116,7 @@ public class MCTSNode implements Serializable {
                 if (!ret.getMove().equals(move)) {
                     log.error("[CTX ERROR] createNode(\nparent=[{}],\nmove=[{}],\nkey={},\ncacheValue={})", parent, move, key, cacheValue);
                     log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move.toString(), ret.getMove());
-                    // FIXME log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
+                    log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
                     throw new RuntimeException(String.format("[key:%s] CONNECTION PROBLEM [%s]\n! cacheValue:%s already connected to node:%s",
                             key, move, cacheValue, cacheValue.getNode()));
                 }

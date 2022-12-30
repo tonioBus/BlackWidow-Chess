@@ -205,7 +205,7 @@ class ServiceNN {
     protected synchronized void submit(final long key,
                                        final Move possibleMove,
                                        final Alliance color2play,
-                                       final Game gameCopy,
+                                       final MCTSGame gameCopy,
                                        final boolean isDirichlet,
                                        final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
@@ -221,7 +221,6 @@ class ServiceNN {
         batchJobs2Commit.put(key, new InputForBatchJobs(
                 possibleMove,
                 color2play,
-                this.deepLearningAGZ.getFixMCTSTreeStrategy(),
                 gameCopy,
                 isDirichlet,
                 isRootNode));

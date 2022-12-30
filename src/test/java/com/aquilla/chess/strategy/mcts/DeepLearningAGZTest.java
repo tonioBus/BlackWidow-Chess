@@ -54,8 +54,9 @@ class DeepLearningAGZTest {
         for (int i = 0; i < LOOP_SIZE; i++) {
             Game.GameStatus status = game.play();
             if (status != Game.GameStatus.IN_PROGRESS) break;
-            Move move = game.getLastMoves().get(0);
-            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(game, move);
+            Move move = game.getMoves().get(0);
+            MCTSGame mctsGame = new MCTSGame(game);
+            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
             assertNotNull(inputs);
         }
         long end = System.currentTimeMillis();
@@ -75,10 +76,11 @@ class DeepLearningAGZTest {
                 seed,
                 updateCpuct,
                 2000);
-        game.setup(whitePlayer, new RandomStrategy(Alliance.WHITE, 1000));
+        game.setup(whitePlayer, new RandomStrategy(Alliance.BLACK, 1000));
         final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
+        MCTSGame mctsGame = new MCTSGame(game);
         for (final Move move : moves) {
-            final double[][][] inputs = InputsNNFactory.createInputsForOnePosition(game, move);
+            final double[][][] inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
             log.info("{}\n{}", move == null ? "Na" : move, deepLearningWhite.ToStringInputs(inputs[0]));
         }
     }

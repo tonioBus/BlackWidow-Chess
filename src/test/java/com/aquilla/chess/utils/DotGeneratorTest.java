@@ -32,12 +32,12 @@ class DotGeneratorTest {
 
     @RepeatedTest(1)
     void testGenerate() throws Exception {
-        playMCTS(10);
+        playMCTS(20);
     }
 
     @Test
     void testBegining() throws Exception {
-        playMCTS(4);
+        playMCTS(5);
     }
 
     void playMCTS(final int nbStepMax) throws Exception {
@@ -72,7 +72,7 @@ class DotGeneratorTest {
         final MCTSNode node = whiteStrategy.getRoot();
         log.info("\n{}\n{}\n",
                 "##########################################################################################################",
-                DotGenerator.toString(node, 15));
+                DotGenerator.toString(node, 15, true));
     }
 
 }

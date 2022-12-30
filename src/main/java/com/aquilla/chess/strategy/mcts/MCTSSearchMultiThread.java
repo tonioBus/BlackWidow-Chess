@@ -23,7 +23,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
 
     private final MCTSNode currentRoot;
     private final DeepLearningAGZ deepLearning;
-    private final Game gameOriginal;
+    private final MCTSGame gameRoot;
     private final Alliance color;
     private final UpdateCpuct updateCpuct;
     private final Dirichlet updateDirichlet;
@@ -49,7 +49,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             final Statistic statistic,
             final DeepLearningAGZ deepLearning,
             final MCTSNode currentRoot,
-            final Game gameOriginal,
+            final MCTSGame gameRoot,
             final Alliance color,
             final UpdateCpuct updateCpuct,
             final Dirichlet dirichlet,
@@ -72,7 +72,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         this.statistic = statistic;
         this.currentRoot = currentRoot;
         this.deepLearning = deepLearning;
-        this.gameOriginal = gameOriginal;
+        this.gameRoot = gameRoot;
         this.color = color;
         this.updateCpuct = updateCpuct;
         this.updateDirichlet = dirichlet;
@@ -170,7 +170,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 statistic,
                 deepLearning,
                 currentRoot,
-                gameOriginal,
+                gameRoot,
                 color,
                 updateCpuct,
                 updateDirichlet,

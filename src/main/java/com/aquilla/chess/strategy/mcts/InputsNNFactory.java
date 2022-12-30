@@ -1,6 +1,7 @@
 package com.aquilla.chess.strategy.mcts;
 
 import com.aquilla.chess.Game;
+import com.aquilla.chess.strategy.FixMCTSTreeStrategy;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -77,18 +78,17 @@ public class InputsNNFactory {
      * @param move : null if we are training
      */
     public static void createInputs(final double[][][] inputs,
-                                    final FixMCTSTreeStrategy fixMCTSTreeStrategy,
-                                    final Game game,
+                                    final MCTSGame mctsGame,
                                     final Alliance color2play) {
         int destinationOffset = 0;
-        for (double[][][] lastInput : fixMCTSTreeStrategy.getLastInputs()) {
+        for (double[][][] lastInput : mctsGame.getLastInputs()) {
             System.arraycopy(lastInput, 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
-        List<Move> moveWhites = game.getPlayer(Alliance.WHITE).getLegalMoves();
+        List<Move> moveWhites = mctsGame.getPlayer(Alliance.WHITE).getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
-        List<Move> moveBlacks = game.getPlayer(Alliance.BLACK).getLegalMoves();
+        List<Move> moveBlacks = mctsGame.getPlayer(Alliance.BLACK).getLegalMoves();
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
         fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
@@ -96,20 +96,18 @@ public class InputsNNFactory {
         fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
-        fill(inputs[109], game.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
+        // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[111], 1.0);
     }
 
     /**
-     * @param game - the board on which we apply the move
-     * @param move - the move to apply
+     * @param board - the board on which we apply the move
+     * @param move - the move to apply or null if nothing should be applied
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
-    @SuppressWarnings("incomplete-switch")
-    public static double[][][] createInputsForOnePosition(final Game game, final Move move) {
-        final var nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        Board board = game.getBoard();
+    public static double[][][] createInputsForOnePosition(Board board, final Move move) {
+        final double[][][] nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if(move!=null) {
             board = move.execute();
         }
