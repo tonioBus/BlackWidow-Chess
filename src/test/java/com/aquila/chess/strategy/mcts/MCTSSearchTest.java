@@ -185,106 +185,58 @@ public class MCTSSearchTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearchMonoThreads(int nbStep) throws InterruptedException {
-        testSearchThreads(nbStep, 1, 10);
+    void testSearchMonoThreads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 1, 10);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch2Threads(int nbStep) throws InterruptedException {
-        testSearchThreads(nbStep, 2, 10);
+    void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 2, 10);
     }
 
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch4Threads(int nbStep) throws InterruptedException {
+    void testSearch4Threads(int nbStep) throws Exception {
         testSearchThreads(nbStep, 4, 10);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch8Threads(int nbStep) throws InterruptedException {
-        testSearchThreads(nbStep, 8, 10);
+    void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 8, 10);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch16Threads(int nbStep) throws InterruptedException {
-        testSearchThreads(nbStep, 16, 100);
+    void testSearch16Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 16, 100);
     }
 
-    private void testSearchThreads(int nbStep, int nbThread, int batchSize) throws InterruptedException {
-//        Random rand = new Random(1);
-//        final DeepLearningAGZ deepLearning = new DeepLearningAGZ(nn, false, batchSize);
-//        MCTSPlayer playerWhite = new MCTSPlayer(deepLearning, 1, updateCpuct, -1).withNbMaxSearchCalls(3);
-//        RandomPlayer playerBlack = new RandomPlayer(2);
-//        final Game game = new Game(//
-//                new Board(), //
-//                playerWhite, //
-//                playerBlack);
-//        game.initWithAllPieces();
-//        playerWhite.initCurrentRootNode();
-//        Statistic statistic = new Statistic();
-//        final MCTSSearchMultiThread mctsSearch = new MCTSSearchMultiThread(
-//                nbThread,
-//                -1,
-//                nbStep,
-//                statistic,
-//                deepLearning,
-//                playerWhite.getRoot(),
-//                game,
-//                Color.WHITE,
-//                updateCpuct,
-//                updateDirichlet,
-//                rand);
-//        mctsSearch.search();
-//        log.warn("\n{}", DotGenerator.toString(playerWhite.getRoot(), 30, nbStep < 100));
-//        log.warn("CacheSize: {} STATS: {}", deepLearning.getCacheSize(), statistic.toString());
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {1, 8})
-    void testGameCopyMultiThread(int nbThreads) throws InterruptedException {
-//        ExecutorService executorService = Executors.newFixedThreadPool(nbThreads * 2);
-//        final Random rand = new Random();
-//        ChessPlayer playerWhite = new RandomPlayer(rand.nextInt(1000));
-//        ChessPlayer playerBlack = new RandomPlayer(rand.nextInt(1000));
-//        final Game game = new Game(//
-//                new Board(), //
-//                playerWhite, //
-//                playerBlack);
-//        game.initWithAllPieces();
-//        final AtomicInteger nbEnds = new AtomicInteger();
-//        final Callable<Void> callable = () -> {
-//            log.warn("start callable");
-//            ChessPlayer playerWhite1 = new RandomPlayer(rand.nextInt(1000));
-//            ChessPlayer playerBlack1 = new RandomPlayer(rand.nextInt(1000));
-//            Game gameCopy = game.copy(playerWhite1, playerBlack1);
-//            try {
-//                do {
-//                    for (int j = 0; j < 400; j++) {
-//                        gameCopy.getPlayer(gameCopy.getColorToPlay()).getPossibleLegalMoves();
-//                    }
-//                    gameCopy.play();
-//                } while (true);
-//            } catch (final EndOfGameException e) {
-//                log.warn("end callable:{}", gameCopy);
-//            }
-//            nbEnds.incrementAndGet();
-//            return null;
-//        };
-//        for (int i = 0; i < nbThreads; i++) {
-//            executorService.submit(callable);
-//        }
-//        executorService.shutdown();
-//        while (!executorService.awaitTermination(50, TimeUnit.SECONDS)) ;
-//        assertEquals(nbThreads, nbEnds.get());
+    private void testSearchThreads(int nbMaxSearchCalls, int nbThreads, int batchSize) throws Exception {
+        int seed = 1;
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().board(board).build();
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, batchSize);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                Alliance.WHITE,
+                deepLearningWhite,
+                seed,
+                updateCpuct,
+                -1)
+                .withNbThread(nbThreads)
+                .withNbMaxSearchCalls(nbMaxSearchCalls);
+        final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
+        game.setup(whiteStrategy, blackStrategy);
+        whiteStrategy.setDirectRoot(game, null);
+        game.play();
+        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getRoot(), 30, nbMaxSearchCalls < 100));
+        log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
     }
 
     /**
-     * @throws ChessPositionException
-     * @throws EndOfGameException
      * @formatter:off <pre>
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- --- --- ---  8

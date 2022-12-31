@@ -73,7 +73,9 @@ public class InputsNNFactory {
      * <li>111: all ones, to help the network detect the edge of the board when using convolutional filters</li>
      * </ul>
      *
-     * @param move : null if we are training
+     * @param inputs
+     * @param mctsGame
+     * @param color2play
      */
     public static void createInputs(final double[][][] inputs,
                                     final MCTSGame mctsGame,
