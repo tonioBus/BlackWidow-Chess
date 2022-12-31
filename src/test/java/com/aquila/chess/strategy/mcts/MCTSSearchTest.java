@@ -19,7 +19,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,11 +45,11 @@ public class MCTSSearchTest {
     }
 
     @Test
-    void testSearch() throws InterruptedException {
+    void testSearch1Step() throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, 5);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, 1);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -59,32 +58,20 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(10);
+                .withNbMaxSearchCalls(1);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
-        final MCTSGame mctsGame = new MCTSGame(game);
-        whiteStrategy.setDirectRoot(game, null);
-        final Statistic statistic = new Statistic();
-        final MCTSSearchMultiThread mctsSearchMultiThread = new MCTSSearchMultiThread(
-                1,
-                1,
-                -1,
-                10,
-                statistic,
-                deepLearningWhite,
-                whiteStrategy.getRoot(),
-                mctsGame,
-                Alliance.WHITE,
-                updateCpuct,
-                updateDirichlet,
-                new Random());
-        mctsSearchMultiThread.search();
-        log.info("parent:{}", whiteStrategy.getRoot());
+        assertEquals(Game.GameStatus.IN_PROGRESS, game.play());
+        final Move move = game.getLastMove();
         final MCTSNode node = whiteStrategy.getRoot();
-        log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), statistic.toString());
-        log.warn(
+        log.info("parent:{}", node);
+        log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
+        log.info(
                 "##########################################################################################################");
-        log.warn("graph: {}", DotGenerator.toString(node, 15));
+        log.info("graph: {}", DotGenerator.toString(node, 15, true));
+        double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
+        log.info("policies[{}]={}", move, policy);
+        assertTrue(policy > 0);
     }
 
     /**
@@ -119,24 +106,9 @@ public class MCTSSearchTest {
                 .withNbMaxSearchCalls(500);
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
-        final MCTSGame mctsGame = new MCTSGame(game);
-        whiteStrategy.setDirectRoot(game, null);
-        final Random rand = new Random(2);
-        final Statistic statistic = new Statistic();
-        final MCTSSearchMultiThread mctsSearchMultiThread = new MCTSSearchMultiThread(
-                1,
-                1,
-                -1,
-                500,
-                statistic,
-                deepLearningWhite,
-                whiteStrategy.getRoot(),
-                mctsGame,
-                Alliance.WHITE,
-                updateCpuct,
-                updateDirichlet,
-                rand);
-        mctsSearchMultiThread.search();
+        game.play();
+        Move move = game.getLastMove();
+        log.info("white move:{}", move);
         log.info("parent:{}", whiteStrategy.getRoot());
         final MCTSNode node = whiteStrategy.getRoot();
         log.info(
@@ -144,9 +116,6 @@ public class MCTSSearchTest {
         log.warn("graph: {}", DotGenerator.toString(node, 15, true));
         List<MCTSNode> nodes = node.search(MCTSNode.State.LOOSE);
         assertEquals(1, nodes.size());
-        game.play();
-        Move move = game.getLastMove();
-        log.info("white move:{}", move);
         // Kg1, the only way to escape for white
         assertEquals("Kg1", move.toString());
     }
@@ -230,7 +199,6 @@ public class MCTSSearchTest {
                 .withNbMaxSearchCalls(nbMaxSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
         game.setup(whiteStrategy, blackStrategy);
-        whiteStrategy.setDirectRoot(game, null);
         game.play();
         log.warn("\n{}", DotGenerator.toString(whiteStrategy.getRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
@@ -272,7 +240,6 @@ public class MCTSSearchTest {
                 .withNbThread(nbThreads)
                 .withNbMaxSearchCalls(nbMaxSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
-        blackStrategy.setDirectRoot(game, null);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);

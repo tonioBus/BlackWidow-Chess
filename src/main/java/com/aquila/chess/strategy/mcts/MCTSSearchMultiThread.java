@@ -76,11 +76,10 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         this.updateCpuct = updateCpuct;
         this.updateDirichlet = dirichlet;
         this.rand = rand;
-        this.buildOrder = currentRoot.getBuildOrder();
+        this.buildOrder = currentRoot == null ? 0 : currentRoot.getBuildOrder();
     }
 
     /**
-     *
      * @return number of visits
      * @throws InterruptedException
      */
@@ -144,7 +143,8 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         WORKER_THREAD_POOL.shutdown();
                         while (!WORKER_THREAD_POOL.awaitTermination(200, TimeUnit.MILLISECONDS)) ;
                         isEnding = true;
-                        if (log.isInfoEnabled()) log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChilds().size());
+                        if (log.isInfoEnabled())
+                            log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChilds().size());
                     }
                 }
             } catch (InterruptedException e) {

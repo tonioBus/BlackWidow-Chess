@@ -121,9 +121,9 @@ public class DeepLearningAGZ {
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
                 log.debug("[{}] CREATE CACHE VALUE:{} move:{} label:{}", color2play, key, possibleMove, label);
-            String lastMoves = gameCopy.getMoves().stream().map(move -> {
-                return move == null ? "-" : move.toString();
-            }).collect(Collectors.joining(":"));
+            String lastMoves = gameCopy.getMoves().stream().map(
+                    move -> move == null ? "-" : move.toString()).
+                    collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;

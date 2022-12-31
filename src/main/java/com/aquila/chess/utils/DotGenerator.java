@@ -125,8 +125,8 @@ public class DotGenerator {
         g.addNodes(new Node("" + node.hashCode()).setShape(shape).setLabel(nodeLabel).setStyle(Style.Node.rounded));
         node.getChilds().forEach(child -> {
             int visits = child.getVisits();
-            double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove(), child.getPiece())];
-            if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE || child.getState() != MCTSNode.State.INTERMEDIATE) {
+            double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
+            if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                 int hashCode = generate(g, child, depth + 1, depthMax);
                 g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
                         .setLabel(String.format("%d / %f", visits, policy)));

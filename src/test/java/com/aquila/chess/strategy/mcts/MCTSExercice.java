@@ -70,7 +70,6 @@ public class MCTSExercice {
                 .withNbThread(1)
                 .withNbMaxSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        blackStrategy.setDirectRoot(game, null);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);

@@ -13,15 +13,6 @@ public class PolicyUtils {
 
     static public final int MAX_POLICY_INDEX = 4672;
 
-    public static int indexFromMove(final Move move, final Piece piece) {
-        if (move == null || piece == null) return 0;
-        int startX = move.getCurrentCoordinate();
-        int startY = move.getCurrentCoordinate();
-        int endX = move.getDestinationCoordinate();
-        int endY = move.getDestinationCoordinate();
-        return indexFromMove(startX, startY, endX, endY, piece);
-    }
-
     public static int indexFromMove(final Move move) {
         Coordinate2D srcCoordinate2D = new Coordinate2D(move.getCurrentCoordinate());
         Coordinate2D destCoordinate2D = new Coordinate2D(move.getDestinationCoordinate());

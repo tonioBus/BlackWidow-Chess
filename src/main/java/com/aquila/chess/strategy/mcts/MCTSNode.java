@@ -338,7 +338,7 @@ public class MCTSNode implements Serializable {
     }
 
     public double getPolicy() {
-        return cacheValue.getPolicies()[PolicyUtils.indexFromMove(this.move, this.piece)];
+        return cacheValue.getPolicies()[PolicyUtils.indexFromMove(this.move)];
     }
 
     public enum State {
