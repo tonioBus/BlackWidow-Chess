@@ -102,8 +102,8 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         if (nbWorks < 1) nbWorks = 1;
         for (int i = 0; i < nbWorks; i++) {
             MCTSSearchWalker MCTSSearchWalker = createSearchWalker(nbStep, i, nbSubmit);
-            if (log.isInfoEnabled())
-                log.info("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getChilds().size());
+            if (log.isDebugEnabled())
+                log.debug("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getChilds().size());
             executorService.submit(MCTSSearchWalker);
             nbSubmit++;
         }

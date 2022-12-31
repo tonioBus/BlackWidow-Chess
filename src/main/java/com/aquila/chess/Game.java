@@ -36,8 +36,6 @@ public class Game {
     protected Board board;
 
     @Getter
-    protected Player nextPlayer;
-    @Getter
     protected Strategy nextStrategy;
 
     @Getter
@@ -59,7 +57,7 @@ public class Game {
     }
 
     public Alliance getColor2play() {
-        return this.nextPlayer.getAlliance();
+        return this.board.currentPlayer().getAlliance();
     }
 
     public boolean isInitialPosition() {
@@ -184,22 +182,32 @@ public class Game {
         assert (strategyPlayerBlack.getAlliance() == Alliance.BLACK);
         this.strategyWhite = strategyPlayerWhite;
         this.strategyBlack = strategyPlayerBlack;
-        nextPlayer = board.whitePlayer();
-        nextStrategy = strategyPlayerWhite;
+        switch (this.board.currentPlayer().getAlliance()) {
+            case WHITE:
+                nextStrategy = strategyPlayerWhite;
+                break;
+            case BLACK:
+                nextStrategy = strategyPlayerBlack;
+                break;
+        }
+    }
+
+    public Player getNextPlayer() {
+        return this.board.currentPlayer();
     }
 
     public GameStatus play() throws Exception {
-        List<Move> moves = nextPlayer.getLegalMoves(Move.MoveStatus.DONE);
+        assert (nextStrategy != null);
+        List<Move> moves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         Move move = nextStrategy.play(this, moveOpponent, moves);
         if (move.isAttack() == false &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        board = nextPlayer.executeMove(move);
+        board = getNextPlayer().executeMove(move);
         transitions.add(new GameTransition(board, move));
         this.status = calculateStatus();
-        this.nextPlayer = getPlayer(this.nextPlayer.getAlliance().complementary());
         this.nextStrategy = this.nextStrategy == this.strategyBlack ? this.strategyWhite : this.strategyBlack;
         moveOpponent = move;
         this.moves.add(move);
@@ -229,7 +237,7 @@ public class Game {
     public GameStatus calculateStatus() {
         if (board.whitePlayer().isInCheckMate()) return GameStatus.CHESSMATE_WHITE;
         if (board.blackPlayer().isInCheckMate()) return GameStatus.CHESSMATE_BLACK;
-        if (nextPlayer.isInStaleMate()) return GameStatus.PAT;
+        if (getNextPlayer().isInStaleMate()) return GameStatus.PAT;
         if (transitions.size() >= 300) return GameStatus.DRAW_300;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return GameStatus.DRAW_50;
         if (!isThereEnoughMaterials()) return GameStatus.DRAW_NOT_ENOUGH_PIECES;
@@ -272,7 +280,7 @@ public class Game {
                 .map(gameTransition -> gameTransition.fromMove.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", transitions.size()));
-        sb.append(String.format("current player:%s\n", this.nextPlayer.getAlliance()));
+        sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         sb.append(String.format("current legal move:%s\n", this
                 .getNextPlayer()
                 .getLegalMoves()

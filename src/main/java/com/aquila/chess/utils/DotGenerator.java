@@ -75,8 +75,9 @@ public class DotGenerator {
         String szMove = node.getMove() == null ? "ROOT" : String.valueOf(node.getMove());
         Alliance color = node.getColorState();
         String pieceSz = node.getPiece() == null ? "No Piece" : node.getPiece().getClass().getSimpleName();
-        String core = String.format("Parent:%s | Init:%b | Prop:%b | %s | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
+        String core = String.format("Parent:%s | key:%s | Init:%b | Prop:%b | %s | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
                 node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
+                node.getKey(),
                 node.getCacheValue().isInitialised(),
                 node.getCacheValue().isPropagated(),
                 color == null ? "no color" : color.toString(), //

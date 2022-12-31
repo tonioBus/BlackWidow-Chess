@@ -35,10 +35,8 @@ public class MCTSGame extends Game {
                 new FixMCTSTreeStrategy(Alliance.WHITE),
                 new FixMCTSTreeStrategy(Alliance.BLACK));
         if (mctsGame.getNextPlayer().getAlliance().isWhite()) {
-            this.nextPlayer = this.board.whitePlayer();
             this.nextStrategy = this.strategyWhite;
         } else {
-            this.nextPlayer = this.board.blackPlayer();
             this.nextStrategy = this.strategyBlack;
         }
         this.lastMoves.addAll(mctsGame.lastMoves);
@@ -53,10 +51,8 @@ public class MCTSGame extends Game {
                 new FixMCTSTreeStrategy(Alliance.WHITE),
                 new FixMCTSTreeStrategy(Alliance.BLACK));
         if (game.getNextPlayer().getAlliance().isWhite()) {
-            this.nextPlayer = this.board.whitePlayer();
             this.nextStrategy = this.strategyWhite;
         } else {
-            this.nextPlayer = this.board.blackPlayer();
             this.nextStrategy = this.strategyBlack;
         }
         int nbMoves = game.getMoves().size();

@@ -63,7 +63,7 @@ public class MCTSSearchTest {
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
         final MCTSGame mctsGame = new MCTSGame(game);
-        whiteStrategy.setCurrentRootNode(game, null);
+        whiteStrategy.setDirectRoot(game, null);
         final Statistic statistic = new Statistic();
         final MCTSSearchMultiThread mctsSearchMultiThread = new MCTSSearchMultiThread(
                 1,
@@ -120,7 +120,7 @@ public class MCTSSearchTest {
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
         final MCTSGame mctsGame = new MCTSGame(game);
-        whiteStrategy.setCurrentRootNode(game, null);
+        whiteStrategy.setDirectRoot(game, null);
         final Random rand = new Random(2);
         final Statistic statistic = new Statistic();
         final MCTSSearchMultiThread mctsSearchMultiThread = new MCTSSearchMultiThread(
@@ -171,7 +171,7 @@ public class MCTSSearchTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
             final MCTSGame mctsGame = new MCTSGame(game);
-            whiteStrategy.setCurrentRootNode(game, null);
+            whiteStrategy.setDirectRoot(game, null);
             assertTrue(mctsGame.getStrategyWhite() instanceof FixMCTSTreeStrategy);
             assertTrue(mctsGame.getStrategyBlack() instanceof FixMCTSTreeStrategy);
             assertEquals(Alliance.WHITE, mctsGame.getStrategyWhite().getAlliance());
@@ -320,31 +320,15 @@ public class MCTSSearchTest {
                 .withNbThread(nbThreads)
                 .withNbMaxSearchCalls(nbMaxSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
-        blackStrategy.setCurrentRootNode(game, null);
+        blackStrategy.setDirectRoot(game, null);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nn.addIndexOffset(0.5, index1, index2);
-//        final Statistic statistic = new Statistic();
-//        final MCTSGame mctsGame = new MCTSGame(game);
-//        final MCTSSearchMultiThread mctsSearchMultiThread = new MCTSSearchMultiThread(
-//                1,
-//                nbThreads,
-//                -1,
-//                nbMaxSearchCalls,
-//                statistic,
-//                deepLearningBlack,
-//                blackStrategy.getRoot(),
-//                mctsGame,
-//                Alliance.BLACK,
-//                updateCpuct,
-//                updateDirichlet,
-//                new Random());
-//        long nbVisits = mctsSearchMultiThread.search();
         game.play();
         log.info("parent:{}", blackStrategy.getRoot());
         log.warn("visits:{}\n{}", blackStrategy.getRoot().getVisits(), DotGenerator.toString(blackStrategy.getRoot(), 30, nbMaxSearchCalls < 100));
-        log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), "NO STATS"); //statistic.toString());
+        log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
             MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getRoot());
             assertEquals("a2", bestNode.move.toString());
