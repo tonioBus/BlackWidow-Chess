@@ -35,7 +35,7 @@
 		<appender-ref ref="FILE" />
 	</logger -->
 
-	<logger name="com.aquilla.chess.strategy.mcts.MCTSSearchMultiThread" level="DEBUG" />
+	<logger name="com.aquila.chess.strategy.mcts.MCTSSearchMultiThread" level="INFO" />
 
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
