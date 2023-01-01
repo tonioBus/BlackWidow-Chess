@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.utils.Utils;
-import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -58,7 +56,7 @@ public class CacheValues {
         if (cacheValue == null) {
             throw new RuntimeException("node for key:" + key + " not found");
         }
-        cacheValue.set(value, notNormalisedPolicies);
+        cacheValue.setTrueValuesAndPolicies(value, notNormalisedPolicies);
         return cacheValue;
     }
 
@@ -106,12 +104,12 @@ public class CacheValues {
             this.type = CacheValueType.ROOT;
         }
 
-        public synchronized void normalize(final List<Move> moves, boolean isDirichlet) {
+        public synchronized void normalize( ) {
             if (isNormalized()) return;
-            int[] indexes = PolicyUtils.getIndexesFilteredPolicies(moves);
+            int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
-                log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, moves.size(), isDirichlet);
-            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
+                log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
+            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, node.getState() == MCTSNode.State.ROOT);
             if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
                 throw new RuntimeException("ERROR, some policy with NaN value");
             }
@@ -123,13 +121,14 @@ public class CacheValues {
             this.type = CacheValueType.LEAF;
         }
 
-        public OutputNN set(final double value, final double[] policies) {
+        public OutputNN setTrueValuesAndPolicies(final double value, final double[] policies) {
             this.value = value;
             this.policies = policies;
-            this.setInitialised(true);
             if (node != null) {
                 node.syncSum();
+                normalize();
             }
+            this.setInitialised(true);
             return this;
         }
 

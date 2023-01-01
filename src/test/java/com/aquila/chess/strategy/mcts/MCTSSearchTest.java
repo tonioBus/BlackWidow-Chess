@@ -44,12 +44,13 @@ public class MCTSSearchTest {
         MCTSNode.resetBuildOrder();
     }
 
-    @Test
-    void testSearch1Step() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 5})
+    void testSearch1Step(int batchSize) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, 1);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, batchSize);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -63,7 +64,7 @@ public class MCTSSearchTest {
         game.setup(whiteStrategy, blackStrategy);
         assertEquals(Game.GameStatus.IN_PROGRESS, game.play());
         final Move move = game.getLastMove();
-        final MCTSNode node = whiteStrategy.getRoot();
+        final MCTSNode node = whiteStrategy.getCurrentRoot();
         log.info("parent:{}", node);
         log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         log.info(
@@ -72,6 +73,7 @@ public class MCTSSearchTest {
         double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
+        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
     }
 
     /**
@@ -103,14 +105,14 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(500);
+                .withNbMaxSearchCalls(50);
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
         game.play();
         Move move = game.getLastMove();
         log.info("white move:{}", move);
-        log.info("parent:{}", whiteStrategy.getRoot());
-        final MCTSNode node = whiteStrategy.getRoot();
+        log.info("parent:{}", whiteStrategy.getDirectRoot());
+        final MCTSNode node = whiteStrategy.getDirectRoot();
         log.info(
                 "##########################################################################################################");
         log.warn("graph: {}", DotGenerator.toString(node, 15, true));
@@ -118,6 +120,8 @@ public class MCTSSearchTest {
         assertEquals(1, nodes.size());
         // Kg1, the only way to escape for white
         assertEquals("Kg1", move.toString());
+        log.info("\n{}\n", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 5, true));
+        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
     }
 
     @Test
@@ -140,7 +144,6 @@ public class MCTSSearchTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
             final MCTSGame mctsGame = new MCTSGame(game);
-            whiteStrategy.setDirectRoot(game, null);
             assertTrue(mctsGame.getStrategyWhite() instanceof FixMCTSTreeStrategy);
             assertTrue(mctsGame.getStrategyBlack() instanceof FixMCTSTreeStrategy);
             assertEquals(Alliance.WHITE, mctsGame.getStrategyWhite().getAlliance());
@@ -161,7 +164,7 @@ public class MCTSSearchTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
     void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 2, 10);
+        testSearchThreads(nbMaxSearchCalls, 2, 50);
     }
 
 
@@ -200,8 +203,10 @@ public class MCTSSearchTest {
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
         game.setup(whiteStrategy, blackStrategy);
         game.play();
-        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getRoot(), 30, nbMaxSearchCalls < 100));
+        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getDirectRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
+        log.info("statistic:{}", whiteStrategy.getStatistic());
+        Helper.checkMCTSTree(whiteStrategy.getDirectRoot());
     }
 
     /**
@@ -245,15 +250,15 @@ public class MCTSSearchTest {
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nn.addIndexOffset(0.5, index1, index2);
         game.play();
-        log.info("parent:{}", blackStrategy.getRoot());
-        log.warn("visits:{}\n{}", blackStrategy.getRoot().getVisits(), DotGenerator.toString(blackStrategy.getRoot(), 30, nbMaxSearchCalls < 100));
+        log.info("parent:{}", blackStrategy.getDirectRoot());
+        log.warn("visits:{}\n{}", blackStrategy.getDirectRoot().getVisits(), DotGenerator.toString(blackStrategy.getDirectRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
-            MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getRoot());
+            MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getDirectRoot());
             assertEquals("a2", bestNode.move.toString());
         }
         assertEquals(0, deepLearningBlack.getServiceNN().getBatchJobs2Commit().size());
-        log.warn("ROOT nb visits:{}", blackStrategy.getRoot().getVisits());
-        Helper.checkMCTSTree(blackStrategy.getRoot());
+        log.warn("ROOT nb visits:{}", blackStrategy.getDirectRoot().getVisits());
+        Helper.checkMCTSTree(blackStrategy.getDirectRoot());
     }
 }

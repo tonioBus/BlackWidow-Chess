@@ -3,6 +3,8 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -111,7 +113,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     log.debug("EXPANSION KEY[{}] MOVE:{} CACHEVALUE:{}", key, selectedMove, cacheValue);
                 if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
-                    selectedNode = MCTSNode.createNode(opponentNode, selectedMove, key, cacheValue);
+                    selectedNode = MCTSNode.createNode(opponentNode, selectedMove,  mctsGame.getBoard(),false, key, cacheValue);
                 } catch (Exception e) {
                     log.error(String.format("[S:%d D:%d] Error during the creation of a new MCTSNode", mctsGame.getNbStep(), depth), e);
                     throw e;
@@ -141,7 +143,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
         }
         // recursive calls
-        List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
+        // List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
+        List<Move> selectNodesMoves = selectedNode.getChildMoves();
         search(selectedNode, selectNodesMoves, depth + 1, false);
         // retro-propagate done in ServiceNN
         selectedNode.decVirtualLoss();
@@ -163,7 +166,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         long key;
         key = deepLearning.addState(mctsGame, label, fixMCTSTreeStrategy.getAlliance().complementary()
                 , null, isRootNode, isRootNode & withDirichlet, statistic);
-        double policies[] = deepLearning.getBatchedPolicies(mctsGame, fixMCTSTreeStrategy.getAlliance().complementary(), key, moves, isRootNode & withDirichlet, statistic);
+        double policies[] = deepLearning.getBatchedPolicies(fixMCTSTreeStrategy.getAlliance().complementary(), key, moves, isRootNode & withDirichlet, statistic);
         Collections.shuffle(moves, rand);
         for (final Move possibleMove : moves) {
             int visits = 0;

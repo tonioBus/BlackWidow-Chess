@@ -35,9 +35,9 @@ class ServiceNN {
      */
     public synchronized void executeJobs(boolean force, final Statistic statistic) {
         boolean submit2NN = force || batchJobs2Commit.size() >= batchSize;
-        if (log.isDebugEnabled()) log.debug("BEGIN executeJobs({})", submit2NN);
+        log.debug("BEGIN executeJobs({})", submit2NN);
         initValueAndPolicies(submit2NN);
-        if (log.isDebugEnabled()) log.debug("END executeJobs({})", submit2NN);
+        log.debug("END executeJobs({})", submit2NN);
     }
 
     private void initValueAndPolicies(boolean submit2NN) {
@@ -47,7 +47,7 @@ class ServiceNN {
             final double[][][][] nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
             createInputs(nbIn);
             System.out.print("#");
-            List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, batchJobs2Commit.size());
+            List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
             System.out.printf("%d&", length);
             int lengthUpdate = updateCacheValuesAndPolicies(outputsNN);
             batchJobs2Commit.clear();
@@ -74,12 +74,12 @@ class ServiceNN {
                 deleteCaches.add(key);
                 double value = node.getValue(); //getExpectedReward(false);
                 node.getCacheValue().setPropagated(true);
-                if (log.isDebugEnabled())
-                    log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value, node, node.getCacheValue().getNbPropagate());
+                if (log.isInfoEnabled())
+                    log.info("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value, node, node.getCacheValue().getNbPropagate());
                 for (MCTSNode node2propagate : nodes2propagate) {
                     value = -value;
                     for (int i = 0; i < node.getCacheValue().getNbPropagate(); i++) {
-                        node2propagate.propagate(value, MCTSNode.PropragateSrc.SERVICE_NN, node.getBuildOrder());
+                        node2propagate.propagate(value);
                     }
                     nbPropagate += node.getCacheValue().getNbPropagate();
                 }

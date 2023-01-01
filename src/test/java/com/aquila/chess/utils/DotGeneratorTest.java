@@ -69,7 +69,7 @@ class DotGeneratorTest {
             assert(game.getStrategyBlack().getAlliance() ==  Alliance.BLACK);
         } while (gameStatus == Game.GameStatus.IN_PROGRESS);
         log.info(game.toString());
-        final MCTSNode node = whiteStrategy.getRoot();
+        final MCTSNode node = whiteStrategy.getDirectRoot();
         log.info("\n{}\n{}\n",
                 "##########################################################################################################",
                 DotGenerator.toString(node, 15, true));

@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,9 @@ public class MCTSNode implements Serializable {
     private double virtualLoss = 0.0;
 
     @Getter
+    public final boolean dirichlet;
+
+    @Getter
     private final CacheValues.CacheValue cacheValue;
 
     @Getter
@@ -32,6 +36,9 @@ public class MCTSNode implements Serializable {
 
     @Getter
     protected transient final Move move;
+
+    @Getter
+    protected transient final List<Move> childMoves;
 
     @Getter
     protected double sum;
@@ -83,10 +90,12 @@ public class MCTSNode implements Serializable {
         this.virtualLoss--;
     }
 
-    private MCTSNode(final MCTSNode parent, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
+    private MCTSNode(final MCTSNode parent, final Move move, final List<Move> childMoves, boolean dirichlet, final long key, final CacheValues.CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         this.parent = parent;
         this.piece = move==null ? null : move.getMovedPiece();
+        this.childMoves = childMoves;
+        this.dirichlet = dirichlet;
         this.creator = Thread.currentThread();
         if (cacheValue.getNode() != null) {
             // log.error("CONNECTION PROBLEM: graph:{}", DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
@@ -108,7 +117,7 @@ public class MCTSNode implements Serializable {
             log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
     }
 
-    public static MCTSNode createNode(final MCTSNode parent, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
+    public static MCTSNode createNode(final MCTSNode parent, final Move move, final Board board, boolean dirichlet, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
             MCTSNode ret = cacheValue.getNode();
             if (ret != null) {
@@ -125,7 +134,9 @@ public class MCTSNode implements Serializable {
                 }
                 return ret;
             }
-            return new MCTSNode(parent, move, key, cacheValue);
+            Board selectBoard = move == null ? board : board.currentPlayer().executeMove(move);
+            List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+            return new MCTSNode(parent, move, childMoves, dirichlet, key, cacheValue);
         }
     }
 
@@ -151,11 +162,10 @@ public class MCTSNode implements Serializable {
      * Update the {@link #sum}, increase the number of {@link #visits}, append this propragation
      * to {@link #values} (used for log and debug)
      *
-     * @param value         the value used to updateValueAndPolicies the reward
-     * @param propragateSrc
+     * @param value the value used to updateValueAndPolicies the reward
      */
-    public void propagate(double value, PropragateSrc propragateSrc, int buildOrder) {
-        //FIXME this.values.add(new PropragateValue(value, propragateSrc, buildOrder));
+    public void propagate(double value) {
+        //FIXME only for display this.values.add(new PropragateValue(value, propragateSrc, buildOrder));
         this.sum += value;
         this.incVisits();
         if (log.isDebugEnabled())
@@ -335,10 +345,6 @@ public class MCTSNode implements Serializable {
 
     public double getValue() {
         return cacheValue.getValue();
-    }
-
-    public double getPolicy() {
-        return cacheValue.getPolicies()[PolicyUtils.indexFromMove(this.move)];
     }
 
     public enum State {

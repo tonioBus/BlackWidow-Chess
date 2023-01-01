@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,11 +33,37 @@ public class Helper {
         private boolean win;
     }
 
-    static public void checkMCTSTree(final MCTSNode node) {
+    static public void checkMCTSTree(final MCTSNode root) {
+        checkMCTSTreePoliciesAndValues(root);
+        checkMCTSTreeVisits(root);
+    }
+
+    static public void checkMCTSTreePoliciesAndValues(final MCTSNode root) {
+        List<String> ret = new ArrayList<>();
+        checkMCTSTreePoliciesAndValues(root, ret);
+        assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
+    }
+
+    static public void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
+        double[] policies = node.getCacheValue().getPolicies();
+        double sumPolicies = Arrays.stream(policies).sum();
+        if (sumPolicies < 0.9 || sumPolicies > 1.1) {
+            ret.add(String.format("sum of policies should be ~= 1. (sum:%f)", sumPolicies));
+        }
+        if (!node.getCacheValue().isNormalized()) {
+            ret.add(String.format("node %s should be normalized", node));
+        }
+        for (MCTSNode child : node.getChilds()) {
+            checkMCTSTreePoliciesAndValues(child, ret);
+        }
+
+    }
+
+    static public void checkMCTSTreeVisits(final MCTSNode root) {
         List<String> ret = new ArrayList<>();
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
-        addNodes2NotTest(node, notTestedNodes);
-        checkMCTSTreeVisits(node, ret, notTestedNodes);
+        addNodes2NotTest(root, notTestedNodes);
+        checkMCTSTreeVisits(root, ret, notTestedNodes);
         assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
     }
 
@@ -66,7 +89,7 @@ public class Helper {
                 ret = true;
             }
         }
-        if(ret) notTestedNodes.put(node.getKey(), node);
+        if (ret) notTestedNodes.put(node.getKey(), node);
         return ret;
     }
 

@@ -163,20 +163,19 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(final MCTSGame gameCopy, final Alliance currentColor, long key, final List<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public double[] getBatchedPolicies(final Alliance currentColor, long key, final List<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
                 log.debug("getBatchedPolicies(): key:{} type:{} color:{}", key, output.getType(), currentColor);
             statistic.nbRetrieveNNCachedPolicies++;
             if (!output.isInitialised()) return output.getPolicies();
-            output.normalize(moves, withDirichlet);
+            // output.normalize(moves, withDirichlet);
             return output.getPolicies();
         } else {
             String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
             log.error(msg);
             throw new RuntimeException(msg);
-            // return new double[PolicyUtils.MAX_POLICY_INDEX];
         }
     }
 
