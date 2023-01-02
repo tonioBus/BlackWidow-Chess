@@ -220,7 +220,7 @@ public class MCTSNode implements Serializable {
 
     void resetExpectedReward(double value) {
         this.cacheValue.value = value;
-        this.cacheValue.setInitialised(true);
+        // this.cacheValue.setInitialised(true);
         syncSum();
         if (log.isDebugEnabled()) log.debug("RESET EXPECTED REWARD DONE: {}", this);
     }
@@ -340,6 +340,7 @@ public class MCTSNode implements Serializable {
         this.childNodes.clear();
         this.visits = 0;
         this.getCacheValue().setAsLeaf();
+        log.info("setInitialised -> true : {}", this.getCacheValue());
         this.getCacheValue().setInitialised(true);
     }
 

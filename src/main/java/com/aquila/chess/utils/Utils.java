@@ -75,8 +75,7 @@ public class Utils {
                 sum += policies[i];
             }
         }
-        if (sum == 0) {
-            log.error("SUM=0 !!!");
+        if (indexes.length > 0 && sum == 0) {
             throw new RuntimeException("toDistribution(): sum of policies==0 !!!");
         }
         for (int i = 0; i < policies.length; i++) {

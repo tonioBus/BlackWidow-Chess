@@ -90,7 +90,6 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         currentRoot.syncSum();
         CacheValues.CacheValue rootValue = currentRoot.getCacheValue();
         if (rootValue != null) {
-            rootValue.setNormalized(false);
             log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot.getKey());
             MCTSNode.resetBuildOrder();
         }

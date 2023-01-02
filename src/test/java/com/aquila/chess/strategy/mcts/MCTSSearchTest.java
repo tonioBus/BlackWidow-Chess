@@ -203,10 +203,10 @@ public class MCTSSearchTest {
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
         game.setup(whiteStrategy, blackStrategy);
         game.play();
-        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getDirectRoot(), 30, nbMaxSearchCalls < 100));
+        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         log.info("statistic:{}", whiteStrategy.getStatistic());
-        Helper.checkMCTSTree(whiteStrategy.getDirectRoot());
+        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
     }
 
     /**
@@ -250,15 +250,15 @@ public class MCTSSearchTest {
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nn.addIndexOffset(0.5, index1, index2);
         game.play();
-        log.info("parent:{}", blackStrategy.getDirectRoot());
-        log.warn("visits:{}\n{}", blackStrategy.getDirectRoot().getVisits(), DotGenerator.toString(blackStrategy.getDirectRoot(), 30, nbMaxSearchCalls < 100));
+        log.info("parent:{}", blackStrategy.getCurrentRoot());
+        log.warn("visits:{}\n{}", blackStrategy.getCurrentRoot().getVisits(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
-            MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getDirectRoot());
+            MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getCurrentRoot());
             assertEquals("a2", bestNode.move.toString());
         }
         assertEquals(0, deepLearningBlack.getServiceNN().getBatchJobs2Commit().size());
-        log.warn("ROOT nb visits:{}", blackStrategy.getDirectRoot().getVisits());
-        Helper.checkMCTSTree(blackStrategy.getDirectRoot());
+        log.warn("ROOT nb visits:{}", blackStrategy.getCurrentRoot().getVisits());
+        Helper.checkMCTSTree(blackStrategy.getCurrentRoot());
     }
 }

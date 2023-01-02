@@ -27,7 +27,7 @@ public class CacheValues {
     }
 
     public synchronized void clearCache() {
-        if(log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
+        if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.clear();
     }
 
@@ -75,12 +75,8 @@ public class CacheValues {
         @Setter
         private boolean propagated = false;
 
-        @Setter
-        private boolean normalized = false;
-
         final private String label;
 
-        @Setter
         private MCTSNode node = null;
 
         private CacheValueType type = CacheValueType.INTERMEDIATE;
@@ -104,8 +100,7 @@ public class CacheValues {
             this.type = CacheValueType.ROOT;
         }
 
-        public synchronized void normalize( ) {
-            if (isNormalized()) return;
+        public synchronized void normalise(double[] policies) {
             int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
@@ -114,7 +109,6 @@ public class CacheValues {
                 throw new RuntimeException("ERROR, some policy with NaN value");
             }
             this.policies = normalisedPolicies;
-            this.normalized = true;
         }
 
         public void setAsLeaf() {
@@ -124,12 +118,25 @@ public class CacheValues {
         public OutputNN setTrueValuesAndPolicies(final double value, final double[] policies) {
             this.value = value;
             this.policies = policies;
-            if (node != null) {
-                node.syncSum();
-                normalize();
-            }
+            log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
             this.setInitialised(true);
+            if (node != null) {
+                setTrueValuesAndPolicies();
+            }
             return this;
+        }
+
+        public void setTrueValuesAndPolicies() {
+            if (initialised && type != CacheValueType.LEAF) {
+                node.syncSum();
+                log.debug("normalise: {} {} {}", policies[0], policies[1], policies[2]);
+                normalise(policies);
+            }
+        }
+
+        public void setNode(MCTSNode node) {
+            this.node = node;
+            setTrueValuesAndPolicies();
         }
 
         public static enum CacheValueType {

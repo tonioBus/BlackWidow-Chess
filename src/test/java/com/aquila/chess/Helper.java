@@ -47,11 +47,11 @@ public class Helper {
     static public void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = Arrays.stream(policies).sum();
-        if (sumPolicies < 0.9 || sumPolicies > 1.1) {
+        if (node.getChilds().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("sum of policies should be ~= 1. (sum:%f)", sumPolicies));
         }
-        if (!node.getCacheValue().isNormalized()) {
-            ret.add(String.format("node %s should be normalized", node));
+        if (!node.getCacheValue().isInitialised()) {
+            ret.add(String.format("node %s should be initialized", node));
         }
         for (MCTSNode child : node.getChilds()) {
             checkMCTSTreePoliciesAndValues(child, ret);
