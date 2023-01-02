@@ -26,6 +26,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     protected int nbThreads;
 
     private final long timeMillisPerStep;
+
+    @Getter
     private long nbMaxSearchCalls = -1;
     private Dirichlet dirichlet = nbStep1 -> false;
 
@@ -43,7 +45,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     // private MCTSNode root = null;
 
-    @Getter
     private MCTSNode directRoot = null;
 
     public MCTSNode getCurrentRoot() {

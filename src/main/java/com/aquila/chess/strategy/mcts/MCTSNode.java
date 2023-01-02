@@ -340,7 +340,6 @@ public class MCTSNode implements Serializable {
         this.childNodes.clear();
         this.visits = 0;
         this.getCacheValue().setAsLeaf();
-        log.info("setInitialised -> true : {}", this.getCacheValue());
         this.getCacheValue().setInitialised(true);
     }
 

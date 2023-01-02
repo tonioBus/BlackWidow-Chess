@@ -1,6 +1,7 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.MCTSNode;
+import com.aquila.chess.strategy.mcts.MCTSStrategy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -33,18 +34,22 @@ public class Helper {
         private boolean win;
     }
 
-    static public void checkMCTSTree(final MCTSNode root) {
-        checkMCTSTreePoliciesAndValues(root);
-        checkMCTSTreeVisits(root);
-    }
-
-    static public void checkMCTSTreePoliciesAndValues(final MCTSNode root) {
+    static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
+        MCTSNode root = mctsStrategy.getCurrentRoot();
         List<String> ret = new ArrayList<>();
-        checkMCTSTreePoliciesAndValues(root, ret);
+        if (mctsStrategy.getNbMaxSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbMaxSearchCalls()) {
+            String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbMaxSearchCalls());
+            log.warn(msg);
+            // ret.add(String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbMaxSearchCalls()));
+        }
+        checkMCTSTreePoliciesAndValues(mctsStrategy.getCurrentRoot(), ret);
+        Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
+        addNodes2NotTest(root, notTestedNodes);
+        checkMCTSTreeVisits(root, ret, notTestedNodes);
         assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
     }
 
-    static public void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
+    static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = Arrays.stream(policies).sum();
         if (node.getChilds().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
@@ -57,14 +62,6 @@ public class Helper {
             checkMCTSTreePoliciesAndValues(child, ret);
         }
 
-    }
-
-    static public void checkMCTSTreeVisits(final MCTSNode root) {
-        List<String> ret = new ArrayList<>();
-        Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
-        addNodes2NotTest(root, notTestedNodes);
-        checkMCTSTreeVisits(root, ret, notTestedNodes);
-        assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
     }
 
     private static boolean addNodes2NotTest(final MCTSNode node, final Map<Long, MCTSNode> notTestedNodes) {

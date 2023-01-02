@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.Helper;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
@@ -86,8 +87,9 @@ public class MCTSExercice {
                 assertFalse(true, "End of game not expected:" + status);
             }
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
-                log.warn("GRAPH: {}", DotGenerator.toString(blackStrategy.getDirectRoot().getParent(), 5));
+                log.warn("GRAPH: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
+            Helper.checkMCTSTree(blackStrategy);
         }
         assertTrue(false, "We should have get promoted");
     }

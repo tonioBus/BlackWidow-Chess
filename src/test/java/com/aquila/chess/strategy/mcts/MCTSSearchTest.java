@@ -45,7 +45,7 @@ public class MCTSSearchTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 5})
+    @ValueSource(ints = {1, 2, 5, 100})
     void testSearch1Step(int batchSize) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
@@ -73,7 +73,7 @@ public class MCTSSearchTest {
         double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
-        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
+        Helper.checkMCTSTree(whiteStrategy);
     }
 
     /**
@@ -111,8 +111,8 @@ public class MCTSSearchTest {
         game.play();
         Move move = game.getLastMove();
         log.info("white move:{}", move);
-        log.info("parent:{}", whiteStrategy.getDirectRoot());
-        final MCTSNode node = whiteStrategy.getDirectRoot();
+        log.info("parent:{}", whiteStrategy.getCurrentRoot());
+        final MCTSNode node = whiteStrategy.getCurrentRoot();
         log.info(
                 "##########################################################################################################");
         log.warn("graph: {}", DotGenerator.toString(node, 15, true));
@@ -121,7 +121,7 @@ public class MCTSSearchTest {
         // Kg1, the only way to escape for white
         assertEquals("Kg1", move.toString());
         log.info("\n{}\n", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 5, true));
-        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
+        Helper.checkMCTSTree(whiteStrategy);
     }
 
     @Test
@@ -206,7 +206,7 @@ public class MCTSSearchTest {
         log.warn("\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         log.info("statistic:{}", whiteStrategy.getStatistic());
-        Helper.checkMCTSTree(whiteStrategy.getCurrentRoot());
+        Helper.checkMCTSTree(whiteStrategy);
     }
 
     /**
@@ -259,6 +259,6 @@ public class MCTSSearchTest {
         }
         assertEquals(0, deepLearningBlack.getServiceNN().getBatchJobs2Commit().size());
         log.warn("ROOT nb visits:{}", blackStrategy.getCurrentRoot().getVisits());
-        Helper.checkMCTSTree(blackStrategy.getCurrentRoot());
+        Helper.checkMCTSTree(blackStrategy);
     }
 }
