@@ -43,7 +43,7 @@ class ServiceNN {
     private void initValueAndPolicies(boolean submit2NN) {
         int length = batchJobs2Commit.size();
         if (submit2NN && length > 0) {
-            log.info("INIT VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
+            log.debug("INIT VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
             final double[][][][] nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
             createInputs(nbIn);
             System.out.print("#");
@@ -180,7 +180,6 @@ class ServiceNN {
         if (cacheValue.isInitialised() == true) {
             log.debug("adding a node already initialized: {} cacheValue:{}", node, cacheValue);
             return;
-            // throw new RuntimeException("Color not Identical");
         }
         this.tmpCacheValues.put(key, cacheValue);
     }

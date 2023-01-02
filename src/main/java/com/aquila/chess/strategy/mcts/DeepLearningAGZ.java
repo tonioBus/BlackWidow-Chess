@@ -125,7 +125,7 @@ public class DeepLearningAGZ {
                     move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
-            cacheValues.create(key, labelCacheValue);
+            cacheValues.create(key, labelCacheValue, isDirichlet);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, possibleMove, color2play, gameCopy, isDirichlet, isRootNode);
         } else {

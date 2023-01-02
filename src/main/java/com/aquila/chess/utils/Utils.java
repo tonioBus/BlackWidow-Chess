@@ -107,33 +107,6 @@ public class Utils {
         return policies;
     }
 
-    @Deprecated
-    public static double[] toDistributionOld(double[] policies, int[] indexes, boolean dirichlet) {
-        double sum = 0;
-        for (int i = 0; i < policies.length; i++) {
-            sum += policies[i];
-        }
-        for (int i = 0; i < policies.length; i++) {
-            policies[i] = policies[i] / sum;
-        }
-        if (dirichlet) {
-            double[] alpha = new double[policies.length];
-            Arrays.fill(alpha, 0.3);
-            DirichletGen dirichletGen = new DirichletGen(stream, alpha);
-            double epsilon = 0.25;
-            int index = 0;
-            double[] d = new double[alpha.length];
-            dirichletGen.nextPoint(d);
-            double p;
-            for (int i = 0; i < policies.length; i++) {
-                p = policies[i];
-                double newP = (1 - epsilon) * p + epsilon * d[i];
-                policies[i] = newP;
-            }
-        }
-        return policies;
-    }
-
     public static int nbMaxBits(long number) {
         return (int) (Math.log(Long.highestOneBit(number)) / Math.log(2.0));
     }

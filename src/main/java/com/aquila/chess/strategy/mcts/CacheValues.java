@@ -44,9 +44,9 @@ public class CacheValues {
         return this.lruMap.size();
     }
 
-    public synchronized CacheValue create(long key, final String label) {
+    public synchronized CacheValue create(long key, final String label, boolean isDirichlet) {
         if (containsKey(key)) throw new RuntimeException("node already created for key:" + key);
-        CacheValue ret = CacheValue.getNotInitialized(String.format("[%d] %s", key, label));
+        CacheValue ret = CacheValue.getNotInitialized(String.format("[%d] %s", key, label), isDirichlet);
         this.lruMap.put(key, ret);
         return ret;
     }
@@ -64,9 +64,10 @@ public class CacheValues {
     static public class CacheValue extends OutputNN implements Serializable {
 
         private static final double NOT_INITIALIZED_VALUE = 0;
+        private boolean isDirichlet = true;
 
-        private static final CacheValue getNotInitialized(final String label) {
-            return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
+        private static final CacheValue getNotInitialized(final String label, boolean isDirichlet) {
+            return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX], isDirichlet);
         }
 
         @Setter
@@ -83,9 +84,10 @@ public class CacheValues {
 
         private int nbPropagate = 1;
 
-        private CacheValue(double value, String label, double[] policies) {
+        private CacheValue(double value, String label, double[] policies, boolean isDirichlet) {
             super(value, policies);
             this.label = label;
+            this.isDirichlet = isDirichlet;
         }
 
         public String toString() {
@@ -104,7 +106,7 @@ public class CacheValues {
             int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
-            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, node.getState() == MCTSNode.State.ROOT);
+            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet && node.getState() == MCTSNode.State.ROOT);
             if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
                 throw new RuntimeException("ERROR, some policy with NaN value");
             }

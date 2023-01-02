@@ -43,10 +43,10 @@ public class NNSimul implements INN {
     public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue + (-0.01 + 0.02 * randomGenerator.nextDouble());
+            double value = mediumValue + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                policies[policyIndex] = mediumPolicies + (-0.01 + 0.02 * randomGenerator.nextDouble());
+                policies[policyIndex] = mediumPolicies; // + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
                 if (offsets.containsKey(policyIndex)) {
                     double offset = offsets.get(policyIndex);
                     policies[policyIndex] += offset;

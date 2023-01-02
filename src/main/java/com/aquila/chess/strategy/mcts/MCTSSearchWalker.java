@@ -3,8 +3,6 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,7 +18,8 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 @Getter
 public class MCTSSearchWalker implements Callable<Integer> {
-    protected static final double WIN_LOOSE_VALUE = 1;
+    protected static final double WIN_VALUE = 1;
+    protected static final double LOOSE_VALUE = -1;
     private static final double DRAWN_VALUE = 0;
 
     private final int numThread;
@@ -238,12 +237,12 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
                         node.setState(MCTSNode.State.WIN);
-                        node.resetExpectedReward(WIN_LOOSE_VALUE);
+                        node.resetExpectedReward(WIN_VALUE);
                         node.getCacheValue().setPropagated(false);
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
-                    return new SearchResult(node, WIN_LOOSE_VALUE);
+                    return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
                         String sequence = sequenceMoves(node);
@@ -253,12 +252,12 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
                         node.setState(MCTSNode.State.LOOSE);
-                        node.resetExpectedReward(WIN_LOOSE_VALUE);
+                        node.resetExpectedReward(LOOSE_VALUE);
                         node.getCacheValue().setPropagated(false);
                         long key = mctsGame.hashCode(simulatedPlayerColor);
                         this.deepLearning.addTerminalNodeToPropagate(key, node);
                     }
-                    return new SearchResult(node, WIN_LOOSE_VALUE);
+                    return new SearchResult(node, LOOSE_VALUE);
                 }
             case PAT:
                 node.setState(MCTSNode.State.PAT);

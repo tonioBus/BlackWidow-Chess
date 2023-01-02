@@ -187,7 +187,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public MCTSNode findBestRewardsWithLogVisits(final MCTSNode opponentNode) {
         if (this.mctsGame.isLogBoard()) {
             log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
-            log.warn("[{}] FINDBEST: {}", this.getAlliance(), DotGenerator.toString(opponentNode, 5, true));
+            // log.warn("[{}] FINDBEST: {}", this.getAlliance(), DotGenerator.toString(opponentNode, 5, true));
         }
 
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
