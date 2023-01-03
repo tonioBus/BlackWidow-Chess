@@ -31,8 +31,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private long nbMaxSearchCalls = -1;
     private Dirichlet dirichlet = nbStep1 -> false;
 
-    private boolean smartRandomChoice = false;
-
     private final Random rand;
 
     @Getter
@@ -42,8 +40,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     @Getter
     private Statistic statistic = new Statistic();
-
-    // private MCTSNode root = null;
 
     private MCTSNode directRoot = null;
 
@@ -80,11 +76,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     public MCTSStrategy withDirichlet(Dirichlet dirichlet) {
         this.dirichlet = dirichlet;
-        return this;
-    }
-
-    public MCTSStrategy withSmartRandomChoice(boolean smartRandomChoice) {
-        this.smartRandomChoice = smartRandomChoice;
         return this;
     }
 
@@ -187,7 +178,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public MCTSNode findBestRewardsWithLogVisits(final MCTSNode opponentNode) {
         if (this.mctsGame.isLogBoard()) {
             log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
-            // log.warn("[{}] FINDBEST: {}", this.getAlliance(), DotGenerator.toString(opponentNode, 5, true));
         }
 
         double maxExpectedReward = Double.NEGATIVE_INFINITY;

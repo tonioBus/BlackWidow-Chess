@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.MCTSStrategyConfig;
 import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -106,7 +107,7 @@ public class CacheValues {
             int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
-            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet && node.getState() == MCTSNode.State.ROOT);
+            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, MCTSStrategyConfig.isDirichlet(node.getMove()) && node.getState() == MCTSNode.State.ROOT);
             if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
                 throw new RuntimeException("ERROR, some policy with NaN value");
             }

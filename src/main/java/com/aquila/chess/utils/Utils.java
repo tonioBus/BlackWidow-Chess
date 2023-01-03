@@ -3,6 +3,7 @@
  */
 package com.aquila.chess.utils;
 
+import com.aquila.chess.MCTSStrategyConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import umontreal.ssj.randvarmulti.DirichletGen;
@@ -68,7 +69,7 @@ public class Utils {
     }
 
 
-    public static double[] toDistribution(double[] policies, int[] indexes, boolean dirichlet) {
+    public static double[] toDistribution(double[] policies, int[] indexes, boolean isDirichlet) {
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
@@ -85,7 +86,7 @@ public class Utils {
                 policies[i] = 0;
             }
         }
-        if (dirichlet) {
+        if (isDirichlet) {
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);

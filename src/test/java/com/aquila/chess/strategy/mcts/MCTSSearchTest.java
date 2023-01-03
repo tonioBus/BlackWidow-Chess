@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
+import com.aquila.chess.MCTSStrategyConfig;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
@@ -26,16 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 public class MCTSSearchTest {
 
-    private static final Dirichlet dirichlet = game -> false;
-
     NNTest nn;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 0.5;
-    };
-
-    private final Dirichlet updateDirichlet = (nbStep) -> {
-        return false;
     };
 
     @BeforeEach
