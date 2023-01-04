@@ -140,6 +140,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             deepLearning.removeState(mctsGame, color2play, selectedMove);
             selectedNode.decVirtualLoss();
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
+            // returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
         }
         // recursive calls
         // List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
@@ -239,9 +240,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(MCTSNode.State.WIN);
                         node.resetExpectedReward(WIN_VALUE);
                         node.getCacheValue().setPropagated(false);
+//                        long key = mctsGame.hashCode(simulatedPlayerColor);
+//                        this.deepLearning.addTerminalNodeToPropagate(key, node);
                     }
-                    long key = mctsGame.hashCode(simulatedPlayerColor);
-                    this.deepLearning.addTerminalNodeToPropagate(key, node);
                     return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
@@ -254,8 +255,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(MCTSNode.State.LOOSE);
                         node.resetExpectedReward(LOOSE_VALUE);
                         node.getCacheValue().setPropagated(false);
-                        long key = mctsGame.hashCode(simulatedPlayerColor);
-                        this.deepLearning.addTerminalNodeToPropagate(key, node);
+//                        long key = mctsGame.hashCode(simulatedPlayerColor);
+//                        this.deepLearning.addTerminalNodeToPropagate(key, node);
                     }
                     return new SearchResult(node, LOOSE_VALUE);
                 }
@@ -284,8 +285,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
             node.resetExpectedReward(DRAWN_VALUE);
             node.createLeaf();
             node.getCacheValue().setPropagated(false);
-            long key = mctsGame.hashCode(simulatedPlayerColor);
-            this.deepLearning.addTerminalNodeToPropagate(key, node);
+//            long key = mctsGame.hashCode(simulatedPlayerColor);
+//            this.deepLearning.addTerminalNodeToPropagate(key, node);
         }
         return new SearchResult(node, 0);
     }
