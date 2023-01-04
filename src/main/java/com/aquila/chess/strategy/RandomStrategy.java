@@ -29,7 +29,7 @@ public class RandomStrategy implements Strategy {
     public Move play(final Game game, final Move opponentMove, final List<Move> moves) {
         long skip = moves.isEmpty() ? 0 : rand.nextInt(moves.size());
         Move move = moves.stream().skip(skip).findFirst().get();
-        log.info("\n{}\n[{}] {} nextPlay() -> {}", "####################################################", this.nbStep, this, move);
+        log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
         return move;
     }

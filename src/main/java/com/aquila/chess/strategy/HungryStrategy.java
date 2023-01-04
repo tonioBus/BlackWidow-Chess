@@ -43,8 +43,7 @@ public class HungryStrategy implements Strategy {
                 bestUnpositionMove = move;
             }
         }
-        log.info("\n{}\n[] {}:{}:bestAttackMove -> {}  bestUnpositionMove:{}",
-                "####################################################",
+        log.info("{}:{}:bestAttackMove -> {}  bestUnpositionMove:{}",
                 this.getName(), alliance, bestAttackMove, bestUnpositionMove);
         if (bestAttackMove != null) return bestAttackMove;
         return bestUnpositionMove;

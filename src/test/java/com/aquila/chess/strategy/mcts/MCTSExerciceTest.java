@@ -27,7 +27,7 @@ import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-public class MCTSExercice {
+public class MCTSExerciceTest {
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 2.5; // Math.exp(-0.04 * nbStep) / 2;
