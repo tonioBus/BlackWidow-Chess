@@ -35,8 +35,8 @@ public class Helper {
     }
 
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
-        MCTSNode root = mctsStrategy.getCurrentRoot();
-        List<String> ret = new ArrayList<>();
+        final MCTSNode root = mctsStrategy.getCurrentRoot();
+        final List<String> ret = new ArrayList<>();
         if (mctsStrategy.getNbMaxSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbMaxSearchCalls()) {
             String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbMaxSearchCalls());
             log.warn(msg);

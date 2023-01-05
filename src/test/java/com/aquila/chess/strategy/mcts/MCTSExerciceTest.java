@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MCTSExerciceTest {
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
-        return 2.5; // Math.exp(-0.04 * nbStep) / 2;
+        return 0.5; // Math.exp(-0.04 * nbStep) / 2;
     };
 
     private static final Dirichlet dirichlet = game -> false;
@@ -100,7 +100,7 @@ public class MCTSExerciceTest {
                 assertFalse(true, "End of game not expected:" + status);
             }
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
-                log.warn("GRAPH: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
+                log.warn("[BLACK] GRAPH:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
         }
         log.info("GAME:\n{}\n", game.toPGN());
@@ -153,7 +153,7 @@ public class MCTSExerciceTest {
             }
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
-                log.warn("GRAPH: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
+                log.warn("[BLACK] GRAPH:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
         }
         log.info("GAME:\n{}\n", game.toPGN());
@@ -203,7 +203,7 @@ public class MCTSExerciceTest {
             }
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
-                log.warn("GRAPH: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
+                log.warn("[BLACK] GRAPH:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
         }
         log.warn("graph: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, true));
@@ -247,9 +247,10 @@ public class MCTSExerciceTest {
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nnBlack.addIndexOffset(0.5, index1, index2);
         boolean good = false;
+        Move move = null;
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
-            Move move = game.getLastMove();
+            move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(whiteStrategy);
             if (status == Game.GameStatus.CHESSMATE_BLACK) {
@@ -258,7 +259,7 @@ public class MCTSExerciceTest {
             }
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        log.warn("graph: {}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, true));
+        log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, true));
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have a chessmate");
     }
@@ -303,13 +304,14 @@ public class MCTSExerciceTest {
                 .withNbThread(4)
                 .withNbMaxSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
+        Move move = null;
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
-            Move move = game.getLastMove();
+            move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    log.warn("graph: {}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
+                    log.warn("[WHITE] graph:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
                     Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
@@ -325,7 +327,7 @@ public class MCTSExerciceTest {
             assertNotEquals(Game.GameStatus.CHESSMATE_WHITE, status, "We should not have a white chessmate");
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        log.warn("graph: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
+        log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
     }
 
@@ -371,9 +373,10 @@ public class MCTSExerciceTest {
                 .withNbThread(4)
                 .withNbMaxSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
+        Move move = null;
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
-            Move move = game.getLastMove();
+            move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
@@ -386,14 +389,14 @@ public class MCTSExerciceTest {
                     log.warn("graph: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
                     Helper.checkMCTSTree(blackStrategy);
                     List<MCTSNode> looses = blackStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
-                    log.info("[BLACK]Loose Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+                    log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
                     break;
             }
             assertNotEquals(Game.GameStatus.CHESSMATE_BLACK, status, "We should not have a black chessmate");
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow");
         }
-        log.warn("graph: {}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
+        log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
     }
 
@@ -428,9 +431,10 @@ public class MCTSExerciceTest {
                 .withNbMaxSearchCalls(800);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
+        Move move = null;
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
-            Move move = game.getLastMove();
+            move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
@@ -444,7 +448,7 @@ public class MCTSExerciceTest {
             assertNotEquals(Game.GameStatus.CHESSMATE_WHITE, status, "We should not have a white chessmate");
             assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        log.warn("graph: {}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
+        log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
     }
 
@@ -464,8 +468,54 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @Test
-    void testMakeWhiteChessMate() {
-//        final Board board = new Board();
+    void testMakeWhiteChessMate() throws Exception {
+        final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
+        final Game game = Game.builder().board(board).build();
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                1,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                BLACK,
+                deepLearningBlack,
+                1,
+                updateCpuct,
+                -1)
+                .withNbThread(1)
+                .withNbMaxSearchCalls(3000);
+        game.setup(whiteStrategy, blackStrategy);
+        Move move;
+        for (int i = 0; i < 4; i++) {
+            Game.GameStatus status = game.play();
+            move = game.getLastMove();
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getMovedPiece().getPieceAllegiance()) {
+                case WHITE:
+                    List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+                    log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+                    Helper.checkMCTSTree(whiteStrategy);
+                    break;
+                case BLACK:
+                    // log.warn("[BLACK] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
+                    List<MCTSNode> wins = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+                    log.info("[BLACK] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+                    Helper.checkMCTSTree(blackStrategy);
+                    break;
+            }
+            if (status == Game.GameStatus.CHESSMATE_BLACK) return;
+            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+        }
+        log.warn("game:{}", game.toPGN());
+        assertTrue(false, "Black chess maet should have been detected");
+        //        final Board board = new Board();
 //        final MCTSPlayer whitePlayer = new MCTSPlayer(deepLearningWhite, 1, updateCpuct, -1)
 //                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
 //        final MCTSPlayer blackPlayer = new MCTSPlayer(deepLearningBlack, 10000, updateCpuct, -1)
