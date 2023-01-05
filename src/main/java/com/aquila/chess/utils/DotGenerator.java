@@ -6,6 +6,7 @@ package com.aquila.chess.utils;
 
 import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.aquila.chess.strategy.mcts.CacheValues;
+import com.aquila.chess.strategy.mcts.MCTSSearchWalker;
 import com.aquila.chess.strategy.mcts.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import info.leadinglight.jdot.Edge;
@@ -74,15 +75,14 @@ public class DotGenerator {
             return 0;
         String szMove = node.getMove() == null ? "ROOT" : String.valueOf(node.getMove());
         Alliance color = node.getColorState();
-        String pieceSz = node.getPiece() == null ? "No Piece" : node.getPiece().getClass().getSimpleName();
-        String core = String.format("Parent:%s | key:%s | Init:%b | Prop:%b | %s | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
+        String core = String.format("Parent:%s | key:%s | Init:%b | Propa:%b | moves:%d | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
                 node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
                 node.getKey(),
                 node.getCacheValue().isInitialised(),
                 node.getCacheValue().isPropagated(),
+                node.getChilds().size(),
                 color == null ? "no color" : color.toString(), //
                 szMove, //
-                pieceSz, //
                 values(node),
                 node.getValue(), //
                 node.getExpectedReward(false), //
@@ -128,8 +128,10 @@ public class DotGenerator {
             double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
             if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                 int hashCode = generate(g, child, depth + 1, depthMax);
+                double exploitation = child.getExpectedReward(false);
+                // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
                 g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
-                        .setLabel(String.format("%d / %f", visits, policy)));
+                        .setLabel(String.format("E:%f V:%d / P:%f", exploitation, visits, policy)));
             }
         });
         return node.hashCode();
