@@ -181,7 +181,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
         List<MCTSNode> bestNodes = new ArrayList<>();
-        for (MCTSNode mctsNode : opponentNode.childNodes.values()) {
+        for (MCTSNode mctsNode : opponentNode.getChildNodes().values()) {
             if (mctsNode.getState() == MCTSNode.State.WIN) {
                 bestNodes.clear();
                 bestNodes.add(mctsNode);
@@ -215,7 +215,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             ret = bestNodes.get(0);
         }
         String state = "MEDIUM";
-        int nbChilds = opponentNode.childNodes.size();
+        int nbChilds = opponentNode.getChildNodes().size();
         if (nbBests == 1 && nbChilds >= 1)
             state = "GOOD";
         else if (nbBests == nbChilds)

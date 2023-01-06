@@ -231,8 +231,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     public SearchResult returnEndOfSimulatedGame(final MCTSNode node, int depth, final Alliance simulatedPlayerColor, final Move selectedMove, final Game.GameStatus gameStatus) {
         switch (gameStatus) {
-            case CHESSMATE_BLACK:
-            case CHESSMATE_WHITE:
+            case BLACK_CHESSMATE:
+            case WHITE_CHESSMATE:
                 if (simulatedPlayerColor == colorStrategy) {
                     if (node.getState() != MCTSNode.State.WIN) {
                         String sequence = sequenceMoves(node);

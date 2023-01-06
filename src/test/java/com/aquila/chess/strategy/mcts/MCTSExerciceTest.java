@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.aquila.chess.Game.GameStatus.*;
 import static com.chess.engine.classic.Alliance.BLACK;
 import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,9 +44,9 @@ public class MCTSExerciceTest {
     @BeforeEach
     public void initMockDeepLearning() {
         nnWhite = new NNSimul(2);
-        deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 50);
+        deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         nnBlack = new NNSimul(1);
-        deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 50);
+        deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         nnBlack.clearIndexOffset();
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(false);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(false);
@@ -70,7 +71,6 @@ public class MCTSExerciceTest {
     void testSimulationDetectPossibleBlackPromotion() throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -91,7 +91,7 @@ public class MCTSExerciceTest {
             Move move = game.getLastMove();
             log.warn("[{}] move: {} class:{}", move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(blackStrategy);
-            if (status != Game.GameStatus.IN_PROGRESS) {
+            if (status != IN_PROGRESS) {
                 if (move instanceof Move.PawnPromotion) {
                     log.info("GAME:\n{}\n", game.toPGN());
                     return;
@@ -126,7 +126,6 @@ public class MCTSExerciceTest {
     void testEndWithBlackPromotion() throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -147,11 +146,11 @@ public class MCTSExerciceTest {
             Move move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(blackStrategy);
-            if (status == Game.GameStatus.CHESSMATE_WHITE) {
+            if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
                 return;
             }
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
                 log.warn("[BLACK] GRAPH:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
@@ -179,7 +178,6 @@ public class MCTSExerciceTest {
     void testOneShotBlackChessMate() throws Exception {
         final Board board = Board.createBoard("kh1", "pa2,kg3", BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -197,11 +195,11 @@ public class MCTSExerciceTest {
             Move move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(blackStrategy);
-            if (status == Game.GameStatus.CHESSMATE_WHITE) {
+            if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
                 return;
             }
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
                 log.warn("[BLACK] GRAPH:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 5));
             }
@@ -230,7 +228,6 @@ public class MCTSExerciceTest {
     void testEndWithWhitePromotion() throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         final Strategy blackStrategy = new RandomStrategy(BLACK, 1);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -253,11 +250,11 @@ public class MCTSExerciceTest {
             move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(whiteStrategy);
-            if (status == Game.GameStatus.CHESSMATE_BLACK) {
+            if (status == BLACK_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
                 return;
             }
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
         log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, true));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -283,7 +280,6 @@ public class MCTSExerciceTest {
     void testAvoidEndWithBlackPromotion() throws Exception {
         final Board board = Board.createBoard("kf1", "pa2,rd3,kf3", WHITE);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -293,7 +289,6 @@ public class MCTSExerciceTest {
                 -1)
                 .withNbThread(4)
                 .withNbMaxSearchCalls(800);
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -324,8 +319,8 @@ public class MCTSExerciceTest {
                     assertTrue(wins.size() > 0);
                     break;
             }
-            assertNotEquals(Game.GameStatus.CHESSMATE_WHITE, status, "We should not have a white chessmate");
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
+            assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
         log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -352,7 +347,6 @@ public class MCTSExerciceTest {
     void testAvoidEndWithWhitePromotion() throws Exception {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8", BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -362,7 +356,6 @@ public class MCTSExerciceTest {
                 -1)
                 .withNbThread(4)
                 .withNbMaxSearchCalls(800);
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -393,8 +386,8 @@ public class MCTSExerciceTest {
                     assertTrue(looses.size() > 0);
                     break;
             }
-            assertNotEquals(Game.GameStatus.CHESSMATE_BLACK, status, "We should not have a black chessmate");
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow");
+            assertNotEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate");
+            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow");
         }
         log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -419,7 +412,6 @@ public class MCTSExerciceTest {
     void testAvoidWhiteChessMate() throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", WHITE);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -438,15 +430,15 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
+                    List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[WHITE] Wins/loss EndNodes: {}", winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     Helper.checkMCTSTree(whiteStrategy);
-                    List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
-                    log.info("[BLACK]Loose Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     break;
                 case BLACK:
                     break;
             }
-            assertNotEquals(Game.GameStatus.CHESSMATE_WHITE, status, "We should not have a white chessmate");
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
+            assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
         log.warn("[{}] graph: {}", move.getMovedPiece().getPieceAllegiance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -471,7 +463,6 @@ public class MCTSExerciceTest {
     void testMakeWhiteChessMate() throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -481,7 +472,6 @@ public class MCTSExerciceTest {
                 -1)
                 .withNbThread(4)
                 .withNbMaxSearchCalls(800);
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -489,59 +479,33 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
-                .withNbMaxSearchCalls(3000);
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 4; i++) {
-            Game.GameStatus status = game.play();
+            status = game.play();
             move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
-                    log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+                    List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
-                    // log.warn("[BLACK] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
-                    List<MCTSNode> wins = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
-                    log.info("[BLACK] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+                    List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     Helper.checkMCTSTree(blackStrategy);
                     break;
             }
-            if (status == Game.GameStatus.CHESSMATE_BLACK) return;
-            assertEquals(Game.GameStatus.IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
+            if (status == WHITE_CHESSMATE) break;
+            assertEquals(IN_PROGRESS, status, "wrong status: only WHITE_CHESSMATE or in progress is allow");
         }
+        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
         log.warn("game:{}", game.toPGN());
-        assertTrue(false, "Black chess maet should have been detected");
-        //        final Board board = new Board();
-//        final MCTSPlayer whitePlayer = new MCTSPlayer(deepLearningWhite, 1, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//        final MCTSPlayer blackPlayer = new MCTSPlayer(deepLearningBlack, 10000, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//        final Game game = new Game(board, whitePlayer, blackPlayer);
-//
-//        whitePlayer.addPieces("KE1");
-//        blackPlayer.addPieces("RA8,KG2,RH2");
-//
-//        game.init();
-//        game.setColorToPlay(Color.BLACK);
-//        boolean good = false;
-//        try {
-//            for (int i = 0; i < 20; i++) {
-//                final Move move = game.play();
-//                if (i == 0 && move.getColor() == Color.BLACK) {
-//                    log.warn("GRAPH: {}", DotGenerator.toString(blackPlayer.getRoot(), 10));
-//                }
-//                log.warn("[{}] move: {}", move.getColor(), move);
-//            }
-//        } catch (final EndOfGameException e) {
-//            log.warn("digraph: {}", DotGenerator.toString(blackPlayer.getRoot(), 10));
-//            assertTrue(e.getTypeOfEnding() == TypeOfEnding.CHESSMATE);
-//            good = true;
-//        }
-//        assertTrue(good);
+        assertEquals(WHITE_CHESSMATE, status, "WHITE_CHESSMATE should have been detected");
     }
 
     /**
@@ -556,39 +520,57 @@ public class MCTSExerciceTest {
      * 2  --- --- --- --- --- --- K-W R-W  2
      * 1  --- --- --- --- K-B --- --- ---  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * Kf3 Kd1 2.Ra1
      * </pre>
      * @formatter:on
      */
     @Test
-    void testMakeBlackChessMate() {
-//        final Board board = new Board();
-//        final MCTSPlayer whitePlayer = new MCTSPlayer(deepLearningWhite, 1, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//        final MCTSPlayer blackPlayer = new MCTSPlayer(deepLearningBlack, 10000, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//
-//        final Game game = new Game(board, whitePlayer, blackPlayer);
-//
-//        blackPlayer.addPieces("KE1");
-//        whitePlayer.addPieces("RA8,KG2,RH2");
-//
-//        game.init();
-//        game.setColorToPlay(Color.WHITE);
-//        boolean good = false;
-//        try {
-//            for (int i = 0; i < 20; i++) {
-//                final Move move = game.play();
-//                if (move.getColor() == Color.WHITE) {
-//                    log.warn("GRAPH: {}", DotGenerator.toString(whitePlayer.getRoot(), 4));
-//                }
-//                log.warn("[{}] move: {}", move.getColor(), move);
-//            }
-//        } catch (final EndOfGameException e) {
-//            log.warn("digraph: {}", DotGenerator.toString(whitePlayer.getRoot(), 10));
-//            assertTrue(e.getTypeOfEnding() == TypeOfEnding.CHESSMATE);
-//            good = true;
-//        }
-//        assertTrue(good);
+    void testMakeBlackChessMate() throws Exception {
+        final Board board = Board.createBoard("ra8,kg2,rh2", "ke1", WHITE);
+        final Game game = Game.builder().board(board).build();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                BLACK,
+                deepLearningBlack,
+                2,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        game.setup(whiteStrategy, blackStrategy);
+        Move move;
+        Game.GameStatus status = null;
+        for (int i = 0; i < 4; i++) {
+            status = game.play();
+            move = game.getLastMove();
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getMovedPiece().getPieceAllegiance()) {
+                case WHITE:
+                    List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    Helper.checkMCTSTree(whiteStrategy);
+                    break;
+                case BLACK:
+                    List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    Helper.checkMCTSTree(blackStrategy);
+                    break;
+            }
+            if (status == BLACK_CHESSMATE) break;
+            assertEquals(IN_PROGRESS, status, "wrong status: only BLACK_CHESSMATE or in progress is allow");
+        }
+        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
+        log.warn("game:{}", game.toPGN());
+        assertEquals(BLACK_CHESSMATE, status, "BLACK_CHESSMATE should have been detected");
     }
 
     /**
@@ -610,33 +592,45 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @Test
-    void testMCTSChessCheck2Move() {
-//        final Board board = new Board();
-//        final MCTSPlayer whitePlayer = new MCTSPlayer(deepLearningWhite, 1, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//        final ChessPlayer blackPlayer = new RandomPlayer(1);
-//        final Game game = new Game(board, whitePlayer, blackPlayer);
-//
-//        whitePlayer.addPieces("PA2,PB2,PD4,QE7,PF2,KG2,PG3,NG5");
-//        blackPlayer.addPieces("PA5,PB6,PE4,PE6,PG6,QH5,KH6");
-//
-//        game.init();
-//
-//        assertThrows(EndOfGameException.class, () -> {
-//            for (int i = 0; i < 8; i++) {
-//                // WHITE MOVE
-//                Move move = game.play();
-//                log.info("\n[{}] move:{} stats:{}", move.getColor(), move, whitePlayer.getStatistic());
-//                log.warn("\nwhite graph: {}", DotGenerator.toString(whitePlayer.getRoot(), 10, true));
-//                // BLACK MOVE
-//                log.warn("\nmove black: {}", game.play());
-//            }
-//        });
-//        log.info(game.toString());
+    void testChessCheck2Move() throws Exception {
+        final Board board = Board.createBoard(
+                "PA2,PB2,PD4,QE7,PF2,KG2,PG3,NG5",
+                "PA5,PB6,PE4,PE6,PG6,QH5,KH6",
+                WHITE);
+        final Game game = Game.builder().board(board).build();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
+        game.setup(whiteStrategy, blackStrategy);
+        Move move;
+        Game.GameStatus status = null;
+        for (int i = 0; i < 8; i++) {
+            status = game.play();
+            move = game.getLastMove();
+            switch (move.getMovedPiece().getPieceAllegiance()) {
+                case WHITE:
+                    List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    log.info("[WHITE] Wins/loss EndNodes: {}", winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    Helper.checkMCTSTree(whiteStrategy);
+                    break;
+            }
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            if (status == BLACK_CHESSMATE) break;
+        }
+        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
+        log.warn("game:{}", game.toPGN());
+        assertEquals(BLACK_CHESSMATE, status, "BLACK_CHESSMATE should have been detected");
     }
 
     /**
-     * @throws IOException
+     * @throws Exception
      * @formatter:off [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- R-B --- --- ---  8
      * 7  --- --- --- --- --- --- --- ---  7
@@ -652,39 +646,99 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @Test
-    void testMCTSChessMateBlack1Move() throws IOException, InterruptedException {
-//        final Board board = new Board();
-//        final ChessPlayer whitePlayer = new RandomPlayer(100);
-//        final MCTSPlayer blackPlayer = new MCTSPlayer(deepLearningBlack, 1, updateCpuct, -1)
-//                .withNbMaxSearchCalls(800).withDirichlet(dirichlet);
-//        final Game game = new Game(board, whitePlayer, blackPlayer);
-//
-//        final King kW = new King(Color.WHITE, Location.get("G1"));
-//        final King kB = new King(Color.BLACK, Location.get("G3"));
-//        final Rook rB = new Rook(Color.BLACK, Location.get("E8"));
-//
-//        whitePlayer.addPieces(kW);
-//        blackPlayer.addPieces(kB, rB);
-//        game.init();
-//        game.setColorToPlay(Color.BLACK);
-//        log.info(game.toString());
-//        log.info("### Black Possibles Moves:");
-//        blackPlayer.getPossibleLegalMoves().forEach((move) -> {
-//            System.out.print(move + " | ");
-//        });
-//
-//
-//        // BLACK MOVE
-//        final EndOfGameException endOfGameException = assertThrows(EndOfGameException.class, () -> {
-//            log.info("move black: {}", game.play(false));
-//            log.info("move white: {}", game.play(false));
-//        });
-//        assertEquals(TypeOfEnding.CHESSMATE, endOfGameException.getTypeOfEnding());
-//        log.info(game.toString());
+    void testChessMateBlack1Move() throws Exception {
+        final Board board = Board.createBoard(
+                "kg1",
+                "re8,kg3",
+                BLACK);
+        final Game game = Game.builder().board(board).build();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                BLACK,
+                deepLearningBlack,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus status = null;
+        status = game.play();
+        List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+        log.warn("[BLACK] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
+        log.info("[BLACK] win EndNodes: {}", win.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        assertTrue(win.size() > 0, "White should have detect loss nodes");
+        assertEquals(WHITE_CHESSMATE, status, "we should be in progress mode");
     }
 
     /**
-     * @throws IOException
+     * @throws Exception
+     * @formatter:off
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * 8  --- --- --- --- R-B --- --- ---  8
+     * 7  --- --- --- --- --- --- --- ---  7
+     * 6  --- --- --- --- --- --- --- ---  6
+     * 5  --- --- --- --- --- --- --- ---  5
+     * 4  --- --- --- --- --- --- --- ---  4
+     * 3  --- --- --- --- --- --- K-B ---  3
+     * 2  --- --- --- --- --- --- --- ---  2
+     * 1  --- --- --- --- --- --- K-W ---  1
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * <p>
+     * PGN format to use with -> https://lichess.org/paste
+     * @formatter:on
+     */
+    @Test
+    void testAvoidChessMateBlack1Move() throws Exception {
+        final Board board = Board.createBoard(
+                "kg1",
+                "re8,kg3",
+                WHITE);
+        final Game game = Game.builder().board(board).build();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                BLACK,
+                deepLearningBlack,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbMaxSearchCalls(800);
+        game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus status = null;
+        status = game.play();
+        List<MCTSNode> loss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
+        log.info("[WHITE] loose EndNodes: {}", loss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        assertTrue(loss.size() > 0, "White should have detect loss nodes");
+        status = game.play();
+        List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
+        log.info("[WHITE] win EndNodes: {}", win.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        log.warn("game:{}", game.toPGN());
+        assertEquals(IN_PROGRESS, status, "we should be in progress mode");
+    }
+
+    /**
+     * @throws Exception
      * @formatter:off [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- --- K-B ---  8
      * 7  R-W --- --- --- --- --- --- ---  7

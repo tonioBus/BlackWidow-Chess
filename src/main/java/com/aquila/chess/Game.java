@@ -85,10 +85,10 @@ public class Game {
         sb.append(String.format("[Black \"%s\"]\n", strategyBlack.getClass().getSimpleName()));
         String result = "*";
         switch (this.status) {
-            case CHESSMATE_WHITE:
+            case WHITE_CHESSMATE:
                 result = "1-0";
                 break;
-            case CHESSMATE_BLACK:
+            case BLACK_CHESSMATE:
                 result = "0-1";
                 break;
             case DRAW_50:
@@ -226,8 +226,8 @@ public class Game {
     public enum GameStatus {
         IN_PROGRESS,
         PAT,
-        CHESSMATE_WHITE,
-        CHESSMATE_BLACK,
+        WHITE_CHESSMATE,
+        BLACK_CHESSMATE,
         DRAW_50,
         DRAW_300,
         DRAW_3,
@@ -235,8 +235,8 @@ public class Game {
     }
 
     public GameStatus calculateStatus() {
-        if (board.whitePlayer().isInCheckMate()) return GameStatus.CHESSMATE_WHITE;
-        if (board.blackPlayer().isInCheckMate()) return GameStatus.CHESSMATE_BLACK;
+        if (board.whitePlayer().isInCheckMate()) return GameStatus.WHITE_CHESSMATE;
+        if (board.blackPlayer().isInCheckMate()) return GameStatus.BLACK_CHESSMATE;
         if (getNextPlayer().isInStaleMate()) return GameStatus.PAT;
         if (transitions.size() >= 300) return GameStatus.DRAW_300;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return GameStatus.DRAW_50;

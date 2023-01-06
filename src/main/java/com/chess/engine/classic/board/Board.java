@@ -140,8 +140,8 @@ public final class Board {
                                     final String blackPieces,
                                     Alliance firstMove) {
         final Builder builder = new Builder();
-        placePieces(builder, Alliance.WHITE, whitePieces);
-        placePieces(builder, Alliance.BLACK, blackPieces);
+        placePieces(builder, Alliance.WHITE, whitePieces.toLowerCase());
+        placePieces(builder, Alliance.BLACK, blackPieces.toLowerCase());
         //white to move
         builder.setMoveMaker(firstMove);
         //build the board

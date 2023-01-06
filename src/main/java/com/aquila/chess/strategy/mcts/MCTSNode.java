@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,22 +42,22 @@ public class MCTSNode implements Serializable {
     protected transient final List<Move> childMoves;
 
     @Getter
-    protected double sum;
+    private double sum;
     @Getter
-    protected transient Thread creator;
+    private transient Thread creator;
 
     @Getter
-    protected final transient Map<Integer, MCTSNode> childNodes = new ConcurrentHashMap<>();
+    private final transient Map<Integer, MCTSNode> childNodes = new ConcurrentHashMap<>();
 
     @Getter
     private int visits = 0;
 
     @Getter
-    protected transient Piece piece;
+    private transient Piece piece;
 
     @Getter
     @Setter
-    protected State state = State.INTERMEDIATE;
+    private State state = State.INTERMEDIATE;
 
     @Getter
     private transient MCTSNode parent;
@@ -93,7 +94,7 @@ public class MCTSNode implements Serializable {
     private MCTSNode(final MCTSNode parent, final Move move, final List<Move> childMoves, boolean dirichlet, final long key, final CacheValues.CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         this.parent = parent;
-        this.piece = move==null ? null : move.getMovedPiece();
+        this.piece = move == null ? null : move.getMovedPiece();
         this.childMoves = childMoves;
         this.dirichlet = dirichlet;
         this.creator = Thread.currentThread();
@@ -239,12 +240,20 @@ public class MCTSNode implements Serializable {
         else return (sum - (withVirtualLoss ? virtualLoss : 0)) / this.getVisits();
     }
 
-    public List<MCTSNode> search(final State state) {
+    public List<MCTSNode> search(final State ... states) {
         List<MCTSNode> ret = new ArrayList<>();
-        if (this.state == state) ret.add(this);
+        if (Arrays.stream(states).anyMatch(state1 -> state1 == this.state)) ret.add(this);
         this.getChilds().forEach(child -> {
-            // log.info("child:{} state:{}", child.move, child.state);
-            ret.addAll(child.search(state));
+            ret.addAll(child.search(states));
+        });
+        return ret;
+    }
+
+    public List<MCTSNode> searchNot(final State ... states) {
+        List<MCTSNode> ret = new ArrayList<>();
+        if (Arrays.stream(states).allMatch(state1 -> state1 != this.state)) ret.add(this);
+        this.getChilds().forEach(child -> {
+            ret.addAll(child.search(states));
         });
         return ret;
     }
