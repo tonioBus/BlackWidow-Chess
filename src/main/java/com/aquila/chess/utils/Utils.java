@@ -75,9 +75,6 @@ public class Utils {
      * @return
      */
     public static double[] toDistribution(double[] policies, int[] indexes, boolean isDirichlet) {
-        if (indexes.length == 0) {
-            throw new RuntimeException("toDistribution(): indexes should not be empty !!!");
-        }
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
