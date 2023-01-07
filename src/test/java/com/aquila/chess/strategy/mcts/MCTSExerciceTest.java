@@ -492,6 +492,7 @@ public class MCTSExerciceTest {
                 case WHITE:
                     List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    if (winLoss1.size() > 0) log.info("graph:\n{}\n");
                     Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
@@ -725,14 +726,11 @@ public class MCTSExerciceTest {
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus status = null;
         status = game.play();
-        List<MCTSNode> loss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
-        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 10, false));
-        log.info("[WHITE] loose EndNodes: {}", loss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-        assertTrue(loss.size() > 0, "White should have detect loss nodes");
+        assertEquals(IN_PROGRESS, status);
+        List<MCTSNode> winLossNodes = traceMCTS(whiteStrategy, true);
+        assertTrue(winLossNodes.size() > 0, "White should have detect loss nodes");
         status = game.play();
-        List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
-        log.warn("[WHITE] graph:\n{}", DotGenerator.toString(blackStrategy.getCurrentRoot(), 10, false));
-        log.info("[WHITE] win EndNodes: {}", win.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        winLossNodes = traceMCTS(blackStrategy, false);
         log.warn("game:{}", game.toPGN());
         assertEquals(IN_PROGRESS, status, "we should be in progress mode");
     }
@@ -877,4 +875,18 @@ public class MCTSExerciceTest {
 //        log.info("[{}] move:{} stats:{}", move.getColor(), move, whitePlayer.getStatistic());
     }
 
+    /**
+     * count the number of win loss, display the graph if interesting, check the tree and return the list of win/loss nodes
+     *
+     * @param strategy
+     * @param b
+     * @return
+     */
+    private List<MCTSNode> traceMCTS(final MCTSStrategy strategy, boolean forceGraph) {
+        List<MCTSNode> winLoss = strategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+        log.info("[{}}] Wins/loss EndNodes ({}): {}", strategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        if (forceGraph || winLoss.size() > 0) log.info("[{}] graph:\n############################\n{}\n############################\n", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
+        Helper.checkMCTSTree(strategy);
+        return winLoss;
+    }
 }
