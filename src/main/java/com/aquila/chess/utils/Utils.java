@@ -3,7 +3,6 @@
  */
 package com.aquila.chess.utils;
 
-import com.aquila.chess.MCTSStrategyConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import umontreal.ssj.randvarmulti.DirichletGen;
@@ -69,7 +68,16 @@ public class Utils {
     }
 
 
+    /**
+     * @param policies
+     * @param indexes
+     * @param isDirichlet
+     * @return
+     */
     public static double[] toDistribution(double[] policies, int[] indexes, boolean isDirichlet) {
+        if (indexes.length == 0) {
+            throw new RuntimeException("toDistribution(): indexes should not be empty !!!");
+        }
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {

@@ -4,9 +4,8 @@
 package com.aquila.chess.utils;
 
 
-import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.aquila.chess.strategy.mcts.CacheValues;
-import com.aquila.chess.strategy.mcts.MCTSSearchWalker;
+import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.aquila.chess.strategy.mcts.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import info.leadinglight.jdot.Edge;
@@ -83,7 +82,7 @@ public class DotGenerator {
                 node.getChilds().size(),
                 color == null ? "no color" : color.toString(), //
                 szMove, //
-                values(node),
+                String.format("ret:%d Prop:%d", node.getRet(), node.getPropagate()),
                 node.getValue(), //
                 node.getExpectedReward(false), //
                 node.getVirtualLoss(), //
@@ -131,7 +130,7 @@ public class DotGenerator {
                 double exploitation = child.getExpectedReward(false);
                 // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
                 g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
-                        .setLabel(String.format("E:%f V:%d / P:%f", exploitation, visits, policy)));
+                        .setLabel(String.format("E:%f V:%d P:%f", exploitation, visits, policy)));
             }
         });
         return node.hashCode();

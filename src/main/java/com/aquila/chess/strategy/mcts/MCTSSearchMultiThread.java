@@ -153,7 +153,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             }
         }
         try {
-            deepLearning.flushJob(true, statistic);
+            deepLearning.flushJob(true);
         } catch (ExecutionException e) {
             log.error("Error during last flushJobs", e);
         }

@@ -6,6 +6,7 @@ import com.aquila.chess.MCTSStrategyConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
+import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -699,7 +700,7 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @Test
-    void testAvoidChessMateBlack1Move() throws Exception {
+    void testAvoidWhiteChessMate1Move() throws Exception {
         final Board board = Board.createBoard(
                 "kg1",
                 "re8,kg3",
@@ -712,7 +713,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(4)
+                .withNbThread(1)
                 .withNbMaxSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -721,7 +722,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(4)
+                .withNbThread(1)
                 .withNbMaxSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus status = null;
@@ -885,7 +886,7 @@ public class MCTSExerciceTest {
     private List<MCTSNode> traceMCTS(final MCTSStrategy strategy, boolean forceGraph) {
         List<MCTSNode> winLoss = strategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
         log.info("[{}}] Wins/loss EndNodes ({}): {}", strategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-        if (forceGraph || winLoss.size() > 0) log.info("[{}] graph:\n############################\n{}\n############################\n", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
+        if (forceGraph || winLoss.size() > 0) log.info("[{}] graph:\n############################\n{}\n############################", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
         Helper.checkMCTSTree(strategy);
         return winLoss;
     }

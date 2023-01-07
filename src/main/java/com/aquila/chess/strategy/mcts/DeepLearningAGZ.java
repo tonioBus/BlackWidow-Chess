@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
+import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -170,7 +171,6 @@ public class DeepLearningAGZ {
                 log.debug("getBatchedPolicies(): key:{} type:{} color:{}", key, output.getType(), currentColor);
             statistic.nbRetrieveNNCachedPolicies++;
             if (!output.isInitialised()) return output.getPolicies();
-            // output.normalize(moves, withDirichlet);
             return output.getPolicies();
         } else {
             String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
@@ -189,9 +189,9 @@ public class DeepLearningAGZ {
         log.info("SAVE DONE");
     }
 
-    public void flushJob(boolean force, final Statistic statistic) throws ExecutionException {
+    public void flushJob(boolean force) throws ExecutionException {
         log.debug("FLUSH JOB");
-        this.serviceNN.executeJobs(force, statistic);
+        this.serviceNN.executeJobs(force);
     }
 
     public int getCacheSize() {

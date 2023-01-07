@@ -2,10 +2,10 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
-import com.aquila.chess.MCTSStrategyConfig;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.nnImpls.NNConstants;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -20,14 +20,18 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.aquila.chess.Game.GameStatus.IN_PROGRESS;
+import static com.chess.engine.classic.Alliance.BLACK;
+import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class MCTSSearchTest {
 
-    NNTest nn;
+    NNTest nnTest;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 0.5;
@@ -35,7 +39,7 @@ public class MCTSSearchTest {
 
     @BeforeEach
     public void init() {
-        nn = new NNTest();
+        nnTest = new NNTest();
         MCTSNode.resetBuildOrder();
     }
 
@@ -45,7 +49,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, batchSize);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, batchSize);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -91,7 +95,7 @@ public class MCTSSearchTest {
         int seed = (int) System.currentTimeMillis();
         final Board board = Board.createBoard("kh1", "pa2,kg3", Alliance.WHITE);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, 1);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, 1);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -124,7 +128,7 @@ public class MCTSSearchTest {
         int seed = 10;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, 50);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, 50);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -148,6 +152,57 @@ public class MCTSSearchTest {
         }
         long endTime = System.currentTimeMillis();
         log.info("Delay: {} ms", (endTime - startTime));
+    }
+
+    /**
+     * @throws Exception
+     * @formatter:off
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * 8  --- --- --- --- R-B --- --- ---  8
+     * 7  --- --- --- --- --- --- --- ---  7
+     * 6  --- --- --- --- --- --- --- ---  6
+     * 5  --- --- --- --- --- --- --- ---  5
+     * 4  --- --- --- --- --- --- --- ---  4
+     * 3  --- --- --- --- --- --- K-B ---  3
+     * 2  --- --- --- --- --- --- --- ---  2
+     * 1  --- --- --- --- --- --- K-W ---  1
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * <p>
+     * PGN format to use with -> https://lichess.org/paste
+     * @formatter:on
+     */
+    @ParameterizedTest
+    @ValueSource(ints = {30,50})
+    void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
+        final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
+        final Game game = Game.builder().board(board).build();
+        NNConstants nnConstant = new NNConstants(1);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 1);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                10,
+                updateCpuct,
+                -1)
+                .withNbThread(1)
+                .withNbMaxSearchCalls(nbSearchCalls);
+        final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
+        game.setup(whiteStrategy, blackStrategy);
+        final Piece rootf8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("e8"));
+        int index1 = PolicyUtils.indexFromMove(4, 7, 4, 0, rootf8);
+        final Piece kingWhite = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("g1"));
+        int index2 = PolicyUtils.indexFromMove(6, 0, 5, 0, kingWhite);
+        nnConstant.addIndexOffset(0.5, index1, index2);
+        Game.GameStatus status = null;
+        status = game.play();
+        assertEquals(IN_PROGRESS, status);
+        List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+        log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        log.info("[{}] graph:\n############################\n{}\n############################", whiteStrategy.getAlliance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 20, nbSearchCalls < 200));
+        Helper.checkMCTSTree(whiteStrategy);
+        assertTrue(winLoss.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
+        log.warn("game:{}", game.toPGN());
     }
 
     @ParameterizedTest
@@ -185,7 +240,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, false, batchSize);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, batchSize);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -228,7 +283,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createBoard("kh1", "pa3,kg3", Alliance.BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nn, false, batchSize);
+        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnTest, false, batchSize);
         final RandomStrategy whiteStrategy = new RandomStrategy(Alliance.WHITE, seed + 1000);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -243,7 +298,7 @@ public class MCTSSearchTest {
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nn.addIndexOffset(0.5, index1, index2);
+        nnTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getCurrentRoot());
         log.warn("visits:{}\n{}", blackStrategy.getCurrentRoot().getVisits(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));

@@ -90,7 +90,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     protected SearchResult search(final MCTSNode opponentNode, final List<Move> moves, int depth, final boolean isRootNode) throws Exception {
         try {
-            deepLearning.flushJob(false, statistic);
+            deepLearning.flushJob(false);
         } catch (ExecutionException e) {
             throw new RuntimeException("Error during last flushJobs", e);
         }
@@ -145,7 +145,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         // recursive calls
         // List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
         List<Move> selectNodesMoves = selectedNode.getChildMoves();
-        search(selectedNode, selectNodesMoves, depth + 1, false);
+        SearchResult searchResult = search(selectedNode, selectNodesMoves, depth + 1, false);
         // retro-propagate done in ServiceNN
         selectedNode.decVirtualLoss();
         return null;
@@ -247,6 +247,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
+                    node.incRet();
                     return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
@@ -262,6 +263,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         long key = mctsGame.hashCode(simulatedPlayerColor);
                         this.deepLearning.addTerminalNodeToPropagate(key, node);
                     }
+                    node.incRet();
                     return new SearchResult(node, LOOSE_VALUE);
                 }
             case PAT:
@@ -292,6 +294,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             long key = mctsGame.hashCode(simulatedPlayerColor);
             this.deepLearning.addTerminalNodeToPropagate(key, node);
         }
+        node.incRet();
         return new SearchResult(node, 0);
     }
 

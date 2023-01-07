@@ -1,5 +1,6 @@
-package com.aquila.chess.strategy.mcts;
+package com.aquila.chess.strategy.mcts.nnImpls;
 
+import com.aquila.chess.strategy.mcts.*;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;

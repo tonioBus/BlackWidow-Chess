@@ -15,7 +15,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ******************************************************************************/
 
-package com.aquila.chess.strategy.mcts.agz;
+package com.aquila.chess.strategy.mcts.nnImpls.agz;
 
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.ConvolutionMode;

@@ -24,6 +24,9 @@ public class MCTSNode implements Serializable {
     static private int nbBuild = 0;
 
     @Getter
+    public int ret;
+
+    @Getter
     private double virtualLoss = 0.0;
 
     @Getter
@@ -78,6 +81,9 @@ public class MCTSNode implements Serializable {
 
     @Getter
     private final List<PropragateValue> values = new ArrayList<>();
+
+    @Getter
+    private int propagate;
 
     public static void resetBuildOrder() {
         nbBuild = 0;
@@ -168,6 +174,7 @@ public class MCTSNode implements Serializable {
     public void propagate(double value) {
         //FIXME only for display this.values.add(new PropragateValue(value, propragateSrc, buildOrder));
         this.sum += value;
+        this.propagate++;
         this.incVisits();
         if (log.isDebugEnabled())
             log.debug("PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
@@ -176,6 +183,7 @@ public class MCTSNode implements Serializable {
     public void unPropagate(double value, PropragateSrc propragateSrc, int buildOrder) {
         this.values.add(new PropragateValue(-value, propragateSrc, buildOrder));
         this.sum -= value;
+        this.propagate--;
         this.decVisits();
         if (log.isDebugEnabled())
             log.debug("UN-PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
@@ -206,6 +214,10 @@ public class MCTSNode implements Serializable {
         this.getChilds().forEach(child -> {
             child.traverse(consumer);
         });
+    }
+
+    public void incRet() {
+        this.ret++;
     }
 
     static public enum PropragateSrc {

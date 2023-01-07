@@ -1,5 +1,9 @@
-package com.aquila.chess.strategy.mcts;
+package com.aquila.chess.strategy.mcts.nnImpls;
 
+import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.OutputNN;
+import com.aquila.chess.strategy.mcts.PolicyUtils;
+import com.aquila.chess.strategy.mcts.UpdateLr;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
