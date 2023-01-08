@@ -4,13 +4,16 @@ import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
 import com.aquila.chess.strategy.mcts.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.BoardUtils;
+import com.chess.engine.classic.board.Move;
+import com.chess.engine.classic.player.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Slf4j
 public class NNConstants implements INN {
@@ -19,11 +22,11 @@ public class NNConstants implements INN {
     static private final double valueRangeMax = 0.400;
     static private final double policyRangeMin = 0.100;
     static private final double policyRangeMax = 0.500;
-    private final Random randomGenerator = new Random();
-    private double mediumValue;
-    private double mediumPolicies;
+    final Random randomGenerator = new Random();
+    double mediumValue;
+    double mediumPolicies;
 
-    private final Map<Integer, Double> offsets = new HashMap<>();
+    protected final Map<Integer, Double> offsets = new HashMap<>();
 
     public NNConstants(long seed) {
         randomGenerator.setSeed(seed);
@@ -105,13 +108,24 @@ public class NNConstants implements INN {
         return null;
     }
 
-    public void addIndexOffset(double offset, int... indexes) {
+    public void addIndexOffset(double offset, String s, Board board, int... indexes) {
         for (int index : indexes) {
             this.offsets.put(index, offset);
         }
     }
 
+    public void addIndexOffset(double offset, final String movesSz, final Board board) {
+        Stream.of(movesSz.toLowerCase().split(";")).forEach(moveSz -> {
+            String[] splittedMove = moveSz.split("-");
+            String startSz = splittedMove[0];
+            String endSz = splittedMove[1];
+            int index = PolicyUtils.indexFromMove(board, startSz, endSz);
+            this.offsets.put(index, offset);
+        });
+    }
+
     public void clearIndexOffset() {
         this.offsets.clear();
     }
+
 }

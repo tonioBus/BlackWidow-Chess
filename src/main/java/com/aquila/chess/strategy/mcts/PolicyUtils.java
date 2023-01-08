@@ -1,5 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,11 @@ public class PolicyUtils {
 
     static public final int MAX_POLICY_INDEX = 4672;
 
+    /**
+     * return policy index from a move
+     * @param move
+     * @return
+     */
     public static int indexFromMove(final Move move) {
         Coordinate2D srcCoordinate2D = new Coordinate2D(move.getCurrentCoordinate());
         Coordinate2D destCoordinate2D = new Coordinate2D(move.getDestinationCoordinate());
@@ -25,15 +32,35 @@ public class PolicyUtils {
     }
 
     /**
+     * return policy index from a move
+     * @param board the board concerning by the move (used to retrieve the Piece)
+     * @param start the start in algrebic notation
+     * @param end the end in algebric notation
+     * @return the index of the given move
+     */
+    public static int indexFromMove(final Board board, String start, String end) {
+        Coordinate2D srcCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(start));
+        Coordinate2D destCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(end));
+        Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition(start));
+        return indexFromMove(
+                srcCoordinate2D.getX(),
+                srcCoordinate2D.getY(),
+                destCoordinate2D.getX(),
+                destCoordinate2D.getY(),
+                piece);
+    }
+
+    /**
      * @return
-     * @formatter:off <pre>
-     *   out: 8x8x73: [0..72]  ->     [0..55)(Queen moves: nbStep + orientation) [56..63](Knights moves) [64..72](underpromotion)
+     *
+     * <pre>
+     * out: 8x8x73: [0..72]  ->     [0..55)(Queen moves: nbStep + orientation) [56..63](Knights moves) [64..72](underpromotion)
      * Queen moves: [1 .. 7] ->     7 number of steps  [N,NE,E,SE,S,SW,W,NW]: 8 orientation -> 7*8
      * Knight moves: [0..7]  ->     [Up+Up+Left,Up+Up+Right,Right+Right+Up, Right+Right+Down,
      * Down+Down+Right, Down+Down+Left,Left+Left+Down,Left+Left+Up]
      * UnderPromotion:
      * </pre>
-     * @formatter:on
+     *
      */
     public static int indexFromMove(int startX, int startY, int endX, int endY, final Piece piece) {
         int ret = 0;

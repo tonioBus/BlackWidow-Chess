@@ -260,9 +260,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(MCTSNode.State.LOOSE);
                         node.resetExpectedReward(LOOSE_VALUE);
                         node.getCacheValue().setPropagated(false);
-                        long key = mctsGame.hashCode(simulatedPlayerColor);
-                        this.deepLearning.addTerminalNodeToPropagate(key, node);
                     }
+                    long key = mctsGame.hashCode(simulatedPlayerColor);
+                    this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incRet();
                     return new SearchResult(node, LOOSE_VALUE);
                 }
@@ -291,9 +291,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
             node.resetExpectedReward(DRAWN_VALUE);
             node.createLeaf();
             node.getCacheValue().setPropagated(false);
-            long key = mctsGame.hashCode(simulatedPlayerColor);
-            this.deepLearning.addTerminalNodeToPropagate(key, node);
         }
+        long key = mctsGame.hashCode(simulatedPlayerColor);
+        this.deepLearning.addTerminalNodeToPropagate(key, node);
         node.incRet();
         return new SearchResult(node, 0);
     }

@@ -4,6 +4,7 @@ import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
 import com.aquila.chess.strategy.mcts.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
+import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,36 +12,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
-public class NNSimul implements INN {
-
-    static private final Logger logger = LoggerFactory.getLogger(NNSimul.class);
-
-    static private final double valueRangeMin = -0.400;
-    static private final double valueRangeMax = 0.400;
-    static private final double policyRangeMin = 0.100;
-    static private final double policyRangeMax = 0.500;
-    private final Random randomGenerator = new Random();
-    private double mediumValue;
-    private double mediumPolicies;
-
-    private final Map<Integer, Double> offsets = new HashMap<>();
+@Slf4j
+public class NNSimul extends NNConstants {
 
     public NNSimul(long seed) {
-        randomGenerator.setSeed(seed);
-        reset();
-    }
-
-    @Override
-    public void reset() {
-        mediumValue = valueRangeMin + (valueRangeMax - valueRangeMin) * randomGenerator.nextDouble();
-        mediumPolicies = policyRangeMin + (policyRangeMax - policyRangeMin) * randomGenerator.nextDouble();
-        logger.warn("mediumValue: {}", mediumValue);
-        logger.warn("mediumPolicies: {}", mediumPolicies);
-    }
-
-    @Override
-    public void close() {
-
+        super(seed);
     }
 
     @Override
@@ -50,7 +26,7 @@ public class NNSimul implements INN {
             double value = mediumValue + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                policies[policyIndex] = mediumPolicies; // + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
+                policies[policyIndex] = mediumPolicies + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
                 if (offsets.containsKey(policyIndex)) {
                     double offset = offsets.get(policyIndex);
                     policies[policyIndex] += offset;
@@ -115,4 +91,5 @@ public class NNSimul implements INN {
     public void clearIndexOffset() {
         this.offsets.clear();
     }
+
 }

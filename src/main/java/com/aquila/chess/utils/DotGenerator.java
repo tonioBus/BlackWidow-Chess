@@ -6,6 +6,7 @@ package com.aquila.chess.utils;
 
 import com.aquila.chess.strategy.mcts.CacheValues;
 import com.aquila.chess.strategy.mcts.MCTSNode;
+import com.aquila.chess.strategy.mcts.MCTSStrategy;
 import com.aquila.chess.strategy.mcts.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import info.leadinglight.jdot.Edge;
@@ -128,9 +129,10 @@ public class DotGenerator {
             if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                 int hashCode = generate(g, child, depth + 1, depthMax);
                 double exploitation = child.getExpectedReward(false);
+                double reward = MCTSStrategy.expectedReward(child);
                 // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
                 g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
-                        .setLabel(String.format("E:%f V:%d P:%f", exploitation, visits, policy)));
+                        .setLabel(String.format("R:%f V:%d P:%f", reward, visits, policy)));
             }
         });
         return node.hashCode();

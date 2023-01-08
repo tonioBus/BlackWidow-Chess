@@ -14,6 +14,7 @@ import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -34,7 +35,7 @@ public class MCTSSearchTest {
     NNTest nnTest;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
-        return 0.5;
+        return 2.5;
     };
 
     @BeforeEach
@@ -58,7 +59,7 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(1);
+                .withNbSearchCalls(1);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
         assertEquals(Game.GameStatus.IN_PROGRESS, game.play());
@@ -75,53 +76,6 @@ public class MCTSSearchTest {
         Helper.checkMCTSTree(whiteStrategy);
     }
 
-    /**
-     * @formatter:off <pre>
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * 8  --- --- --- --- --- --- --- ---  8
-     * 7  --- --- --- --- --- --- --- ---  7
-     * 6  --- --- --- --- --- --- --- ---  6
-     * 5  --- --- --- --- --- --- --- ---  5
-     * 4  --- --- --- --- --- --- --- ---  4
-     * 3  --- --- --- --- --- --- K-B ---  3
-     * 2  P-B --- --- --- --- --- --- ---  2
-     * 1  --- --- --- --- --- --- --- K-W  1
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * </pre>
-     * @formatter:on
-     */
-    @Test
-    void testSearchFinal() throws Exception {
-        int seed = (int) System.currentTimeMillis();
-        final Board board = Board.createBoard("kh1", "pa2,kg3", Alliance.WHITE);
-        final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, 1);
-        final MCTSStrategy whiteStrategy = new MCTSStrategy(
-                game,
-                Alliance.WHITE,
-                deepLearningWhite,
-                seed,
-                updateCpuct,
-                -1)
-                .withNbThread(1)
-                .withNbMaxSearchCalls(50);
-        final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
-        game.setup(whiteStrategy, blackStrategy);
-        game.play();
-        Move move = game.getLastMove();
-        log.info("white move:{}", move);
-        log.info("parent:{}", whiteStrategy.getCurrentRoot());
-        final MCTSNode node = whiteStrategy.getCurrentRoot();
-        log.info(
-                "##########################################################################################################");
-        log.warn("graph: {}", DotGenerator.toString(node, 15, true));
-        List<MCTSNode> nodes = node.search(MCTSNode.State.LOOSE);
-        assertTrue(nodes.size() > 0);
-        // Kg1, the only way to escape for white
-        assertEquals("Kg1", move.toString());
-        log.info("\n{}\n", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 5, true));
-        Helper.checkMCTSTree(whiteStrategy);
-    }
 
     @Test
     void testInitSearch() {
@@ -137,7 +91,7 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(500);
+                .withNbSearchCalls(500);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed);
         game.setup(whiteStrategy, blackStrategy);
         long startTime = System.currentTimeMillis();
@@ -156,7 +110,6 @@ public class MCTSSearchTest {
 
     /**
      * @throws Exception
-     * @formatter:off
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- R-B --- --- ---  8
      * 7  --- --- --- --- --- --- --- ---  7
@@ -169,14 +122,14 @@ public class MCTSSearchTest {
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * <p>
      * PGN format to use with -> https://lichess.org/paste
-     * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {30,50})
+    @ValueSource(ints = {30, 50, 100})
+    @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
         final Game game = Game.builder().board(board).build();
-        NNConstants nnConstant = new NNConstants(1);
+        final NNConstants nnConstant = new NNConstants(1);
         final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 1);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -186,14 +139,14 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(nbSearchCalls);
+                .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
         final Piece rootf8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("e8"));
         int index1 = PolicyUtils.indexFromMove(4, 7, 4, 0, rootf8);
         final Piece kingWhite = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("g1"));
         int index2 = PolicyUtils.indexFromMove(6, 0, 5, 0, kingWhite);
-        nnConstant.addIndexOffset(0.5, index1, index2);
+        nnConstant.addIndexOffset(0.5, "a2-a1", board, index1, index2);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);
@@ -203,6 +156,54 @@ public class MCTSSearchTest {
         Helper.checkMCTSTree(whiteStrategy);
         assertTrue(winLoss.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
         log.warn("game:{}", game.toPGN());
+    }
+
+    /**
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * 8  --- --- --- --- --- --- --- ---  8
+     * 7  --- --- --- --- --- --- --- ---  7
+     * 6  --- --- --- --- --- --- --- ---  6
+     * 5  --- --- --- --- --- --- --- ---  5
+     * 4  --- --- --- --- --- --- --- ---  4
+     * 3  --- --- --- --- --- --- K-B ---  3
+     * 2  P-B --- --- --- --- --- --- ---  2
+     * 1  --- --- --- --- --- --- K-W ---  1
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * </pre>
+     */
+    @ParameterizedTest
+    @ValueSource(ints = {30, 50, 100})
+    @DisplayName("MCTS tree should avoid white chess-mate with promotion")
+    void testAvoidWhiteChessMate1MoveWithPromotion(int nbSearchCalls) throws Exception {
+        int seed = (int) System.currentTimeMillis();
+        final Board board = Board.createBoard("kg1", "pa2,kg3", Alliance.WHITE);
+        final Game game = Game.builder().board(board).build();
+        final NNConstants nnConstant = new NNConstants(1);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 1);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                Alliance.WHITE,
+                deepLearningWhite,
+                seed,
+                updateCpuct,
+                -1)
+                .withNbThread(4)
+                .withNbSearchCalls(nbSearchCalls);
+        final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
+        game.setup(whiteStrategy, blackStrategy);
+        nnConstant.addIndexOffset(0.1, "a2-a1", board);
+        nnConstant.addIndexOffset(0.1, "g1-f1", board);
+        Game.GameStatus status = game.play();
+        Move move = game.getLastMove();
+        assertEquals(IN_PROGRESS, status);
+        List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+        log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        log.info("[{}] graph:\n############################\n{}\n############################", whiteStrategy.getAlliance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 20, nbSearchCalls < 200));
+        Helper.checkMCTSTree(whiteStrategy);
+        assertTrue(winLoss.size() > 0);
+        // Kg1, the only way to escape for white
+        assertEquals("Kf1", move.toString());
+        Helper.checkMCTSTree(whiteStrategy);
     }
 
     @ParameterizedTest
@@ -249,7 +250,7 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(nbThreads)
-                .withNbMaxSearchCalls(nbMaxSearchCalls);
+                .withNbSearchCalls(nbMaxSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
         game.setup(whiteStrategy, blackStrategy);
         game.play();
@@ -293,7 +294,7 @@ public class MCTSSearchTest {
                 updateCpuct,
                 -1)
                 .withNbThread(nbThreads)
-                .withNbMaxSearchCalls(nbMaxSearchCalls);
+                .withNbSearchCalls(nbMaxSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);

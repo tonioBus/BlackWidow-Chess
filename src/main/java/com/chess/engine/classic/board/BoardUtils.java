@@ -85,6 +85,10 @@ public enum  BoardUtils {
         return POSITION_TO_COORDINATE.get(position);
     }
 
+    class Coordinate{
+        int x;
+        int y;
+    }
     public String getPositionAtCoordinate(final int coordinate) {
         return ALGEBRAIC_NOTATION.get(coordinate);
     }

@@ -4,7 +4,6 @@ import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.NonNull;
@@ -28,7 +27,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private final long timeMillisPerStep;
 
     @Getter
-    private long nbMaxSearchCalls = -1;
+    private long nbSearchCalls = -1;
     private Dirichlet dirichlet = nbStep1 -> false;
 
     private final Random rand;
@@ -69,8 +68,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.originalGame = originalGame;
     }
 
-    public MCTSStrategy withNbMaxSearchCalls(long nbMaxSearchCalls) {
-        this.nbMaxSearchCalls = nbMaxSearchCalls;
+    public MCTSStrategy withNbSearchCalls(long nbSearchCalls) {
+        this.nbSearchCalls = nbSearchCalls;
         return this;
     }
 
@@ -131,7 +130,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 nbStep,
                 nbThreads,
                 this.timeMillisPerStep,
-                this.nbMaxSearchCalls,
+                this.nbSearchCalls,
                 statistic,
                 this.deepLearning,
                 directRoot,
@@ -175,6 +174,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return ret;
     }
 
+    public static double expectedReward(final MCTSNode mctsNode) {
+       return mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
+    }
+
     public MCTSNode findBestRewardsWithLogVisits(final MCTSNode opponentNode) {
         if (this.mctsGame.isLogBoard()) {
             log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
@@ -188,7 +191,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 break;
             }
             log.debug("FINDBEST: expectedReward:{} visitsDelta:{} node:{}", mctsNode.getExpectedReward(false), Math.log(1 + Math.sqrt(mctsNode.getVisits())), mctsNode);
-            double rewardsLogVisits = mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
+            double rewardsLogVisits = expectedReward(mctsNode);
             if (rewardsLogVisits > maxExpectedReward) {
                 maxExpectedReward = rewardsLogVisits;
                 bestNodes.clear();

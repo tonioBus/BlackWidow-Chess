@@ -52,7 +52,7 @@ class DotGeneratorTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbMaxSearchCalls(nbSearchCalls);
+                .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, 1000);
         game.setup(whiteStrategy, blackStrategy);
         int nbStep = 0;
