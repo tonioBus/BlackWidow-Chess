@@ -100,9 +100,27 @@ class ServiceNN {
         updateCacheValuesAndPolicies(outputsNN);
     }
 
+    private void optimiseLooseNode(final Map<Long, CacheValues.CacheValue> propagationValues) {
+        for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
+            CacheValues.CacheValue cacheValue = entry.getValue();
+            if (cacheValue.getNode() == null) continue;
+            MCTSNode node = cacheValue.getNode();
+            if (node != null && node.getState() == MCTSNode.State.LOOSE) {
+                MCTSNode node2optimise = node.getParent();
+                log.info("LOOSE NODE:{} childs:{}", node2optimise.getMove(), node2optimise.getNumberAllSubNodes());
+                node2optimise.allChildNodes().forEach(child -> {
+                    double value = child.getValue();
+                    int sign = child.getNumberNodesUntil(node2optimise) % 2 == 1 ? -1 : 1;
+                    log.info("value:{} sign:{} child:{} ", value, sign, child.getMove());
+                });
+            }
+        }
+    }
+
     private void propagateValues(boolean submit2NN, int length) {
         int nbPropagate = 0;
         List<Long> deleteCaches = new ArrayList<>();
+        optimiseLooseNode(propagationValues);
         for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
             long key = entry.getKey();
             CacheValues.CacheValue cacheValue = entry.getValue();
@@ -119,13 +137,14 @@ class ServiceNN {
             List<MCTSNode> nodes2propagate = createPropragationList(node.getParent(), key);
             if (nodes2propagate != null) {
                 deleteCaches.add(key);
-                double value = node.getValue();
+                double value2propagate = node.getValue();
+                if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
                 node.getCacheValue().setPropagated(true);
-                log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value, node, node.getCacheValue().getNbPropagate());
+                log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getCacheValue().getNbPropagate());
                 for (MCTSNode node2propagate : nodes2propagate) {
-                    value = -value;
+                    value2propagate = -value2propagate;
                     for (int i = 0; i < node.getCacheValue().getNbPropagate(); i++) {
-                        node2propagate.propagate(value);
+                        node2propagate.propagate(value2propagate);
                     }
                     nbPropagate += node.getCacheValue().getNbPropagate();
                 }
@@ -197,7 +216,6 @@ class ServiceNN {
                     throw new Error("OldCacheValue != current cacheValue");
                 }
                 if (log.isDebugEnabled()) log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
-                // throw new Error("CacheValue [" + key + "/"+move+"] already stored on tmpCacheValues");
             } else {
                 propagationValues.put(key, cacheValue);
                 if (log.isDebugEnabled())
@@ -218,8 +236,6 @@ class ServiceNN {
         while (node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
             CacheValues.CacheValue cacheValue = propagationValues.get(node.getKey());
             if (cacheValue == null || cacheValue.isInitialised()) return true;
-            // if (cacheValues.containsKey(node.getKey())) return true;
-            // if (!node.getCacheValue().isInitialised()) return true;
             node = node.getParent();
         }
         return false;

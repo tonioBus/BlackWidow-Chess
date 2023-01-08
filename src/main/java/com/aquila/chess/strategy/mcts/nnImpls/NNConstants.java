@@ -109,7 +109,8 @@ public class NNConstants implements INN {
         return null;
     }
 
-    public void addIndexOffset(double offset, String s, Board board, int... indexes) {
+    @Deprecated
+    public void addIndexOffset(double offset, String s, int... indexes) {
         for (int index : indexes) {
             this.offsets.put(index, offset);
         }

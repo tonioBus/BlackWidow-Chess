@@ -258,7 +258,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
                         node.setState(MCTSNode.State.LOOSE);
-                        node.resetExpectedReward(-LOOSE_VALUE);
+                        node.resetExpectedReward(LOOSE_VALUE);
                         node.getCacheValue().setPropagated(false);
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);

@@ -23,6 +23,7 @@ public class Utils {
 
     static private final RandomStream stream = new MRG32k3a();
 
+    @Deprecated
     public static double getRandom(double min, double max, Random rand) {
         double zeroOne = rand.nextDouble();
         return (max - min) * zeroOne + min;
@@ -34,6 +35,7 @@ public class Utils {
      * @param arr
      * @param rand
      */
+    @Deprecated
     public static void randomize(Object[] arr, Random rand) {
         int n = arr.length;
 
@@ -49,6 +51,7 @@ public class Utils {
         }
     }
 
+    @Deprecated
     public static double[] normalise(double[] policies) {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;

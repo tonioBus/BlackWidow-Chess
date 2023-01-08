@@ -109,19 +109,18 @@ public class MCTSSearchTest {
     }
 
     /**
-     * @throws Exception
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * 8  --- --- --- --- R-B --- --- ---  8
-     * 7  --- --- --- --- --- --- --- ---  7
-     * 6  --- --- --- --- --- --- --- ---  6
-     * 5  --- --- --- --- --- --- --- ---  5
-     * 4  --- --- --- --- --- --- --- ---  4
-     * 3  --- --- --- --- --- --- K-B ---  3
-     * 2  --- --- --- --- --- --- --- ---  2
-     * 1  --- --- --- --- --- --- K-W ---  1
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * <p>
-     * PGN format to use with -> https://lichess.org/paste
+     * @throws Exception [a] [b] [c] [d] [e] [f] [g] [h]
+     *                   8  --- --- --- --- R-B --- --- ---  8
+     *                   7  --- --- --- --- --- --- --- ---  7
+     *                   6  --- --- --- --- --- --- --- ---  6
+     *                   5  --- --- --- --- --- --- --- ---  5
+     *                   4  --- --- --- --- --- --- --- ---  4
+     *                   3  --- --- --- --- --- --- K-B ---  3
+     *                   2  --- --- --- --- --- --- --- ---  2
+     *                   1  --- --- --- --- --- --- K-W ---  1
+     *                   [a] [b] [c] [d] [e] [f] [g] [h]
+     *                   <p>
+     *                   PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
     @ValueSource(ints = {30, 50, 100})
@@ -142,11 +141,8 @@ public class MCTSSearchTest {
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
-        final Piece rootf8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("e8"));
-        int index1 = PolicyUtils.indexFromMove(4, 7, 4, 0, rootf8);
-        final Piece kingWhite = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("g1"));
-        int index2 = PolicyUtils.indexFromMove(6, 0, 5, 0, kingWhite);
-        nnConstant.addIndexOffset(0.5, "a2-a1", board, index1, index2);
+        nnConstant.addIndexOffset(0.1, "e8-e1", board);
+        nnConstant.addIndexOffset(0.1, "g1-h1", board);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);
@@ -159,7 +155,7 @@ public class MCTSSearchTest {
     }
 
     /**
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- --- --- ---  8
      * 7  --- --- --- --- --- --- --- ---  7
      * 6  --- --- --- --- --- --- --- ---  6
@@ -168,7 +164,7 @@ public class MCTSSearchTest {
      * 3  --- --- --- --- --- --- K-B ---  3
      * 2  P-B --- --- --- --- --- --- ---  2
      * 1  --- --- --- --- --- --- K-W ---  1
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
      */
     @ParameterizedTest

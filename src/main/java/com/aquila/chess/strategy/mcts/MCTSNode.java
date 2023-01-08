@@ -220,6 +220,24 @@ public class MCTSNode implements Serializable {
         this.ret++;
     }
 
+    public List<MCTSNode> allChildNodes() {
+        List<MCTSNode> allDescendances = new ArrayList<>();
+        allChildNodes(this, allDescendances);
+        return allDescendances;
+    }
+
+    private void allChildNodes(final MCTSNode node, final List<MCTSNode> retNodes) {
+        node.getChildNodes().values().forEach(child -> {
+            retNodes.add(child);
+            allChildNodes(child, retNodes);
+        });
+    }
+
+    public int getNumberNodesUntil(final MCTSNode node2optimise) {
+        if (this == node2optimise) return 0;
+        return 1 + this.parent.getNumberNodesUntil(node2optimise);
+    }
+
     static public enum PropragateSrc {
         SERVICE_NN("SE"), MCTS("MC"), SAVE_BATCH("SA"), CALL("CA"), UN_PROPAGATE("UP");
 
@@ -252,7 +270,7 @@ public class MCTSNode implements Serializable {
         else return (sum - (withVirtualLoss ? virtualLoss : 0)) / this.getVisits();
     }
 
-    public List<MCTSNode> search(final State ... states) {
+    public List<MCTSNode> search(final State... states) {
         List<MCTSNode> ret = new ArrayList<>();
         if (Arrays.stream(states).anyMatch(state1 -> state1 == this.state)) ret.add(this);
         this.getChilds().forEach(child -> {
@@ -261,7 +279,7 @@ public class MCTSNode implements Serializable {
         return ret;
     }
 
-    public List<MCTSNode> searchNot(final State ... states) {
+    public List<MCTSNode> searchNot(final State... states) {
         List<MCTSNode> ret = new ArrayList<>();
         if (Arrays.stream(states).allMatch(state1 -> state1 != this.state)) ret.add(this);
         this.getChilds().forEach(child -> {
