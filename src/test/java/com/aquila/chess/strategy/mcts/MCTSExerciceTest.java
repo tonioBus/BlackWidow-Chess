@@ -243,10 +243,8 @@ public class MCTSExerciceTest {
                 .withNbThread(4)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5, index1, index2);
+        Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
+        nnBlack.addIndexOffset(0.1, "a6-a7;a7-a8", piece);
         boolean good = false;
         Move move = null;
         for (int i = 0; i < 3; i++) {
@@ -331,9 +329,7 @@ public class MCTSExerciceTest {
     }
 
     /**
-     * @throws ChessPositionException
-     * @throws EndOfGameException
-     * @formatter:off <pre>
+     * <pre>
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- K-B --- ---  8
      * 7  P-W --- --- --- --- --- --- ---  7
@@ -345,7 +341,6 @@ public class MCTSExerciceTest {
      * 1  --- --- --- --- --- --- --- ---  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
-     * @formatter:on
      */
     @Test
     void testAvoidEndWithWhitePromotion() throws Exception {
@@ -487,6 +482,8 @@ public class MCTSExerciceTest {
                 .withNbThread(4)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
+        nnBlack.addIndexOffset(0.1, "a8-a3", board);
+        nnBlack.addIndexOffset(0.1, "g2-g3", board);
         Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 4; i++) {
@@ -729,6 +726,7 @@ public class MCTSExerciceTest {
                 .withNbThread(1)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
+        nnWhite.addIndexOffset(0.1, "e8-e1", board);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);

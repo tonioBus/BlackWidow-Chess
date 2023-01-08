@@ -38,10 +38,12 @@ public class PolicyUtils {
      * @param end the end in algebric notation
      * @return the index of the given move
      */
-    public static int indexFromMove(final Board board, String start, String end) {
+    public static int indexFromMove(final Piece piece, String start, String end) {
         Coordinate2D srcCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(start));
         Coordinate2D destCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(end));
-        Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition(start));
+        if(piece == null) {
+            throw new RuntimeException(String.format("Piece not found in %s", start));
+        }
         return indexFromMove(
                 srcCoordinate2D.getX(),
                 srcCoordinate2D.getY(),
