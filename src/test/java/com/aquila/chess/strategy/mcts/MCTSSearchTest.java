@@ -67,9 +67,7 @@ public class MCTSSearchTest {
         final MCTSNode node = whiteStrategy.getCurrentRoot();
         log.info("parent:{}", node);
         log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
-        log.info(
-                "##########################################################################################################");
-        log.info("graph: {}", DotGenerator.toString(node, 15, true));
+        if(log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
         double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
@@ -148,7 +146,7 @@ public class MCTSSearchTest {
         assertEquals(IN_PROGRESS, status);
         List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
         log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-        log.info("[{}] graph:\n############################\n{}\n############################", whiteStrategy.getAlliance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 20, nbSearchCalls < 200));
+        if(log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 50));
         Helper.checkMCTSTree(whiteStrategy);
         assertTrue(winLoss.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
         log.warn("game:{}", game.toPGN());
@@ -194,7 +192,7 @@ public class MCTSSearchTest {
         assertEquals(IN_PROGRESS, status);
         List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
         log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-        log.info("[{}] graph:\n############################\n{}\n############################", whiteStrategy.getAlliance(), DotGenerator.toString(whiteStrategy.getCurrentRoot(), 20, nbSearchCalls < 200));
+        if(log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 50));
         Helper.checkMCTSTree(whiteStrategy);
         assertTrue(winLoss.size() > 0);
         // Kg1, the only way to escape for white
@@ -250,7 +248,7 @@ public class MCTSSearchTest {
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1);
         game.setup(whiteStrategy, blackStrategy);
         game.play();
-        log.warn("\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));
+        if(log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbMaxSearchCalls < 100, 50));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         log.info("statistic:{}", whiteStrategy.getStatistic());
         Helper.checkMCTSTree(whiteStrategy);
@@ -298,7 +296,8 @@ public class MCTSSearchTest {
         nnTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getCurrentRoot());
-        log.warn("visits:{}\n{}", blackStrategy.getCurrentRoot().getVisits(), DotGenerator.toString(blackStrategy.getCurrentRoot(), 30, nbMaxSearchCalls < 100));
+        log.warn("visits:{}", blackStrategy.getCurrentRoot().getVisits());
+        if(log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(nbMaxSearchCalls < 100, 50));
         log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
             MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getCurrentRoot());
