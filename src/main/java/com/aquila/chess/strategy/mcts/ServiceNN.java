@@ -111,7 +111,7 @@ class ServiceNN {
                 node2optimise.allChildNodes().forEach(child -> {
                     double value = child.getValue();
                     int sign = child.getNumberNodesUntil(node2optimise) % 2 == 1 ? -1 : 1;
-                    log.info("value:{} sign:{} child:{} ", value, sign, child.getMove());
+                    // log.info("value:{} sign:{} child:{} ", value, sign, child.getMove());
                 });
             }
         }

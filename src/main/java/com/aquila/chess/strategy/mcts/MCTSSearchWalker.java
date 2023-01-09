@@ -99,6 +99,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
         MCTSNode selectedNode;
         Move selectedMove;
+        long key = 0;
         synchronized (opponentNode) {
             if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
             selectedMove = selection(strategy2use, opponentNode, moves, isRootNode, depth);
@@ -106,7 +107,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             if (log.isDebugEnabled()) log.debug("END synchronized 1.0 ({})", opponentNode);
             // expansion
             if (selectedNode == null) {
-                long key = mctsGame.hashCode(selectedMove.getMovedPiece().getPieceAllegiance(), selectedMove);
+                key = mctsGame.hashCode(selectedMove.getMovedPiece().getPieceAllegiance(), selectedMove);
                 CacheValues.CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
                 if (log.isDebugEnabled())
                     log.debug("EXPANSION KEY[{}] MOVE:{} CACHEVALUE:{}", key, selectedMove, cacheValue);
@@ -121,11 +122,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 selectedNode.syncSum();
                 if (log.isDebugEnabled()) log.debug("END synchronized 1.1 ({})", opponentNode);
                 // opponentNode.decVirtualLoss();
-                if (!selectedNode.isSync()) {
-                    if (log.isDebugEnabled()) log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
-                    if (log.isDebugEnabled()) log.debug("\tparent:{}", opponentNode);
-                    this.deepLearning.getServiceNN().addNodeToPropagate(key, selectedNode);
-                }
                 return null;
             }
             // opponentNode.decVirtualLoss();
@@ -141,6 +137,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
             selectedNode.decVirtualLoss();
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
             // returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
+        }
+        if (key != 0 && !selectedNode.isSync()) {
+            if (log.isDebugEnabled()) log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
+            if (log.isDebugEnabled()) log.debug("\tparent:{}", opponentNode);
+            this.deepLearning.getServiceNN().addNodeToPropagate(key, selectedNode);
         }
         // recursive calls
         // List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
