@@ -96,7 +96,7 @@ class ServiceNN {
         createInputs(nbIn);
         System.out.print("#");
         List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
-        System.out.printf("%d&", length);
+        System.out.printf("%d&\n", length);
         updateCacheValuesAndPolicies(outputsNN);
     }
 
