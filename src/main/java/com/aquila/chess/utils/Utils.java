@@ -5,10 +5,12 @@ package com.aquila.chess.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
+import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 import umontreal.ssj.randvarmulti.DirichletGen;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
+import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -123,6 +125,18 @@ public class Utils {
     public static String toSha1(String text) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         return UUID.nameUUIDFromBytes(md.digest(text.getBytes())).toString();
+    }
+
+    static public int maxGame(String path) {
+        File dataDirectory = new File(path); // "train/"
+        int max = 0;
+        if (dataDirectory.canRead()) {
+            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
+                int currentNumber = Integer.valueOf(file.getName()).intValue();
+                if (currentNumber > max) max = currentNumber;
+            }
+        }
+        return max;
     }
 
 }

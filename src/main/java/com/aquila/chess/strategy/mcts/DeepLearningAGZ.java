@@ -1,5 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.OneStepRecord;
+import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
@@ -13,7 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -123,7 +127,7 @@ public class DeepLearningAGZ {
             if (log.isDebugEnabled())
                 log.debug("[{}] CREATE CACHE VALUE:{} move:{} label:{}", color2play, key, possibleMove, label);
             String lastMoves = gameCopy.getMoves().stream().map(
-                    move -> move == null ? "-" : move.toString()).
+                            move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
             cacheValues.create(key, labelCacheValue, isDirichlet);
@@ -219,26 +223,66 @@ public class DeepLearningAGZ {
         // FIXME trainGame.save(numGame, resultGame);
     }
 
-    /**
-     * FIXME
-     public void train(final TrainGame trainGame) throws IOException {
-     if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
-     final int nbStep = trainGame.getOneStepRecordList().size();
-     log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
-     int nbChunk = nbStep / FIT_CHUNK;
-     int restChunk = nbStep % FIT_CHUNK;
-     for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
-     trainChunk(indexChunk, FIT_CHUNK, trainGame);
-     }
-     if (restChunk > 0) {
-     trainChunk(nbChunk, restChunk, trainGame);
-     }
-     double score = nn.getScore();
-     log.info("NETWORK score: {}", score);
-     if ("NaN".equals(score + "")) throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
-     }
-     */
+    public void train(final TrainGame trainGame) throws IOException {
+        if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
+        final int nbStep = trainGame.getOneStepRecordList().size();
+        log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
+        int nbChunk = nbStep / FIT_CHUNK;
+        int restChunk = nbStep % FIT_CHUNK;
+        for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
+            trainChunk(indexChunk, FIT_CHUNK, trainGame);
+        }
+        if (restChunk > 0) {
+            trainChunk(nbChunk, restChunk, trainGame);
+        }
+        double score = nn.getScore();
+        log.info("NETWORK score: {}", score);
+        if ("NaN".equals(score + "")) throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
+    }
 
+    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
+        double[][][][] inputsForNN = new double[chunkSize][DL4JAlphaGoZeroBuilder.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        double[][] policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
+        double[][] valuesForNN = new double[chunkSize][1];
+        final AtomicInteger atomicInteger = new AtomicInteger();
+        Double value = trainGame.getValue();
+        List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
+        for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
+            atomicInteger.set(chunkNumber);
+            int gameRound = indexChunk * chunkSize + chunkNumber;
+            OneStepRecord oneStepRecord = inputsList.get(gameRound);
+            inputsForNN[chunkNumber] = oneStepRecord.getInputs();
+            Map<Integer, Double> policies = oneStepRecord.getPolicies();
+            // actual reward for current state (inputs), so color complement color2play
+            double actualRewards = getActualRewards(value, oneStepRecord.getColor2play());
+            // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
+            double trainPolicy = -actualRewards;
+            valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
+            // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
+            if (policies != null) {
+                // we train the policy only when we will move from the loosing player
+                if (trainPolicy > 0) {
+                    policies.forEach((indexFromMove, previousPolicies) -> {
+                        policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
+                    });
+                } /*else if (trainPolicy < 0) {
+                    // complement the distribution of policies
+                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+                    policies.forEach((indexFromMove, probability) -> {
+                        double policy = 2 * average - probability;
+                        policiesForNN[atomicInteger.get()][indexFromMove] = policy;
+                    });
+                } else if (trainPolicy == 0) {
+                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+                    policies.forEach((indexFromMove, childrenVisits) -> {
+                        policiesForNN[atomicInteger.get()][indexFromMove] = average;
+                    });
+                }*/
+            }
+        }
+        log.info("NETWORK FIT[{}]: {}", chunkSize, value);
+        nn.fit(inputsForNN, policiesForNN, valuesForNN);
+    }
 
     /**
      * @param value
@@ -254,48 +298,6 @@ public class DeepLearningAGZ {
         }
         return sign * value;
     }
-
-    /**
-     *
-     * @param indexChunk
-     * @param chunkSize
-     * @param trainGame
-     */
-    /**
-     * FIXME
-     * private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
-     * double[][][][] inputsForNN = new double[chunkSize][DL4JAlphaGoZeroBuilder.FEATURES_PLANES][Board.NB_COL][Board.NB_COL];
-     * double[][] policiesForNN = new double[chunkSize][Board.NB_COL * Board.NB_COL * 73];
-     * double[][] valuesForNN = new double[chunkSize][1];
-     * final AtomicInteger atomicInteger = new AtomicInteger();
-     * Double value = trainGame.getValue();
-     * List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
-     * for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
-     * atomicInteger.set(chunkNumber);
-     * int gameRound = indexChunk * chunkSize + chunkNumber;
-     * OneStepRecord oneStepRecord = inputsList.get(gameRound);
-     * inputsForNN[chunkNumber] = oneStepRecord.getInputs();
-     * Map<Integer, Double> policies = oneStepRecord.getPolicies();
-     * // actual reward for current state (inputs), so color complement color2play
-     * double actualRewards = getActualRewards(value, oneStepRecord.getColor2play());
-     * // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
-     * double trainPolicy = -actualRewards;
-     * valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
-     * // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
-     * if (policies != null) {
-     * // we train the policy only when we will move from the loosing player
-     * if (trainPolicy > 0) {
-     * policies.forEach((indexFromMove, previousPolicies) -> {
-     * policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
-     * });
-     * }
-     * }
-     * }
-     * log.info("NETWORK FIT[{}]: {}", chunkSize, value);
-     * nn.fit(inputsForNN, policiesForNN, valuesForNN);
-     * }
-     */
-
 
     public String getFilename() {
         return nn.getFilename();

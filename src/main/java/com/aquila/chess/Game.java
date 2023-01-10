@@ -1,6 +1,7 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.Strategy;
+import com.aquila.chess.strategy.mcts.ResultGame;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -10,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +47,9 @@ public class Game {
     protected Strategy strategyBlack;
     @Getter
     protected Move moveOpponent = null;
+
+    @Getter
+    private final TrainGame trainGame = new TrainGame();
 
     @Builder
     public Game(Board board, Strategy strategyWhite, Strategy strategyBlack) {
@@ -291,4 +296,15 @@ public class Game {
         return sb.toString();
     }
 
+    public void saveBatch(ResultGame resultGame, int numGames) throws IOException {
+        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
+        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.oneStepRecordList.size());
+        trainGame.save(numGames, resultGame);
+        log.info("SAVE DONE");
+        clearTrainGame();
+    }
+
+    public void clearTrainGame() {
+        this.trainGame.clear();
+    }
 }

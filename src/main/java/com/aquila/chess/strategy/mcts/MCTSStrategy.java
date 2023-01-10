@@ -273,4 +273,25 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return getName();
     }
 
+    public ResultGame getResultGame(final Game.GameStatus gameStatus) {
+        ResultGame resultGame = null;
+
+        switch (gameStatus) {
+            case PAT:
+            case DRAW_3:
+            case DRAW_50:
+            case DRAW_300:
+            case DRAW_NOT_ENOUGH_PIECES:
+                resultGame = new ResultGame(1, 1);
+                break;
+            case WHITE_CHESSMATE:
+                resultGame = new ResultGame(0, 1);
+                break;
+            case BLACK_CHESSMATE:
+                resultGame = new ResultGame(1, 0);
+                break;
+        }
+        return resultGame;
+
+    }
 }
