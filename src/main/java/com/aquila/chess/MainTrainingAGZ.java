@@ -32,16 +32,16 @@ public class MainTrainingAGZ {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 500000) return 1e-7;
-        if (nbGames > 300000) return 1e-6;
-        if (nbGames > 100000) return 1e-5;
-        return 1e-6;
+        if (nbGames > 500000) return 1e-6;
+        if (nbGames > 300000) return 1e-5;
+        if (nbGames > 100000) return 1e-4;
+        return 1e-3;
     };
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
-        return 2.5;
-        // if (nbStep <= 30) return 2.5;
-        // else return 0.25;
+        // return 2.5;
+        if (nbStep <= 30) return 2.5;
+        else return 0.0025;
         // return 2.0 * Math.exp(-0.01 * nbStep);
     };
 
@@ -71,8 +71,8 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
-                    .withDirichlet(dirichlet)
-                    .withNbThread(1);
+                    .withDirichlet(dirichlet);
+                    // .withNbThread(1);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -81,8 +81,8 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
-                    .withDirichlet(dirichlet)
-                    .withNbThread(1);
+                    .withDirichlet(dirichlet);
+                    // .withNbThread(1);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             do {
