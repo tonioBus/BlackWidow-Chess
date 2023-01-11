@@ -303,14 +303,20 @@ public class MCTSNode implements Serializable {
 
     public void addChild(final MCTSNode node) {
         if (node.getParent() != this) {
-            log.warn("node.parent: {}", DotGenerator.toString(node.getParent(), 10, true));
-            log.warn("this: {}", DotGenerator.toString(this, 10, true));
+            MCTSNode rootNode = getFirstRoot(node);
+            log.warn("root: {}", DotGenerator.toString(rootNode, 20, true));
+            log.warn("this.parent: {}", DotGenerator.toString(this.getParent(), 20, true));
             String msg = String.format("NODE-PARENT:%s <>\nCURRENT-PARENT: %s", node.getParent(), this);
             log.error(msg);
             throw new RuntimeException(msg);
         }
         this.childNodes.put(node.move.hashCode(), node);
         node.parent = this;
+    }
+
+    public static MCTSNode getFirstRoot(final MCTSNode node) {
+        if(node.getState() == State.ROOT) return node;
+        return getFirstRoot(node.getParent());
     }
 
     @Override
