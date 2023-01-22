@@ -95,8 +95,8 @@ class ServiceNN {
         final double[][][][] nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");
-        List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
-        System.out.printf("%d&\n", length);
+        final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
+        System.out.printf("%d&|", length);
         updateCacheValuesAndPolicies(outputsNN);
     }
 
@@ -170,7 +170,7 @@ class ServiceNN {
         if (child == null) return null;
         List<MCTSNode> nodes2propagate = new ArrayList<>();
         MCTSNode node = child;
-        while (node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
+        while (node != null && node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
             if (!node.isSync()) {
                 if (log.isDebugEnabled()) log.debug("POSTPONED PROPAGATE(node not sync): key:{} node:{}", key, node);
                 return null;
@@ -182,7 +182,7 @@ class ServiceNN {
                 throw new RuntimeException("Node null !! Child:" + child);
             }
         }
-        nodes2propagate.add(node);
+        if (node != null) nodes2propagate.add(node);
         return nodes2propagate.size() == 0 ? null : nodes2propagate;
     }
 

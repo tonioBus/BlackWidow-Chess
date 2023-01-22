@@ -17,11 +17,13 @@ public class Helper {
     static public CountNodes countNbNodes(final MCTSNode node) {
         int ret = 1;
         if (node.getState() == MCTSNode.State.WIN) return new CountNodes(ret, true);
-        for (final MCTSNode child : node.getChilds()) {
-            CountNodes countNodes = countNbNodes(child);
-            if (countNodes.isWin()) return countNodes;
-            else {
-                ret += countNodes.getCount();
+        for (final MCTSNode child : node.getChildsAsCollection()) {
+            if (child != null) {
+                CountNodes countNodes = countNbNodes(child);
+                if (countNodes.isWin()) return countNodes;
+                else {
+                    ret += countNodes.getCount();
+                }
             }
         }
         return new CountNodes(ret, false);
@@ -52,20 +54,20 @@ public class Helper {
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = Arrays.stream(policies).sum();
-        if (node.getChilds().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
+        if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("sum of policies should be ~= 1. (sum:%f)", sumPolicies));
         }
         if (!node.getCacheValue().isInitialised()) {
             ret.add(String.format("node %s should be initialized", node));
         }
-        for (MCTSNode child : node.getChilds()) {
+        for (MCTSNode child : node.getChildsAsCollection()) {
+            if (child == null) continue;
             checkMCTSTreePoliciesAndValues(child, ret);
         }
-
     }
 
     private static boolean addNodes2NotTest(final MCTSNode node, final Map<Long, MCTSNode> notTestedNodes) {
-        if (node.getChilds().size() == 0) {
+        if (node.getChildsAsCollection().size() == 0) {
             switch (node.getState()) {
                 case WIN:
                 case PAT:
@@ -80,7 +82,8 @@ public class Helper {
             return false;
         }
         boolean ret = false;
-        for (MCTSNode child : node.getChilds()) {
+        for (MCTSNode child : node.getChildsAsCollection()) {
+            if (child == null) continue;
             if (addNodes2NotTest(child, notTestedNodes)) {
                 notTestedNodes.put(child.getKey(), child);
                 ret = true;
@@ -99,8 +102,10 @@ public class Helper {
         } else if (nbAllChilds != nbVisits) {
             ret.add(String.format("Node with wrong number of visits (%d) vs number all childs (%d): %s", nbVisits, nbAllChilds, node));
         }
-        for (MCTSNode child : node.getChilds()) {
-            checkMCTSTreeVisits(child, ret, notTestedNodes);
+        for (MCTSNode child : node.getChildsAsCollection()) {
+            if (child != null) {
+                checkMCTSTreeVisits(child, ret, notTestedNodes);
+            }
         }
     }
 

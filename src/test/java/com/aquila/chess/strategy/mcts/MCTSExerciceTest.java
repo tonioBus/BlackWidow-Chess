@@ -676,9 +676,8 @@ public class MCTSExerciceTest {
                 .withNbThread(4)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        Game.GameStatus status = null;
-        status = game.play();
-        List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+        final Game.GameStatus status = game.play();
+        final List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
         if(log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
         log.info("[BLACK] win EndNodes: {}", win.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         assertTrue(win.size() > 0, "White should have detect loss nodes");

@@ -80,7 +80,7 @@ public class DotGenerator {
                 node.getKey(),
                 node.getCacheValue().isInitialised(),
                 node.getCacheValue().isPropagated(),
-                node.getChilds().size(),
+                node.getChildMoves().size(),
                 color == null ? "no color" : color.toString(), //
                 szMove, //
                 String.format("ret:%d Prop:%d", node.getRet(), node.getPropagate()),
@@ -88,7 +88,7 @@ public class DotGenerator {
                 node.getExpectedReward(false), //
                 node.getVirtualLoss(), //
                 node.getVisits(),
-                node.getChilds().size(),
+                node.getNonNullChildsAsCollection().size(),
                 node.getBuildOrder(),
                 node.getCreator().getName());
         Shape shape = Shape.record;
@@ -117,22 +117,24 @@ public class DotGenerator {
                 core = String.format("%s | %s", core, node.getState());
                 break;
         }
-        if (node.getChilds().size() == 0) {
+        if (node.getNonNullChildsAsCollection().size() == 0) {
             g.addNodes(new Node("" + node.hashCode()).setShape(shape).setLabel(core).setStyle(Style.Node.rounded));
             return node.hashCode();
         }
         String nodeLabel = String.format("{ %s }", core);
         g.addNodes(new Node("" + node.hashCode()).setShape(shape).setLabel(nodeLabel).setStyle(Style.Node.rounded));
-        node.getChilds().forEach(child -> {
-            int visits = child.getVisits();
-            double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
-            if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
-                int hashCode = generate(g, child, depth + 1, depthMax);
-                double exploitation = child.getExpectedReward(false);
-                double reward = MCTSStrategy.expectedReward(child);
-                // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
-                g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
-                        .setLabel(String.format("R:%f V:%d P:%f", reward, visits, policy)));
+        node.getChildsAsCollection().forEach(child -> {
+            if (child != null) {
+                int visits = child.getVisits();
+                double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
+                if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
+                    int hashCode = generate(g, child, depth + 1, depthMax);
+                    double exploitation = child.getExpectedReward(false);
+                    double reward = MCTSStrategy.expectedReward(child);
+                    // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
+                    g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
+                            .setLabel(String.format("R:%f V:%d P:%f", reward, visits, policy)));
+                }
             }
         });
         return node.hashCode();

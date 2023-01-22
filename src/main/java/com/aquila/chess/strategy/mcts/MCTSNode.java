@@ -11,12 +11,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class MCTSNode implements Serializable {
@@ -42,15 +39,9 @@ public class MCTSNode implements Serializable {
     protected transient final Move move;
 
     @Getter
-    protected transient final List<Move> childMoves;
-
-    @Getter
     private double sum;
     @Getter
     private transient Thread creator;
-
-    @Getter
-    private final transient Map<Integer, MCTSNode> childNodes = new ConcurrentHashMap<>();
 
     @Getter
     private int visits = 0;
@@ -85,6 +76,9 @@ public class MCTSNode implements Serializable {
     @Getter
     private int propagate;
 
+    @Getter
+    private final transient Map<Move, MCTSNode> childNodes = new HashMap<>();
+
     public static void resetBuildOrder() {
         nbBuild = 0;
     }
@@ -97,15 +91,50 @@ public class MCTSNode implements Serializable {
         this.virtualLoss--;
     }
 
-    private MCTSNode(final MCTSNode parent, final Move move, final List<Move> childMoves, boolean dirichlet, final long key, final CacheValues.CacheValue cacheValue) {
+    /**
+     * Only call for root node
+     *
+     * @param alliance
+     * @param childMoves
+     * @param dirichlet
+     * @param key
+     * @param cacheValue
+     */
+    public MCTSNode(final Alliance alliance, List<Move> childMoves, long key, CacheValues.CacheValue cacheValue) {
+        nbBuild = 0;
         this.buildOrder = nbBuild++;
-        this.parent = parent;
-        this.piece = move == null ? null : move.getMovedPiece();
-        this.childMoves = childMoves;
-        this.dirichlet = dirichlet;
+        childMoves.forEach(move1 -> childNodes.put(move1, null));
         this.creator = Thread.currentThread();
         if (cacheValue.getNode() != null) {
-            // log.error("CONNECTION PROBLEM: graph:{}", DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
+            throw new RuntimeException(String.format("CONNECTION PROBLEM [ROOT] ! cacheValue:%s already connected to node:%s",
+                    cacheValue, cacheValue.getNode()));
+        }
+        this.move = null;
+        this.key = key;
+        this.dirichlet = true;
+        this.cacheValue = cacheValue;
+        this.cacheValue.setNode(this);
+        this.colorState = alliance;
+        this.syncSum();
+        if (log.isDebugEnabled())
+            log.debug("CREATE ROOT NODE[key:{}] -> cacheValue:{}", key, this.getCacheValue());
+    }
+
+
+    /**
+     * @param move
+     * @param childMoves
+     * @param key
+     * @param cacheValue
+     */
+    private MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValues.CacheValue cacheValue) {
+        this.buildOrder = nbBuild++;
+        this.piece = move == null ? null : move.getMovedPiece();
+        childMoves.forEach(move1 -> childNodes.put(move1, null));
+        // this.childNodes.keySet().addAll(childMoves);
+        this.dirichlet = false;
+        this.creator = Thread.currentThread();
+        if (cacheValue.getNode() != null) {
             throw new RuntimeException(String.format("CONNECTION PROBLEM [%s] ! cacheValue:%s already connected to node:%s",
                     move, cacheValue, cacheValue.getNode()));
         }
@@ -114,7 +143,7 @@ public class MCTSNode implements Serializable {
         this.cacheValue.setNode(this);
         if (move != null) {
             this.colorState = move.getMovedPiece().getPieceAllegiance();
-            this.move = move; //FIXME ? new Move(move);
+            this.move = move;
             this.piece = move.getMovedPiece();
         } else {
             this.move = null;
@@ -124,32 +153,60 @@ public class MCTSNode implements Serializable {
             log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
     }
 
-    public static MCTSNode createNode(final MCTSNode parent, final Move move, final Board board, boolean dirichlet, final long key, final CacheValues.CacheValue cacheValue) {
+    /**
+     * Create a node. This method is not responsible to attach this node to his parent
+     *
+     * @param parent     the parent node, use for some checking
+     * @param move       the move this node represent
+     * @param rootBoard  the board
+     * @param dirichlet
+     * @param key
+     * @param cacheValue
+     * @return
+     */
+    public static MCTSNode createNode(final MCTSNode parent, final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
-            MCTSNode ret = cacheValue.getNode();
+            final MCTSNode ret = cacheValue.getNode();
             if (ret != null) {
                 if (log.isDebugEnabled())
                     log.debug("RETURN MADE NODE[key:{}] -> move: {} cacheValue.Move:{}", key, move, ret.getMove());
                 if (!ret.getMove().equals(move)) {
-                    move.toString();
-                    ret.getMove().toString();
                     log.error("[CTX ERROR] createNode(\nparent=[{}],\nmove=[{}],\nkey={},\ncacheValue={})", parent, move, key, cacheValue);
-                    log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move.toString(), ret.getMove().toString());
+                    log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move, ret.getMove());
                     log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
                     throw new RuntimeException(String.format("[key:%s] CONNECTION PROBLEM [%s]\n! cacheValue:%s already connected to node:%s",
                             key, move, cacheValue, cacheValue.getNode()));
                 }
+                if (ret == parent) {
+                    throw new RuntimeException(String.format("The children:%s is the same as the parent:%s", ret, parent));
+                }
                 return ret;
             }
-            Board selectBoard = move == null ? board : board.currentPlayer().executeMove(move);
-            List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-            return new MCTSNode(parent, move, childMoves, dirichlet, key, cacheValue);
+            final Board selectBoard = move == null ? rootBoard : move.execute();
+            final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+            return new MCTSNode(move, childMoves, key, cacheValue);
+        }
+    }
+
+    public static MCTSNode createRootNode(final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
+        synchronized (cacheValue) {
+            MCTSNode rootNode;
+            final MCTSNode ret = cacheValue.getNode();
+            if (ret != null) {
+                rootNode = ret;
+            } else {
+                final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), childMoves, key, cacheValue);
+            }
+            rootNode.setAsRoot();
+            rootNode.parent = null;
+            return rootNode;
         }
     }
 
     /**
      * synchronized the node:
-     * If {@link #cacheValue} is initialised
+     * If {@link #cadcheValue} is initialised
      * <ul>
      *     <li>set {@link #visits} to 0</li>
      *     <li>set {@link #sum} to {@link #getCacheValue()}.value</li>
@@ -180,7 +237,7 @@ public class MCTSNode implements Serializable {
             log.debug("PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
     }
 
-    public void unPropagate(double value, PropragateSrc propragateSrc, int buildOrder) {
+    public void unPropagate(double value, final PropragateSrc propragateSrc, int buildOrder) {
         this.values.add(new PropragateValue(-value, propragateSrc, buildOrder));
         this.sum -= value;
         this.propagate--;
@@ -204,15 +261,22 @@ public class MCTSNode implements Serializable {
         getCacheValue().setAsRoot();
         this.state = State.ROOT;
         if (this.parent != null) {
-            this.parent.getChilds().clear();
+            this.parent.clearChildrens();
             this.parent = null;
+        }
+    }
+
+    private void clearChildrens() {
+        for (Move move : this.childNodes.keySet()) {
+            MCTSNode oldNode = this.childNodes.replace(move, null);
+            oldNode.parent = null;
         }
     }
 
     private void traverse(Consumer<MCTSNode> consumer) {
         consumer.accept(this);
-        this.getChilds().forEach(child -> {
-            child.traverse(consumer);
+        this.getChildsAsCollection().forEach(child -> {
+            if (child != null) child.traverse(consumer);
         });
     }
 
@@ -227,15 +291,25 @@ public class MCTSNode implements Serializable {
     }
 
     private void allChildNodes(final MCTSNode node, final List<MCTSNode> retNodes) {
-        node.getChildNodes().values().forEach(child -> {
-            retNodes.add(child);
-            allChildNodes(child, retNodes);
+        node.getChildsAsCollection().forEach(child -> {
+            if (child != null) {
+                retNodes.add(child);
+                allChildNodes(child, retNodes);
+            }
         });
     }
 
     public int getNumberNodesUntil(final MCTSNode node2optimise) {
         if (this == node2optimise) return 0;
         return 1 + this.parent.getNumberNodesUntil(node2optimise);
+    }
+
+    public Collection<Move> getChildMoves() {
+        return this.childNodes.keySet();
+    }
+
+    public int getNumberOfChilds() {
+        return (int) this.childNodes.values().stream().filter(node -> node != null).count();
     }
 
     static public enum PropragateSrc {
@@ -273,8 +347,8 @@ public class MCTSNode implements Serializable {
     public List<MCTSNode> search(final State... states) {
         List<MCTSNode> ret = new ArrayList<>();
         if (Arrays.stream(states).anyMatch(state1 -> state1 == this.state)) ret.add(this);
-        this.getChilds().forEach(child -> {
-            ret.addAll(child.search(states));
+        this.getChildsAsCollection().forEach(child -> {
+            if (child != null) ret.addAll(child.search(states));
         });
         return ret;
     }
@@ -282,40 +356,58 @@ public class MCTSNode implements Serializable {
     public List<MCTSNode> searchNot(final State... states) {
         List<MCTSNode> ret = new ArrayList<>();
         if (Arrays.stream(states).allMatch(state1 -> state1 != this.state)) ret.add(this);
-        this.getChilds().forEach(child -> {
-            ret.addAll(child.search(states));
+        this.getChildsAsCollection().forEach(child -> {
+            if (child != null) ret.addAll(child.search(states));
         });
         return ret;
     }
 
-    /**
-     * @return the childNodes
-     */
-    public List<MCTSNode> getChilds() {
-        return new ArrayList<>(childNodes.values());
+    public List<MCTSNode> getNonNullChildsAsCollection() {
+        return this.childNodes.values().stream().filter(node -> node != null).collect(Collectors.toList());
+    }
+
+    public Collection<MCTSNode> getChildsAsCollection() {
+        return this.childNodes.values();
     }
 
     public MCTSNode findChild(final Move move) {
         if (move == null)
             return null;
-        return this.childNodes.get(move.hashCode());
+        return this.childNodes.get(move);
     }
 
-    public void addChild(final MCTSNode node) {
-        if (node.getParent() != this) {
-            MCTSNode rootNode = getFirstRoot(node);
-            log.warn("root: {}", DotGenerator.toString(rootNode, 20, true));
-            log.warn("this.parent: {}", DotGenerator.toString(this.getParent(), 20, true));
-            String msg = String.format("NODE-PARENT:%s <>\nCURRENT-PARENT: %s", node.getParent(), this);
-            log.error(msg);
-            throw new RuntimeException(msg);
+    /**
+     * Add a children node to this
+     *
+     * @param childNode
+     */
+    public void addChild(final MCTSNode childNode) {
+        assert (childNode.move != null);
+        assert (childNode != this);
+//        if (childNode.getParent() != this) {
+//            MCTSNode rootNode = getFirstRoot(childNode);
+//            log.warn("root: {}", DotGenerator.toString(rootNode, 20, true));
+//            log.warn("this.parent: {}", DotGenerator.toString(this.getParent(), 20, true));
+//            String msg = String.format("NODE-PARENT:%s <>\nCURRENT-PARENT: %s", childNode.getParent(), this);
+//            log.error(msg);
+//            throw new RuntimeException(msg);
+//        }
+        final MCTSNode oldChild = this.childNodes.put(childNode.move, childNode);
+        if (oldChild != null) {
+            log.error("Add a child to a node with already this child set:{}", this);
+            log.error("OldChild:{}", oldChild);
+            log.error("NewChild:{}", childNode);
+            throw new RuntimeException("Adding a child to a node that already have this child ");
         }
-        this.childNodes.put(node.move.hashCode(), node);
-        node.parent = this;
+        if (childNode.parent != null) {
+            log.error("Child:{}", childNode);
+            throw new RuntimeException("child has already a parent");
+        }
+        childNode.parent = this;
     }
 
     public static MCTSNode getFirstRoot(final MCTSNode node) {
-        if(node.getState() == State.ROOT) return node;
+        if (node.getState() == State.ROOT) return node;
         return getFirstRoot(node.getParent());
     }
 
@@ -367,8 +459,10 @@ public class MCTSNode implements Serializable {
 
     public int getNumberAllSubNodes() {
         int subNode = 1;
-        for (final MCTSNode node : this.childNodes.values()) {
-            subNode += node.getNumberAllSubNodes();
+        for (final MCTSNode node : this.getChildsAsCollection()) {
+            if (node != null) {
+                subNode += node.getNumberAllSubNodes();
+            }
         }
         return subNode;
     }

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -63,7 +64,7 @@ public class DeepLearningAGZ {
     final INN nn;
 
     @Getter
-    private final CacheValues cacheValues = new CacheValues(20000);
+    private final CacheValues cacheValues = new CacheValues(40000);
 
     @Setter
     @Getter
@@ -110,33 +111,73 @@ public class DeepLearningAGZ {
     }
 
     /**
+     *
+     * @param mctsGame
+     * @param label
+     * @param node
+     * @param statistic
+     * @return
+     */
+    public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
+        if (node.getMove() == null) return addRootState(mctsGame, label, node.getColorState().complementary(), statistic);
+        final Move possibleMove = node.getMove();
+        return addState(mctsGame, label, possibleMove, statistic);
+    }
+
+    /**
      * Add a new state for the next NN submission
      *
-     * @param gameCopy     the game entity
+     * @param mctsGame     the game entity
      * @param label        label kept on cacheValue for debugging
-     * @param color2play   color that will play
      * @param possibleMove the move for this state
-     * @param isRootNode   true if this is the root node
-     * @param isDirichlet  true is we need to apply dirichlet to the root node
      * @return the key used to store the job and the related cacheValue
      */
-    public synchronized long addState(final MCTSGame gameCopy, final String label, final Alliance color2play, final Move possibleMove, boolean isRootNode, boolean isDirichlet, final Statistic statistic) {
+    public synchronized long addState(final MCTSGame mctsGame, final String label, final Move possibleMove, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addState", Thread.currentThread().getName());
-        long key = gameCopy.hashCode(color2play, possibleMove);
+        Alliance color2play = possibleMove.getMovedPiece().getPieceAllegiance();
+        long key = mctsGame.hashCode(possibleMove);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
-                log.debug("[{}] CREATE CACHE VALUE:{} move:{} label:{}", color2play, key, possibleMove, label);
-            String lastMoves = gameCopy.getMoves().stream().map(
+                log.debug("CREATE CACHE VALUE:{} move:{} label:{}", key, possibleMove, label);
+            String lastMoves = mctsGame.getMoves().stream().map(
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
-            cacheValues.create(key, labelCacheValue, isDirichlet);
+            cacheValues.create(key, labelCacheValue, false);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
-            serviceNN.submit(key, possibleMove, color2play, gameCopy, isDirichlet, isRootNode);
+            serviceNN.submit(key, possibleMove, color2play, mctsGame, false, false);
         } else {
             statistic.nbRetrieveNNCachedValues++;
         }
         if (log.isDebugEnabled()) log.debug("[{}] END addState", Thread.currentThread().getName());
+        return key;
+    }
+
+    /**
+     *
+     * @param mctsGame
+     * @param label
+     * @param color2play
+     * @param statistic
+     * @return
+     */
+    public synchronized long addRootState(final MCTSGame mctsGame, final String label, final Alliance color2play, final Statistic statistic) {
+        if (log.isDebugEnabled()) log.debug("[{}] BEGIN addRootState", Thread.currentThread().getName());
+        long key = mctsGame.hashCode(color2play);
+        if (!cacheValues.containsKey(key)) {
+            if (log.isDebugEnabled())
+                log.debug("[{}] CREATE ROOT CACHE VALUE:{} move:root label:{}", color2play, key, label);
+            String lastMoves = mctsGame.getMoves().stream().map(
+                            move -> move == null ? "-" : move.toString()).
+                    collect(Collectors.joining(":"));
+            final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, "ROOT");
+            cacheValues.create(key, labelCacheValue, true);
+            if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
+            serviceNN.submit(key, null, color2play, mctsGame, true, true);
+        } else {
+            statistic.nbRetrieveNNCachedValues++;
+        }
+        if (log.isDebugEnabled()) log.debug("[{}] END addRootState", Thread.currentThread().getName());
         return key;
     }
 
@@ -168,7 +209,7 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(final Alliance currentColor, long key, final List<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public double[] getBatchedPolicies(final Alliance currentColor, long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
@@ -216,11 +257,6 @@ public class DeepLearningAGZ {
                     (int) nbIn[7][y])); //
         }
         return sb.toString();
-    }
-
-    public void save(final ResultGame resultGame, int numGame) throws IOException {
-        // FIXME TrainGame trainGame = new TrainGame();
-        // FIXME trainGame.save(numGame, resultGame);
     }
 
     public void train(final TrainGame trainGame) throws IOException {

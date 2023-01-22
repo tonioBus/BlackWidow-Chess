@@ -29,9 +29,6 @@ public class Game {
     protected GameStatus status;
 
     @Getter
-    protected final Vector<GameTransition> transitions = new Vector<>();
-
-    @Getter
     protected final List<Move> moves = new ArrayList<>(127);
 
     @Getter
@@ -71,7 +68,7 @@ public class Game {
     }
 
     public int getNbStep() {
-        return this.getTransitions().size();
+        return this.getMoves().size();
     }
 
     public boolean isLogBoard() {
@@ -167,7 +164,8 @@ public class Game {
     }
 
     public Board getLastBoard() {
-        return transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().getBoard();
+        int size = moves.size();
+        return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
     }
 
     public Move getLastMove() {
@@ -211,7 +209,7 @@ public class Game {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         board = getNextPlayer().executeMove(move);
-        transitions.add(new GameTransition(board, move));
+        // transitions.add(new GameTransition(board, move));
         this.status = calculateStatus();
         this.nextStrategy = this.nextStrategy == this.strategyBlack ? this.strategyWhite : this.strategyBlack;
         moveOpponent = move;
@@ -243,13 +241,13 @@ public class Game {
         if (board.whitePlayer().isInCheckMate()) return GameStatus.WHITE_CHESSMATE;
         if (board.blackPlayer().isInCheckMate()) return GameStatus.BLACK_CHESSMATE;
         if (getNextPlayer().isInStaleMate()) return GameStatus.PAT;
-        if (transitions.size() >= 300) return GameStatus.DRAW_300;
+        if (moves.size() >= 300) return GameStatus.DRAW_300;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return GameStatus.DRAW_50;
-        if (!isThereEnoughMaterials()) return GameStatus.DRAW_NOT_ENOUGH_PIECES;
+        if (!isThereEnoughMaterials(this.board)) return GameStatus.DRAW_NOT_ENOUGH_PIECES;
         return GameStatus.IN_PROGRESS;
     }
 
-    private boolean isThereEnoughMaterials() {
+    private boolean isThereEnoughMaterials(final Board board) {
         long nbWhitePawn = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
         long nbBlackPawn = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
         if (nbWhitePawn + nbBlackPawn > 0) return true;
@@ -280,11 +278,11 @@ public class Game {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append(String.format("GAME STATUS:%s\n", getStatus()));
-        sb.append(String.format("MOVES:%s\n", transitions
+        sb.append(String.format("MOVES:%s\n", moves
                 .stream()
-                .map(gameTransition -> gameTransition.fromMove.toString())
+                .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
-        sb.append(String.format("nbStep:%d\n", transitions.size()));
+        sb.append(String.format("nbStep:%d\n", moves.size()));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         sb.append(String.format("current legal move:%s\n", this
                 .getNextPlayer()

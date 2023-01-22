@@ -1,83 +1,71 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
+import com.chess.engine.classic.pieces.Piece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class MCTSGame extends Game {
+public class MCTSGame {
 
     @Getter
-    protected final CircularFifoQueue<double[][][]> lastInputs = new CircularFifoQueue<>(8);
+    protected final CircularFifoQueue<double[][][]> last8Inputs = new CircularFifoQueue<>(8);
 
     @Getter
-    protected final CircularFifoQueue<Move> lastMoves = new CircularFifoQueue<>(8);
+    protected final List<Move> moves = new ArrayList<>(127);
 
-    public FixMCTSTreeStrategy getStrategyWhite() {
-        return (FixMCTSTreeStrategy) strategyWhite;
-    }
+    @Getter
+    protected final CircularFifoQueue<Move> last8Moves = new CircularFifoQueue<>(8);
+    @Getter
+    private int nbMoveNoAttackAndNoPawn = 0;
 
-    public FixMCTSTreeStrategy getStrategyBlack() {
-        return (FixMCTSTreeStrategy) strategyBlack;
-    }
+    @Getter
+    protected Game.GameStatus status;
 
-    public MCTSGame(final MCTSGame mctsGame) {
-        super(mctsGame.getLastBoard(),
-                new FixMCTSTreeStrategy(Alliance.WHITE),
-                new FixMCTSTreeStrategy(Alliance.BLACK));
-        if (mctsGame.getNextPlayer().getAlliance().isWhite()) {
-            this.nextStrategy = this.strategyWhite;
-        } else {
-            this.nextStrategy = this.strategyBlack;
-        }
-        this.lastMoves.addAll(mctsGame.lastMoves);
-        this.nbMoveNoAttackAndNoPawn = mctsGame.getNbMoveNoAttackAndNoPawn();
-        this.status = mctsGame.calculateStatus();
-        this.moveOpponent = mctsGame.getMoveOpponent();
-        this.lastInputs.addAll(mctsGame.lastInputs);
-    }
+    @Getter
+    protected Board board;
 
     public MCTSGame(final Game game) {
-        super(game.getLastBoard(),
-                new FixMCTSTreeStrategy(Alliance.WHITE),
-                new FixMCTSTreeStrategy(Alliance.BLACK));
-        if (game.getNextPlayer().getAlliance().isWhite()) {
-            this.nextStrategy = this.strategyWhite;
-        } else {
-            this.nextStrategy = this.strategyBlack;
-        }
+        this.board = game.getBoard();
         int nbMoves = game.getMoves().size();
         int start = nbMoves < 8 ? 0 : nbMoves - 8;
         for (int i = start; i < nbMoves; i++) {
-            lastMoves.add(game.getMoves().get(i));
+            last8Moves.add(game.getMoves().get(i));
         }
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
         this.status = game.calculateStatus();
-        this.moveOpponent = game.getMoveOpponent();
         initLastInputs(game);
+    }
+
+    public MCTSGame(final MCTSGame game) {
+        this.board = game.getBoard();
+        int nbMoves = game.getMoves().size();
+        int start = nbMoves < 8 ? 0 : nbMoves - 8;
+        for (int i = start; i < nbMoves; i++) {
+            last8Moves.add(game.getMoves().get(i));
+        }
+        this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
+        this.status = game.calculateStatus(this.board);
+        this.last8Inputs.addAll(game.getLast8Inputs());
     }
 
     private void initLastInputs(final Game game) {
         int nbMoves = game.getMoves().size();
         int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-        game.getTransitions().stream().skip(skipMoves).forEach(transitionMove -> {
-            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(transitionMove.getBoard(), null);
-            this.lastInputs.add(inputs);
+        game.getMoves().stream().skip(skipMoves).forEach(move -> {
+            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
+            this.last8Inputs.add(inputs);
         });
-    }
-
-    public void nextMoves(final String moveWhite, final String moveBlack) {
-        this.getStrategyWhite().setNextMoveSz(moveWhite);
-        this.getStrategyBlack().setNextMoveSz(moveBlack);
     }
 
     /**
@@ -104,9 +92,18 @@ public class MCTSGame extends Game {
         return ret;
     }
 
+    public Move getLastMove() {
+        return this.getMoves().get(this.getMoves().size() - 1);
+    }
+
+    public Board getLastBoard() {
+        int size = moves.size();
+        return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
+    }
+
     public String getHashCodeString(final Alliance color2play, final Move move) {
         StringBuilder sb = new StringBuilder();
-        Board board = this.transitions.size() == 0 ? this.getBoard() : this.transitions.lastElement().getBoard();
+        Board board = getLastBoard();
         if (move != null) {
             try {
                 board = move.execute();
@@ -121,7 +118,7 @@ public class MCTSGame extends Game {
         }
         sb.append(board.toString());
         sb.append("\nM:");
-        sb.append(this.lastMoves.stream().map(Object::toString).collect(Collectors.joining(",")));
+        sb.append(this.last8Moves.stream().map(Object::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
         sb.append(color2play);
         return sb.toString();
@@ -135,16 +132,64 @@ public class MCTSGame extends Game {
         return hash;
     }
 
-    @Override
-    public GameStatus play() throws Exception {
-        GameStatus gameStatus = super.play();
-        this.lastMoves.add(this.moves.get(this.moves.size() - 1));
+    public Game.GameStatus play(final MCTSNode opponentNode, final Move move) {
+        if (move.isAttack() == false &&
+                move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
+            this.nbMoveNoAttackAndNoPawn++;
+        else
+            this.nbMoveNoAttackAndNoPawn = 0;
+        final MCTSNode nextNode = opponentNode.findChild(move);
+        board = nextNode.getMove().execute();
+        this.moves.add(move);
+        this.last8Moves.add(move);
         this.pushNNInput();
-        return gameStatus;
+        return this.status = calculateStatus(board);
+    }
+
+    public Game.GameStatus calculateStatus(final Board board) {
+        if (board.whitePlayer().isInCheckMate()) return Game.GameStatus.WHITE_CHESSMATE;
+        if (board.blackPlayer().isInCheckMate()) return Game.GameStatus.BLACK_CHESSMATE;
+        if (board.currentPlayer().isInStaleMate()) return Game.GameStatus.PAT;
+        if (moves.size() >= 300) return Game.GameStatus.DRAW_300;
+        if (this.nbMoveNoAttackAndNoPawn >= 50) return Game.GameStatus.DRAW_50;
+        if (!isThereEnoughMaterials(board)) return Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
+        return Game.GameStatus.IN_PROGRESS;
+    }
+
+    private boolean isThereEnoughMaterials(final Board board) {
+        long nbWhitePawn = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
+        long nbBlackPawn = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
+        if (nbWhitePawn + nbBlackPawn > 0) return true;
+        long nbWhitePieces = board.whitePlayer().getActivePieces().size();
+        long nbBlackPieces = board.blackPlayer().getActivePieces().size();
+        long nbWhiteKnight = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count();
+        long nbBlackKnight = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count();
+        long nbWhiteBishop = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.BISHOP).count();
+        long nbBlackBishop = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.BISHOP).count();
+
+        final boolean whiteKingAlone = nbWhitePieces == 1;
+        final boolean whiteHasOnly2knights = nbWhitePieces == 3 && nbWhiteKnight == 2;
+        final boolean whiteHasOnly1knight = nbWhitePieces == 2 && nbWhiteKnight == 1;
+        final boolean whiteHasOnly1Bishop = nbWhitePieces == 2 && nbWhiteBishop == 1;
+
+        final boolean blackKingAlone = board.blackPlayer().getActivePieces().size() == 1;
+        final boolean blackHasOnly2knights = board.blackPlayer().getActivePieces().size() == 3
+                && board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count() == 2;
+        final boolean blackHasOnly1knight = nbBlackPieces == 2 && nbBlackKnight == 1;
+        final boolean blackHasOnly1Bishop = nbBlackPieces == 2 && nbBlackBishop == 1;
+
+        if ((whiteKingAlone || whiteHasOnly2knights || whiteHasOnly1knight || whiteHasOnly1Bishop) &&
+                (blackKingAlone || blackHasOnly2knights || blackHasOnly1knight || blackHasOnly1Bishop))
+            return false;
+        return true;
     }
 
     protected void pushNNInput() {
         double[][][] inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
-        this.getLastInputs().add(inputs);
+        this.getLast8Inputs().add(inputs);
+    }
+
+    public int getNbStep() {
+        return moves.size();
     }
 }

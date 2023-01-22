@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
@@ -74,10 +74,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         Thread.currentThread().setName(String.format("Worker-%d", numThread));
-        // gameOriginal.isInitialPosition();
-        final List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
-        cpuct = updateCpuct.update(mctsGame.getTransitions().size());
-        SearchResult searchResult = search(currentRoot, selectNodesMoves, 0, true);
+        cpuct = updateCpuct.update(mctsGame.getMoves().size());
+        SearchResult searchResult = search(currentRoot, 0, true);
         if (searchResult == null) {
             if (log.isDebugEnabled()) log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
@@ -88,21 +86,26 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return numThread;
     }
 
-    protected SearchResult search(final MCTSNode opponentNode, final List<Move> moves, int depth, final boolean isRootNode) throws Exception {
+    protected SearchResult search(final MCTSNode opponentNode, int depth, final boolean isRootNode) throws Exception {
         try {
             deepLearning.flushJob(false);
         } catch (ExecutionException e) {
             throw new RuntimeException("Error during last flushJobs", e);
         }
-        final FixMCTSTreeStrategy strategy2use = (FixMCTSTreeStrategy) mctsGame.getNextStrategy();
-        final Alliance color2play = strategy2use.getAlliance();
+        final Alliance colorOpponent = opponentNode.getColorState();
+        final Alliance color2play = colorOpponent.complementary();
 
         MCTSNode selectedNode;
         Move selectedMove;
         long key = 0;
         synchronized (opponentNode) {
-            if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
-            selectedMove = selection(strategy2use, opponentNode, moves, isRootNode, depth);
+            log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
+            if (opponentNode.getChildsAsCollection().size() == 0) {
+                // end of game
+                log.error("END OF GAME: {}", opponentNode);
+                // throw new RuntimeException("END OF GAME");
+            }
+            selectedMove = selection(opponentNode, isRootNode, depth);
             selectedNode = opponentNode.findChild(selectedMove);
             if (log.isDebugEnabled()) log.debug("END synchronized 1.0 ({})", opponentNode);
             // expansion
@@ -110,33 +113,29 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 key = mctsGame.hashCode(selectedMove.getMovedPiece().getPieceAllegiance(), selectedMove);
                 CacheValues.CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
                 if (log.isDebugEnabled())
-                    log.debug("EXPANSION KEY[{}] MOVE:{} CACHEVALUE:{}", key, selectedMove, cacheValue);
+                    log.debug("EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
-                    selectedNode = MCTSNode.createNode(opponentNode, selectedMove, mctsGame.getBoard(), false, key, cacheValue);
+                    selectedNode = MCTSNode.createNode(opponentNode, selectedMove, mctsGame.getBoard(), key, cacheValue);
+                    opponentNode.addChild(selectedNode);
+                    assert(selectedNode != opponentNode);
                 } catch (Exception e) {
                     log.error(String.format("[S:%d D:%d] Error during the creation of a new MCTSNode", mctsGame.getNbStep(), depth), e);
                     throw e;
                 }
-                opponentNode.addChild(selectedNode);
                 selectedNode.syncSum();
                 if (log.isDebugEnabled()) log.debug("END synchronized 1.1 ({})", opponentNode);
-                // opponentNode.decVirtualLoss();
                 return null;
             }
-            // opponentNode.decVirtualLoss();
         }
         // evaluate
         selectedNode.incVirtualLoss();
-        strategy2use.setNextMove(selectedMove);
-        Game.GameStatus gameStatus = mctsGame.play();
-//            log.info("GAME.PLAY:{}  NB-STEP:{}", selectedMove, game.getNbStep());
+        Game.GameStatus gameStatus = mctsGame.play(opponentNode, selectedMove);
         getStatistic().nbPlay++;
         if (gameStatus != Game.GameStatus.IN_PROGRESS) {
             deepLearning.removeState(mctsGame, color2play, selectedMove);
             selectedNode.decVirtualLoss();
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
-            // returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
         }
         if (key != 0 && !selectedNode.isSync()) {
             if (log.isDebugEnabled()) log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
@@ -144,31 +143,42 @@ public class MCTSSearchWalker implements Callable<Integer> {
             this.deepLearning.getServiceNN().addNodeToPropagate(key, selectedNode);
         }
         // recursive calls
-        // List<Move> selectNodesMoves = this.getPossibleMoves(mctsGame);
-        List<Move> selectNodesMoves = selectedNode.getChildMoves();
-        SearchResult searchResult = search(selectedNode, selectNodesMoves, depth + 1, false);
+        SearchResult searchResult = search(selectedNode, depth + 1, false);
         // retro-propagate done in ServiceNN
         selectedNode.decVirtualLoss();
         return null;
     }
 
-    protected Move selection(final FixMCTSTreeStrategy fixMCTSTreeStrategy, final MCTSNode opponentNode, final List<Move> moves, final boolean isRootNode, int depth) throws InterruptedException {
+    protected Move selection(final MCTSNode opponentNode, final boolean isRootNode, int depth) {
         double maxUcb = Double.NEGATIVE_INFINITY;
         double ucb;
         double policy;
         double exploitation;
         double exploration = 0.0;
         MCTSNode child;
-        List<Move> bestMoves = new ArrayList<>();
+
+        final Alliance colorOpponent = opponentNode.getColorState();
+        final Alliance color2play = colorOpponent.complementary();
+        final Collection<Move> moves = opponentNode.getChildMoves();
+        final List<Move> bestMoves = new ArrayList<>();
         int sumVisits = opponentNode.getVisits();
 
-        String label = String.format("[S:%d|D:%d] ROOT-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode == null ? "ROOT" : opponentNode.getMove() == null ? "Move(null)" : opponentNode.getMove().toString());
+        String label = String.format("[S:%d|D:%d] ROOT-SELECTION:%s",
+                mctsGame.getNbStep(),
+                depth,
+                opponentNode.getMove() == null ? "Move(null)" : opponentNode.getMove().toString());
         boolean withDirichlet = this.updateDirichlet.update(mctsGame.getNbStep());
-        long key;
-        key = deepLearning.addState(mctsGame, label, fixMCTSTreeStrategy.getAlliance().complementary()
-                , null, isRootNode, isRootNode & withDirichlet, statistic);
-        double policies[] = deepLearning.getBatchedPolicies(fixMCTSTreeStrategy.getAlliance().complementary(), key, moves, isRootNode & withDirichlet, statistic);
-        Collections.shuffle(moves, rand);
+        long key = deepLearning.addState(mctsGame,
+                label,
+                opponentNode,
+                statistic);
+        final double[] policies = deepLearning.getBatchedPolicies(
+                colorOpponent, //fixMCTSTreeStrategy.getAlliance().complementary(),
+                key,
+                moves,
+                isRootNode & withDirichlet,
+                statistic);
+        // Collections.shuffle(moves, rand);
         for (final Move possibleMove : moves) {
             int visits = 0;
             child = opponentNode.findChild(possibleMove);
@@ -176,7 +186,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 log.debug("[{}]  FINDCHILD({}): child={}", nbSubmit, possibleMove, child);
             if (child == null) {
                 label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-                key = deepLearning.addState(mctsGame, label, possibleMove.getMovedPiece().getPieceAllegiance(), possibleMove, false, false, statistic);
+                key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
                 CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
                 if (log.isDebugEnabled())
                     log.debug("GET CACHE VALUE[key:{}] possibleMove:{} CACHEVALUE:{}", key, possibleMove, cacheValue);
@@ -207,7 +217,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             bestMove = bestMoves.get(0);
             statistic.nbGoodSelection++;
         } else if (nbBestMoves > 1) {
-            System.out.print("|" + nbBestMoves);
+            System.out.printf("|%d", nbBestMoves);
             statistic.nbRandomSelection++;
             statistic.nbRandomSelectionBestMoves += nbBestMoves;
             if (nbBestMoves > statistic.maxRandomSelectionBestMoves)
@@ -226,7 +236,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     static public double exploration(final MCTSNode opponentNode, double cpuct, int sumVisits, int visits, double policy) {
         double cpuctBase = 19652.0;
-        double currentCpuct = cpuct + Math.log((opponentNode.getChilds().stream().mapToDouble(child1 -> child1.getVisits()).sum() + 1 + cpuctBase) / cpuctBase);
+        double currentCpuct = cpuct + Math.log((opponentNode.getNonNullChildsAsCollection().stream().mapToDouble(child1 -> child1.getVisits()).sum() + 1 + cpuctBase) / cpuctBase);
         return policy * currentCpuct * Math.sqrt(sumVisits) / (1 + visits);
     }
 
@@ -345,12 +355,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected String sequenceMoves(MCTSNode node) {
         if (node == this.currentRoot)
             return "";
-        return sequenceMoves(node.getParent()) + " -> " + node.toString();
+        return sequenceMoves(node.getParent()) + " -> " + node;
     }
 
-    public Move getRandomMove(final List<Move> bestNodes) {
-        Collections.shuffle(bestNodes, rand);
-        return bestNodes.get(0);
+    public Move getRandomMove(final Collection<Move> moves) {
+        int num = (int) (Math.random() * moves.size());
+        for (Move move : moves) if (--num < 0) return move;
+        return null;
     }
 
     public Statistic getStatistic() {

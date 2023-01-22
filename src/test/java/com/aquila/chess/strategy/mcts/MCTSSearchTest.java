@@ -95,30 +95,31 @@ public class MCTSSearchTest {
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
             final MCTSGame mctsGame = new MCTSGame(game);
-            assertTrue(mctsGame.getStrategyWhite() instanceof FixMCTSTreeStrategy);
-            assertTrue(mctsGame.getStrategyBlack() instanceof FixMCTSTreeStrategy);
-            assertEquals(Alliance.WHITE, mctsGame.getStrategyWhite().getAlliance());
-            assertEquals(Alliance.BLACK, mctsGame.getStrategyBlack().getAlliance());
-            assertEquals(Alliance.WHITE, mctsGame.getPlayer(Alliance.WHITE).getAlliance());
-            assertEquals(Alliance.BLACK, mctsGame.getPlayer(Alliance.BLACK).getAlliance());
+//            assertTrue(mctsGame.getStrategyWhite() instanceof FixMCTSTreeStrategy);
+//            assertTrue(mctsGame.getStrategyBlack() instanceof FixMCTSTreeStrategy);
+//            assertEquals(Alliance.WHITE, mctsGame.getStrategyWhite().getAlliance());
+//            assertEquals(Alliance.BLACK, mctsGame.getStrategyBlack().getAlliance());
+//            assertEquals(Alliance.WHITE, mctsGame.getPlayer(Alliance.WHITE).getAlliance());
+//            assertEquals(Alliance.BLACK, mctsGame.getPlayer(Alliance.BLACK).getAlliance());
         }
         long endTime = System.currentTimeMillis();
         log.info("Delay: {} ms", (endTime - startTime));
     }
 
     /**
-     * @throws Exception [a] [b] [c] [d] [e] [f] [g] [h]
-     *                   8  --- --- --- --- R-B --- --- ---  8
-     *                   7  --- --- --- --- --- --- --- ---  7
-     *                   6  --- --- --- --- --- --- --- ---  6
-     *                   5  --- --- --- --- --- --- --- ---  5
-     *                   4  --- --- --- --- --- --- --- ---  4
-     *                   3  --- --- --- --- --- --- K-B ---  3
-     *                   2  --- --- --- --- --- --- --- ---  2
-     *                   1  --- --- --- --- --- --- K-W ---  1
-     *                   [a] [b] [c] [d] [e] [f] [g] [h]
-     *                   <p>
-     *                   PGN format to use with -> https://lichess.org/paste
+     * @throws Exception
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * 8  --- --- --- --- R-B --- --- ---  8
+     * 7  --- --- --- --- --- --- --- ---  7
+     * 6  --- --- --- --- --- --- --- ---  6
+     * 5  --- --- --- --- --- --- --- ---  5
+     * 4  --- --- --- --- --- --- --- ---  4
+     * 3  --- --- --- --- --- --- K-B ---  3
+     * 2  --- --- --- --- --- --- --- ---  2
+     * 1  --- --- --- --- --- --- K-W ---  1
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * <p>
+     * PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
     @ValueSource(ints = {30, 50, 100})

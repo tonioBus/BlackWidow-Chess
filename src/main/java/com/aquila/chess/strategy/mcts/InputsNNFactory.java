@@ -81,14 +81,15 @@ public class InputsNNFactory {
                                     final MCTSGame mctsGame,
                                     final Alliance color2play) {
         int destinationOffset = 0;
-        for (double[][][] lastInput : mctsGame.getLastInputs()) {
+        for (double[][][] lastInput : mctsGame.getLast8Inputs()) {
             System.arraycopy(lastInput, 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
-        List<Move> moveWhites = mctsGame.getPlayer(Alliance.WHITE).getLegalMoves();
+        final Board board = mctsGame.getLastBoard();
+        List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
-        List<Move> moveBlacks = mctsGame.getPlayer(Alliance.BLACK).getLegalMoves();
+        List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
         fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
@@ -102,13 +103,13 @@ public class InputsNNFactory {
 
     /**
      * @param board - the board on which we apply the move
-     * @param move - the move to apply or null if nothing should be applied
+     * @param move  - the move to apply or null if nothing should be applied
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
     public static double[][][] createInputsForOnePosition(Board board, final Move move) {
         final double[][][] nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        if(move!=null) {
+        if (move != null) {
             board = move.execute();
         }
         for (int y = BoardUtils.NUM_TILES_PER_ROW - 1; y >= 0; y--) {

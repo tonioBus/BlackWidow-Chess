@@ -88,7 +88,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         long start = System.currentTimeMillis();
         statistic.clear();
         currentRoot.syncSum();
-        CacheValues.CacheValue rootValue = currentRoot.getCacheValue();
+        final CacheValues.CacheValue rootValue = currentRoot.getCacheValue();
         if (rootValue != null) {
             log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot.getKey());
             MCTSNode.resetBuildOrder();
@@ -99,10 +99,10 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         else nbWorks = Math.min(nbThreads, (int) nbMaxSearchCalls);
         if (nbWorks < 1) nbWorks = 1;
         for (int i = 0; i < nbWorks; i++) {
-            MCTSSearchWalker MCTSSearchWalker = createSearchWalker(nbStep, i, nbSubmit);
+            final MCTSSearchWalker mctsSearchWalker = createSearchWalker(nbStep, i, nbSubmit);
             if (log.isDebugEnabled())
-                log.debug("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getChilds().size());
-            executorService.submit(MCTSSearchWalker);
+                log.debug("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getNonNullChildsAsCollection().size());
+            executorService.submit(mctsSearchWalker);
             nbSubmit++;
         }
         boolean isEnding = false;
@@ -116,9 +116,9 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 // continue;
             }
             try {
-                Integer nbSearchWalker = future.get();
+                final Integer nbSearchWalker = future.get();
                 if (log.isDebugEnabled())
-                    log.debug("[{}] IS DONE {}:{} childs:{}", nbStep, nbSearchWalker.intValue(), future.isDone(), this.currentRoot.getChilds().size());
+                    log.debug("[{}] IS DONE {}:{} childs:{}", nbStep, nbSearchWalker.intValue(), future.isDone(), this.currentRoot.getChildsAsCollection().size());
                 if (isEnding == false) {
                     boolean isContinue = false;
                     switch (this.stopMode) {
@@ -135,7 +135,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                                 nbSearchWalker.intValue(),
                                 nbSubmit);
                         if (log.isDebugEnabled())
-                            log.debug("[{}] CREATING new TASK:{} childs:{}", nbStep, nbSearchWalker.intValue(), this.currentRoot.getChilds().size());
+                            log.debug("[{}] CREATING new TASK:{} childs:{}", nbStep, nbSearchWalker.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
                         executorService.submit(MCTSSearchWalker);
                         nbSubmit++;
                     } else {
@@ -143,7 +143,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         while (!WORKER_THREAD_POOL.awaitTermination(200, TimeUnit.MILLISECONDS)) ;
                         isEnding = true;
                         if (log.isInfoEnabled())
-                            log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChilds().size());
+                            log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChildsAsCollection().size());
                     }
                 }
             } catch (InterruptedException e) {
