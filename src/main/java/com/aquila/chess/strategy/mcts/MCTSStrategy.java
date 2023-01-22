@@ -93,6 +93,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> moves) throws InterruptedException {
+        this.root = null;
+        this.directRoot = null;
         final Move move = mctsStep(moveOpponent, moves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
@@ -108,7 +110,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         deepLearning.clearAllCaches();
         this.mctsGame = new MCTSGame(game);
         if (this.root == null) {
-            assert (opponentMove == null);
+            // assert (opponentMove == null);
             long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             this.root = MCTSNode.createRootNode(mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
             this.directRoot = this.root;
