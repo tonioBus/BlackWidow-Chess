@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * <p>Network Input</p>
- * The input encoding follows the approach taken for AlphaZero.
+ * <h2>Network Input</h2>
+ * <p>The input encoding follows the approach taken for AlphaZero.
  * The main difference is that the move count is no longer encoded — it is technically not required since it’s just some superfluous extra-information. We should
  * also mention that Leela Chess Zero is an ongoing project, and naturally improvements and code changes happen. The input format was subject to such changes
  * as well, for example to cope with chess variants such as Chess960 or Armageddon, or simply to experiment with encodings. The encoding described here is
@@ -32,22 +32,25 @@ import java.util.stream.Collectors;
  * lc0/src/neural/encoder.cc and lc0/src/neural/encoder_test.cc.
  * The input consists of 112 planes of size 8 × 8. Information w.r.t. the placement
  * of pieces is encoded from the perspective of the player whose current turn it
- * is. Assume that we take that player’s perspective. The first plane encodes
- * the position of our own pawns. The second plane encodes the position of our
+ * is. Assume that we take that player’s perspective.
+ * <p>The first plane encodes
+ * the position of our own pawns. </p>
+ * <p>The second plane encodes the position of our
  * knights, then our bishops, rooks, queens and finally the king. Starting from
  * plane 6 we encode the position of the enemy’s pawns, then knights, bishops,
  * rooks, queens and the enemy’s king. Plane 12 is set to all ones if one or more
- * repetitions occurred.
- * These 12 planes are repeated to encode not only the current position, but also
- * the seven previous ones. Planes 104 to 107 are set to 1 if White can castle
- * queenside, White can castle kingside, Black can castle queenside and Black can
+ * repetitions occurred.</p>
+ * <p>These 12 planes are repeated to encode not only the current position, but also
+ * the seven previous ones.
+ * <p>Planes 104 to 107 are set to 1 if White can castle
+ * queenside, White can castle kingside, Black can castle queenside and Black can</p>
  * 176 4. MODERN AI APPROACHES - A DEEP DIVE
  * castle kingside (in that order). Plane 108 is set to all ones if it is Black’s turn and
  * to 0 otherwise. Plane 109 encodes the number of moves where no capture has
  * been made and no pawn has been moved, i.e. the 50 moves rule. Plane 110 used
  * to be a move counter, but is simply set to always 0 in current generations of Lc0.
  * Last, plane 111 is set to all ones. This is, as previously mentioned, to help the
- * network detect the edge of the board when using convolutional filters.
+ * network detect the edge of the board when using convolutional filters.</p>
  */
 @Slf4j
 public class DeepLearningAGZ {
@@ -143,7 +146,7 @@ public class DeepLearningAGZ {
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
-            cacheValues.create(key, labelCacheValue, false);
+            cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, possibleMove, color2play, mctsGame, false, false);
         } else {
@@ -171,7 +174,7 @@ public class DeepLearningAGZ {
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, "ROOT");
-            cacheValues.create(key, labelCacheValue, true);
+            cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, null, color2play, mctsGame, true, true);
         } else {

@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
@@ -118,7 +117,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 try {
                     selectedNode = MCTSNode.createNode(opponentNode, selectedMove, mctsGame.getBoard(), key, cacheValue);
                     opponentNode.addChild(selectedNode);
-                    assert(selectedNode != opponentNode);
+                    assert (selectedNode != opponentNode);
                 } catch (Exception e) {
                     log.error(String.format("[S:%d D:%d] Error during the creation of a new MCTSNode", mctsGame.getNbStep(), depth), e);
                     throw e;
@@ -217,7 +216,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             bestMove = bestMoves.get(0);
             statistic.nbGoodSelection++;
         } else if (nbBestMoves > 1) {
-            System.out.printf("|%d", nbBestMoves);
+            // System.out.printf("|%d", nbBestMoves);
             statistic.nbRandomSelection++;
             statistic.nbRandomSelectionBestMoves += nbBestMoves;
             if (nbBestMoves > statistic.maxRandomSelectionBestMoves)
@@ -328,7 +327,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 parent.decVirtualLoss();
             }
         } else {
-            // parent.incVisits();
             deepLearning.removeState(mctsGame, simulatedPlayerColor, selectedMove);
             deepLearning.getServiceNN().removeNodeToPropagate(node);
         }

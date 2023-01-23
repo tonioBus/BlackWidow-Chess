@@ -50,7 +50,7 @@ public class MCTSStrategyConfig {
             case BLACK:
                 return DEFAULT_BLACK_INSTANCE.isDirichlet();
         }
-        throw new RuntimeException("allegiance not know:" + pieceAllegiance);
+        throw new RuntimeException(String.format("allegiance not know: %s", pieceAllegiance));
     }
 
     public static boolean isDirichlet(Move move) {

@@ -95,33 +95,6 @@ public class MainTrainingSimulNN {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            game.saveBatch(resultGame, lastSaveGame);
-            if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-                MainFitNN.trainGames(lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
-                nnWhite.close();
-                nnWhite = new NNDeep4j(NN_REFERENCE, true);
-                deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-                deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
-            lastSaveGame++;
-            Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
-            if (status == Status.SWITCHING) {
-                final Path reference = Paths.get(NN_REFERENCE);
-                final Path opponent = Paths.get(NN_OPPONENT);
-                SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm-ss");
-                final Path backupOpponent = Paths.get(NN_OPPONENT + "_" + format.format(new Date()));
-                log.info("BACKUP PARTNER {} -> {}", opponent, backupOpponent);
-                if (opponent.toFile().canRead()) {
-                    Files.copy(opponent, backupOpponent, StandardCopyOption.REPLACE_EXISTING);
-                }
-                Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
-                log.info("Switching DP {} <-> {}", reference, opponent);
-                nnBlack.close();
-                nnBlack = new NNDeep4j(NN_OPPONENT, false);
-                deepLearningBlack = new DeepLearningAGZ(nnBlack, true);
-                deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
         }
     }
 }

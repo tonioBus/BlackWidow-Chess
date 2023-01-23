@@ -45,13 +45,15 @@ public class MainTrainingAGZ {
         // return 2.0 * Math.exp(-0.01 * nbStep);
     };
 
-    private static final Dirichlet dirichlet = nbStep -> true; // nbStep <= 30;
+    private static final Dirichlet dirichlet = nbStep -> true;
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
         int lastSaveGame = Utils.maxGame("train/") + 1;
         log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40, 55);
+        MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
+        MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
         DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
@@ -72,7 +74,6 @@ public class MainTrainingAGZ {
                     -1)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
-                    // .withNbThread(1);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -82,14 +83,13 @@ public class MainTrainingAGZ {
                     -1)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
-                    // .withNbThread(1);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             do {
                 gameStatus = game.play();
                 sequence.play();
                 Move move = game.getLastMove();
-                log.info("game:\n{}", game.toString());
+                log.info("game:\n{}", game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);

@@ -257,7 +257,7 @@ public class MCTSNode implements Serializable {
     }
 
     public void setAsRoot() {
-        log.warn("[{}] SET AS ROOT:{}", this.getColorState(), this);
+        log.warn("[{}] SET AS ROOT:{} {}", this.getColorState(), getCacheValue().value, this);
         getCacheValue().setAsRoot();
         this.state = State.ROOT;
         if (this.parent != null) {
