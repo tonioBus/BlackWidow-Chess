@@ -85,6 +85,7 @@ public class MainTrainingAGZ {
                     .withDirichlet(dirichlet);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
+
             do {
                 gameStatus = game.play();
                 sequence.play();

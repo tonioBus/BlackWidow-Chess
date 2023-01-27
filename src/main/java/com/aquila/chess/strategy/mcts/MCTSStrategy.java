@@ -20,12 +20,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private final Game originalGame;
     private MCTSGame mctsGame;
     private int nbStep = 0;
-
     @Setter
     protected int nbThreads;
-
     private final long timeMillisPerStep;
-
     @Getter
     private long nbSearchCalls = -1;
     private Dirichlet dirichlet = nbStep1 -> false;
@@ -42,6 +39,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private MCTSNode root = null;
 
+    @Getter
     private MCTSNode directRoot = null;
 
     public MCTSNode getCurrentRoot() {
@@ -251,12 +249,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return nodes.get(index);
     }
 
-    /**
-     * @return the root
-     */
-//    public MCTSNode getRoot() {
-//        return root;
-//    }
     public MCTSStrategy withNbThread(int nbThreads) {
         this.nbThreads = nbThreads;
         log.warn("change nb threads: {}", nbThreads);

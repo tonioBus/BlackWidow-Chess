@@ -86,8 +86,11 @@ public class MainTrainingSimulNN {
                     // .withNbThread(1);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
+            TrainGame trainGame = new TrainGame();
             do {
+                final Alliance color2play = game.getColor2play();
                 gameStatus = game.play();
+                final MCTSStrategy currentStrategy = ((MCTSStrategy) game.getStrategy(color2play));
                 sequence.play();
                 Move move = game.getLastMove();
                 log.info("game:\n{}", game.toString());
@@ -95,6 +98,8 @@ public class MainTrainingSimulNN {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
+            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
+            game.saveBatch(resultGame, lastSaveGame);
         }
     }
 }

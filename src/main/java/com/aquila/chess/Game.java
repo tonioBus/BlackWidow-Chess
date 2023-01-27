@@ -209,7 +209,6 @@ public class Game {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         board = getNextPlayer().executeMove(move);
-        // transitions.add(new GameTransition(board, move));
         this.status = calculateStatus();
         this.nextStrategy = this.nextStrategy == this.strategyBlack ? this.strategyWhite : this.strategyBlack;
         moveOpponent = move;
@@ -223,7 +222,6 @@ public class Game {
 
     public Strategy getStrategy(final Alliance alliance) {
         return alliance.isWhite() ? strategyWhite : strategyBlack;
-
     }
 
     public enum GameStatus {
