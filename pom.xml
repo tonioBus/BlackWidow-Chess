@@ -17,6 +17,7 @@
         <nd4j.version>1.0.0-M2.1</nd4j.version>
         <dl4j.version>1.0.0-M2.1</dl4j.version>
         <java.version>11</java.version>
+        <native.maven.plugin.version>0.9.19</native.maven.plugin.version>
     </properties>
 
     <dependencies>
@@ -118,6 +119,20 @@
 
     </dependencies>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>graalvm-native-build-tools-snapshots</id>
+            <name>GraalVM native-build-tools Snapshots</name>
+            <url>https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
     <build>
         <plugins>
             <plugin>
@@ -154,6 +169,31 @@
                     <includes>
                         <include>**/*Test*.java</include>
                     </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>build-native</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>false</skip>
+                    <imageName>MCTSTrain</imageName>
+                    <mainClass>com.aquila.chess.MainTrainingAGZ</mainClass>
+                    <buildArgs>
+                        <buildArg>--no-fallback</buildArg>
+                        <buildArg>--report-unsupported-elements-at-runtime</buildArg>
+                        <!-- buildArg>report-unsupported-elements-at-compile</buildArg -->
+                    </buildArgs>
                 </configuration>
             </plugin>
         </plugins>
