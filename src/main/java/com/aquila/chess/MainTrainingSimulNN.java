@@ -95,6 +95,8 @@ public class MainTrainingSimulNN {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
+            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
+            game.saveBatch(resultGame, lastSaveGame);
         }
     }
 }
