@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.OneStepRecord;
+import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
@@ -41,6 +43,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     @Getter
     private MCTSNode directRoot = null;
+
+    @Getter
+    private TrainGame trainGame = new TrainGame();
 
     public MCTSNode getCurrentRoot() {
         return directRoot.getParent();
@@ -93,9 +98,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                      final List<Move> moves) throws InterruptedException {
         this.root = null;
         this.directRoot = null;
+        final MCTSGame currentMctsGame = new MCTSGame(game);
         final Move move = mctsStep(moveOpponent, moves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
+        this.saveTraining(currentMctsGame);
+        currentMctsGame.play(this.directRoot, move);
         return move;
     }
 
@@ -293,5 +301,42 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
         return resultGame;
 
+    }
+
+    private Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+        if (!stepNode.isSync()) {
+            String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
+            log.error(msg);
+            throw new RuntimeException(msg);
+        }
+        final Map<Integer, Double> probabilities = new HashMap<>();
+        stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
+            int index = PolicyUtils.indexFromMove(child.getMove());
+            double probability = (double) child.getVisits() / (double) stepNode.getVisits();
+            probabilities.put(index, probability);
+        });
+        return probabilities;
+    }
+
+    private void saveTraining(final MCTSGame mctsGame) {
+        double[][][] inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
+        Map<Integer, Double> policies = calculatePolicies(this.directRoot.getParent());
+        OneStepRecord lastOneStepRecord = new OneStepRecord(
+                inputs,
+                this.alliance,
+                policies);
+        trainGame.add(lastOneStepRecord);
+    }
+
+    public void saveBatch(ResultGame resultGame, int numGames) throws IOException {
+        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
+        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
+        trainGame.save(numGames, resultGame);
+        log.info("SAVE DONE");
+        clearTrainGame();
+    }
+
+    public void clearTrainGame() {
+        this.trainGame.clear();
     }
 }

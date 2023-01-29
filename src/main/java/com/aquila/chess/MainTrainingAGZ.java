@@ -24,7 +24,7 @@ public class MainTrainingAGZ {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
 
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
-    private static final int BATCH_SIZE = 1;
+    private static final int BATCH_SIZE = 5;
     static public final int NB_STEP = 800;
 
     /**
@@ -96,7 +96,7 @@ public class MainTrainingAGZ {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            game.saveBatch(resultGame, lastSaveGame);
+            whiteStrategy.saveBatch(resultGame, lastSaveGame);
             if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
                 MainFitNN.trainGames(lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
                 nnWhite.close();

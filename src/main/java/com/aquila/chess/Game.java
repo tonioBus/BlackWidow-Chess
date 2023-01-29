@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Game {
 
-    static public final String CASTLING_SHORT = "O-O";
-
-    static public final String CASTLING_LONG = "O-O-O";
-
     @Getter
     protected int nbMoveNoAttackAndNoPawn = 0;
     @Getter
@@ -44,9 +40,6 @@ public class Game {
     protected Strategy strategyBlack;
     @Getter
     protected Move moveOpponent = null;
-
-    @Getter
-    private final TrainGame trainGame = new TrainGame();
 
     @Builder
     public Game(Board board, Strategy strategyWhite, Strategy strategyBlack) {
@@ -292,15 +285,4 @@ public class Game {
         return sb.toString();
     }
 
-    public void saveBatch(ResultGame resultGame, int numGames) throws IOException {
-        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
-        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.oneStepRecordList.size());
-        trainGame.save(numGames, resultGame);
-        log.info("SAVE DONE");
-        clearTrainGame();
-    }
-
-    public void clearTrainGame() {
-        this.trainGame.clear();
-    }
 }

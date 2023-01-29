@@ -40,10 +40,8 @@ public class MainTrainingSimulNN {
     };
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
-        // return 2.5;
         if (nbStep <= 30) return 2.5;
         else return 0.0025;
-        // return 2.0 * Math.exp(-0.01 * nbStep);
     };
 
     private static final Dirichlet dirichlet = nbStep -> true; // nbStep <= 30;
@@ -88,9 +86,7 @@ public class MainTrainingSimulNN {
             Game.GameStatus gameStatus;
             TrainGame trainGame = new TrainGame();
             do {
-                final Alliance color2play = game.getColor2play();
                 gameStatus = game.play();
-                final MCTSStrategy currentStrategy = ((MCTSStrategy) game.getStrategy(color2play));
                 sequence.play();
                 Move move = game.getLastMove();
                 log.info("game:\n{}", game.toString());
@@ -99,7 +95,7 @@ public class MainTrainingSimulNN {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            game.saveBatch(resultGame, lastSaveGame);
+            whiteStrategy.saveBatch(resultGame, lastSaveGame);
         }
     }
 }

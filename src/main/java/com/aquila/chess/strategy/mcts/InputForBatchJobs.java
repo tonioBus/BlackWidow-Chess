@@ -28,13 +28,8 @@ public class InputForBatchJobs {
         this.mctsGame = mctsGame;
         this.isDirichlet = isDirichlet;
         this.isRootNode = isRootNode;
-        this.inputs = createInput(mctsGame);
+        this.inputs = InputsNNFactory.createInput(mctsGame, color2play);
     }
 
-    private double[][][] createInput(final MCTSGame mctsGame) {
-        double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        InputsNNFactory.createInputs(inputs, mctsGame, color2play);
-        return inputs;
-    }
 
 }

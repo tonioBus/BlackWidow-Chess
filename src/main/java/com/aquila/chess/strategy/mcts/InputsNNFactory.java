@@ -14,6 +14,12 @@ public class InputsNNFactory {
 
     public static final int PLANE_COLOR = 108;
 
+    public static double[][][] createInput(final MCTSGame mctsGame, final Alliance color2play) {
+        double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        InputsNNFactory.createInputs(inputs, mctsGame, color2play);
+        return inputs;
+    }
+
     /**
      * <h1>Network Input</h1>
      * <p>

@@ -172,7 +172,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 opponentNode,
                 statistic);
         final double[] policies = deepLearning.getBatchedPolicies(
-                colorOpponent, //fixMCTSTreeStrategy.getAlliance().complementary(),
                 key,
                 moves,
                 isRootNode & withDirichlet,

@@ -1,0 +1,80 @@
+package com.aquila.chess.strategy.mcts;
+
+import com.aquila.chess.Game;
+import com.aquila.chess.OneStepRecord;
+import com.aquila.chess.TrainGame;
+import com.aquila.chess.manager.GameManager;
+import com.aquila.chess.manager.Sequence;
+import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.Strategy;
+import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
+import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.Move;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Slf4j
+public class SaveGameTest {
+
+    static public final int NB_STEP = 50;
+
+    /**
+     * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
+     * and 0.0002 after 100, 300, and 500 thousand steps for chess
+     */
+    public static final UpdateLr updateLr = nbGames -> {
+        if (nbGames > 500000) return 1e-6;
+        if (nbGames > 300000) return 1e-5;
+        if (nbGames > 100000) return 1e-4;
+        return 1e-3;
+    };
+
+    private static final UpdateCpuct updateCpuct = nbStep -> {
+        if (nbStep <= 30) return 2.5;
+        else return 0.0025;
+    };
+
+    private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
+
+    @Test
+    void testSaveGame() throws Exception {
+        GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
+        INN nnWhite = new NNSimul(1);
+        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().board(board).build();
+        Sequence sequence = gameManager.createSequence();
+        long seed = 314;
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                Alliance.WHITE,
+                deepLearningWhite,
+                seed,
+                updateCpuct,
+                -1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
+        // .withNbThread(1);
+        final Strategy blackStrategy = new RandomStrategy(Alliance.BLACK, (int) seed);
+        game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus gameStatus = null;
+        for (int i = 0; i < 5; i++) {
+            gameStatus = game.play();
+            sequence.play();
+            game.getLastMove();
+            log.info("game:\n{}", game);
+        }
+        log.info("#########################################################################");
+        log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
+        log.info("#########################################################################");
+        ResultGame resultGame = new ResultGame(1,1);
+        whiteStrategy.saveBatch(resultGame, 666);
+        TrainGame trainGame = TrainGame.load(666);
+        assertEquals(5, trainGame.getOneStepRecordList().size());
+    }
+}

@@ -212,11 +212,11 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(final Alliance currentColor, long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public double[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
-                log.debug("getBatchedPolicies(): key:{} type:{} color:{}", key, output.getType(), currentColor);
+                log.debug("getBatchedPolicies(): key:{} type:{}", key, output.getType());
             statistic.nbRetrieveNNCachedPolicies++;
             if (!output.isInitialised()) return output.getPolicies();
             return output.getPolicies();

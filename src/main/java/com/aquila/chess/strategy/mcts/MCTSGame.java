@@ -61,11 +61,16 @@ public class MCTSGame {
 
     private void initLastInputs(final Game game) {
         int nbMoves = game.getMoves().size();
-        int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-        game.getMoves().stream().skip(skipMoves).forEach(move -> {
-            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
+        if (nbMoves == 0 && this.last8Moves.size() == 0) {
+            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(board, null);
             this.last8Inputs.add(inputs);
-        });
+        } else {
+            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+            game.getMoves().stream().skip(skipMoves).forEach(move -> {
+                double[][][] inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
+                this.last8Inputs.add(inputs);
+            });
+        }
     }
 
     /**
