@@ -143,8 +143,7 @@ public class MCTSGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        final MCTSNode nextNode = opponentNode.findChild(move);
-        board = nextNode.getMove().execute();
+        board = move.execute();
         this.moves.add(move);
         this.last8Moves.add(move);
         this.pushNNInput();

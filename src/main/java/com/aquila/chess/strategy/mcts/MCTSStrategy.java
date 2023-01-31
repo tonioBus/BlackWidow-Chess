@@ -162,11 +162,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long endTime = System.currentTimeMillis();
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
-        MCTSNode bestNode = findBestRewardsWithLogVisits(directRoot);
+        final MCTSNode bestNode = findBestRewardsWithLogVisits(directRoot);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic.toString());
-        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s", this.getAlliance(), nbNumberSearchCalls,
-                length, speed);
-        Optional<Move> optionalMove = currentMoves.stream().filter(move -> move.equals(bestNode.getMove())).findFirst();
+        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s BestReward:{}", this.getAlliance(), nbNumberSearchCalls,
+                length, speed, bestNode.getCacheValue().value);
+        final Optional<Move> optionalMove = currentMoves.stream().filter(move -> move.equals(bestNode.getMove())).findFirst();
         Move ret;
         if (optionalMove.isEmpty()) {
             log.warn(
