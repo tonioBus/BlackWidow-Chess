@@ -3,6 +3,10 @@
  */
 package com.aquila.chess.utils;
 
+import com.aquila.chess.strategy.mcts.InputsNNFactory;
+import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.pieces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
@@ -137,6 +141,65 @@ public class Utils {
             }
         }
         return max;
+    }
+
+    /**
+     * Display the board located in inputs at offset boardIndex (offset within the 8 encoded board)
+     *
+     * @param inputs
+     * @param boardIndex
+     * @return
+     */
+    static public String displayBoard(double[][][] inputs, int boardIndex) {
+        Board.Builder builder = new Board.Builder();
+        boolean empty = true;
+        for (Alliance color : Arrays.asList(Alliance.WHITE, Alliance.BLACK)) {
+            for (int piece = InputsNNFactory.PAWN_INDEX; piece <= InputsNNFactory.KING_INDEX; piece++) {
+                int indexInput = (piece + 6 * color.ordinal()) + (boardIndex * 13);
+                for (int x = 0; x < Board.NB_COL; x++) {
+                    for (int y = 0; y < Board.NB_COL; y++) {
+                        if (inputs[indexInput][x][y] != 0.0) {
+                            int piecePosition;
+                            if(color.isWhite()) {
+                                piecePosition = 64 - ((8 - x) + y * 8);
+                            } else {
+                                piecePosition = ((7 - x) + y * 8);
+                            }
+                            switch (piece) {
+                                case InputsNNFactory.PAWN_INDEX:
+                                    log.info("PAWN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new Pawn(color, piecePosition));
+                                    break;
+                                case InputsNNFactory.BISHOP_INDEX:
+                                    log.info("BISHOP color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new Bishop(color, piecePosition));
+                                    break;
+                                case InputsNNFactory.KING_INDEX:
+                                    log.info("KING color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new King(color, piecePosition, false, false));
+                                    break;
+                                case InputsNNFactory.KNIGHT_INDEX:
+                                    log.info("KNIGHT color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new Knight(color, piecePosition));
+                                    break;
+                                case InputsNNFactory.ROOK_INDEX:
+                                    log.info("ROOK color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new Rook(color, piecePosition));
+                                    break;
+                                case InputsNNFactory.QUEEN_INDEX:
+                                    log.info("QUEEN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    builder.setPiece(new Queen(color, piecePosition));
+                                    break;
+                            }
+                            empty = false;
+                        }
+                    }
+                }
+            }
+        }
+        if (empty) return null;
+        builder.setMoveMaker(Alliance.WHITE);
+        return builder.build().toString();
     }
 
 }

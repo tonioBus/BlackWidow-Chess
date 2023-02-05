@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 public final class Board {
 
+    public static final int NB_COL = 8;
     private final Map<Integer, Piece> boardConfig;
     private final Collection<Piece> whitePieces;
     private final Collection<Piece> blackPieces;
@@ -136,6 +137,7 @@ public final class Board {
     }
 
     private static final Pattern pieceAndPositionPattern = Pattern.compile("([pbnrqk]?)([a-h][1-8])(k?)(q?)");
+
     public static Board createBoard(final String whitePieces,
                                     final String blackPieces,
                                     Alliance firstMove) {
@@ -151,7 +153,7 @@ public final class Board {
     private static void placePieces(final Board.Builder builder, final Alliance alliance, final String pieces) {
         Arrays.stream(pieces.toLowerCase().split("[;,]")).forEach(pieceAndPosition -> {
             Matcher matcher = pieceAndPositionPattern.matcher(pieceAndPosition);
-            if(!matcher.matches())
+            if (!matcher.matches())
                 throw new RuntimeException(String.format("pieces description incorrect: (%s)", pieces));
             String piece = matcher.group(1);
             String position = matcher.group(2);
@@ -167,7 +169,7 @@ public final class Board {
                                      final Alliance alliance,
                                      boolean kingSideCastleCapable,
                                      boolean queenSideCastleCapable) {
-        switch(piece) {
+        switch (piece) {
             case "":
             case "p":
                 return new Pawn(alliance, coordinate);

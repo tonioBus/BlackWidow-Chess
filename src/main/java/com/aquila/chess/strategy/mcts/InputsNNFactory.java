@@ -14,6 +14,12 @@ public class InputsNNFactory {
 
     public static final int PLANE_COLOR = 108;
 
+    public static final int PAWN_INDEX = 0;
+    public static final int KNIGHT_INDEX = 1;
+    public static final int BISHOP_INDEX = 2;
+    public static final int ROOK_INDEX = 3;
+    public static final int QUEEN_INDEX = 4;
+    public static final int KING_INDEX = 5;
     public static double[][][] createInput(final MCTSGame mctsGame, final Alliance color2play) {
         double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         InputsNNFactory.createInputs(inputs, mctsGame, color2play);

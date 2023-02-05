@@ -47,6 +47,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     @Getter
     private TrainGame trainGame = new TrainGame();
 
+    @Setter
+    private MCTSStrategy partnerStrategy = null;
+
     public MCTSNode getCurrentRoot() {
         return directRoot.getParent();
     }
@@ -102,7 +105,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final Move move = mctsStep(moveOpponent, moves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
-        this.saveTraining(currentMctsGame);
+        this.storeStepTraining(currentMctsGame);
         currentMctsGame.play(this.directRoot, move);
         return move;
     }
@@ -318,13 +321,14 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private void saveTraining(final MCTSGame mctsGame) {
+    private void storeStepTraining(final MCTSGame mctsGame) {
         double[][][] inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
         Map<Integer, Double> policies = calculatePolicies(this.directRoot.getParent());
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 this.alliance,
                 policies);
+        log.info("Save inputs:{}", policies.size());
         trainGame.add(lastOneStepRecord);
     }
 
@@ -339,4 +343,5 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public void clearTrainGame() {
         this.trainGame.clear();
     }
+
 }

@@ -1,23 +1,17 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.TrainGame;
-import com.aquila.chess.manager.GameManager;
-import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class SaveGameTest {
+class InputsNNFactoryTest {
 
     static public final int NB_STEP = 50;
 
@@ -40,16 +34,13 @@ public class SaveGameTest {
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
 
     @Test
-    @Order(0)
-    void testSaveGame() throws Exception {
-        GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
+    void createInputsForOnePosition() {
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        Sequence sequence = gameManager.createSequence();
         long seed = 314;
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -73,28 +64,10 @@ public class SaveGameTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        for (int i = 0; i < 5; i++) {
-            gameStatus = game.play();
-            sequence.play();
-            game.getLastMove();
-            log.info("game:\n{}", game);
-        }
-        log.info("#########################################################################");
-        log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
-        log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch(resultGame, 666);
-        TrainGame trainGame = TrainGame.load(666);
-        assertEquals(5, trainGame.getOneStepRecordList().size());
+        double[][][] inputs = InputsNNFactory.createInputsForOnePosition(board, null);
+        String boartdSz = Utils.displayBoard(inputs, 0);
+        log.info("board.string:\n{}", board.toString());
+        assertEquals(board.toString(), boartdSz);
+        log.info("BOARD:[{}]", boartdSz);
     }
-
-    @Test
-    @Order(1)
-    public void testLoadTraining() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load(666);
-        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
-            log.info("board(0):\n{}", Utils.displayBoard(oneStepRecord.getInputs(), 0));
-        });
-    }
-
 }

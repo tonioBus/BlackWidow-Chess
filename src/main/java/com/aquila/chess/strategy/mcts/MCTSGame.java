@@ -190,6 +190,7 @@ public class MCTSGame {
 
     protected void pushNNInput() {
         double[][][] inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
+        log.info("pushNNInput:\n{}\n", Utils.displayBoard(inputs, 0));
         this.getLast8Inputs().add(inputs);
     }
 
