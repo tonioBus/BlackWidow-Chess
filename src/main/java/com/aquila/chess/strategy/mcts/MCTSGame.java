@@ -1,6 +1,9 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.Inputs8NN;
+import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.InputsOneNN;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 public class MCTSGame {
 
     @Getter
-    protected final CircularFifoQueue<double[][][]> last8Inputs = new CircularFifoQueue<>(8);
+    protected final CircularFifoQueue<InputsOneNN> last8Inputs = new CircularFifoQueue<>(8);
 
     @Getter
     protected final List<Move> moves = new ArrayList<>(127);
@@ -62,12 +65,12 @@ public class MCTSGame {
     private void initLastInputs(final Game game) {
         int nbMoves = game.getMoves().size();
         if (nbMoves == 0 && this.last8Moves.size() == 0) {
-            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(board, null);
+            final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
             this.last8Inputs.add(inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             game.getMoves().stream().skip(skipMoves).forEach(move -> {
-                double[][][] inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
+                final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
                 this.last8Inputs.add(inputs);
             });
         }
@@ -189,8 +192,8 @@ public class MCTSGame {
     }
 
     protected void pushNNInput() {
-        double[][][] inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
-        log.info("pushNNInput:\n{}\n", Utils.displayBoard(inputs, 0));
+        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
+        log.info("pushNNInput:\n{}\n", inputs);
         this.getLast8Inputs().add(inputs);
     }
 

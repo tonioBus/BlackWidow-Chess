@@ -1,8 +1,9 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.InputsOneNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
@@ -64,8 +65,8 @@ class InputsNNFactoryTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        double[][][] inputs = InputsNNFactory.createInputsForOnePosition(board, null);
-        String boartdSz = Utils.displayBoard(inputs, 0);
+        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
+        String boartdSz = inputs.toString();
         log.info("board.string:\n{}", board.toString());
         assertEquals(board.toString(), boartdSz);
         log.info("BOARD:[{}]", boartdSz);

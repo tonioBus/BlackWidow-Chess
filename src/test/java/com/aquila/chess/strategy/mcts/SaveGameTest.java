@@ -93,7 +93,7 @@ public class SaveGameTest {
     public void testLoadTraining() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load(666);
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
-            log.info("board(0):\n{}", Utils.displayBoard(oneStepRecord.getInputs(), 0));
+            log.info("board(0):\n{}", oneStepRecord);
         });
     }
 

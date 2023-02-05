@@ -1,5 +1,7 @@
-package com.aquila.chess.strategy.mcts;
+package com.aquila.chess.strategy.mcts.inputs;
 
+import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -20,10 +22,11 @@ public class InputsNNFactory {
     public static final int ROOK_INDEX = 3;
     public static final int QUEEN_INDEX = 4;
     public static final int KING_INDEX = 5;
-    public static double[][][] createInput(final MCTSGame mctsGame, final Alliance color2play) {
+
+    public static InputsFullNN createInput(final MCTSGame mctsGame, final Alliance color2play) {
         double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         InputsNNFactory.createInputs(inputs, mctsGame, color2play);
-        return inputs;
+        return new InputsFullNN(inputs);
     }
 
     /**
@@ -89,12 +92,12 @@ public class InputsNNFactory {
      * @param mctsGame
      * @param color2play
      */
-    public static void createInputs(final double[][][] inputs,
-                                    final MCTSGame mctsGame,
-                                    final Alliance color2play) {
+    private static void createInputs(final double[][][] inputs,
+                                     final MCTSGame mctsGame,
+                                     final Alliance color2play) {
         int destinationOffset = 0;
-        for (double[][][] lastInput : mctsGame.getLast8Inputs()) {
-            System.arraycopy(lastInput, 0, inputs, destinationOffset, INN.SIZE_POSITION);
+        for (InputsOneNN lastInput : mctsGame.getLast8Inputs()) {
+            System.arraycopy(lastInput.inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
         final Board board = mctsGame.getLastBoard();
@@ -119,7 +122,7 @@ public class InputsNNFactory {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
-    public static double[][][] createInputsForOnePosition(Board board, final Move move) {
+    public static InputsOneNN createInputsForOnePosition(Board board, final Move move) {
         final double[][][] nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null) {
             board = move.execute();
@@ -150,7 +153,7 @@ public class InputsNNFactory {
             }
         }
         //FIXME fill(nbInNew[INN.SIZE_POSITION - 1], game.nbMovesWithRepetition() > 0 ? 1.0 : 0.0);
-        return nbInNew;
+        return new InputsOneNN(nbInNew);
     }
 
     /**

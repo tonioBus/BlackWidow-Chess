@@ -2,6 +2,8 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.InputsOneNN;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -56,7 +58,7 @@ class DeepLearningAGZTest {
             if (status != Game.GameStatus.IN_PROGRESS) break;
             Move move = game.getMoves().get(0);
             MCTSGame mctsGame = new MCTSGame(game);
-            double[][][] inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
             assertNotNull(inputs);
         }
         long end = System.currentTimeMillis();
@@ -80,8 +82,8 @@ class DeepLearningAGZTest {
         final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
         MCTSGame mctsGame = new MCTSGame(game);
         for (final Move move : moves) {
-            final double[][][] inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
-            log.info("{}\n{}", move == null ? "Na" : move, deepLearningWhite.ToStringInputs(inputs[0]));
+            final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            log.info("{}\n{}", move == null ? "Na" : move, inputs);
         }
     }
 }

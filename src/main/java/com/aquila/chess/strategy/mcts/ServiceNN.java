@@ -189,7 +189,7 @@ class ServiceNN {
     private void createInputs(double[][][][] nbIn) {
         int indexNbIn = 0;
         for (Map.Entry<Long, InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
-            System.arraycopy(entry.getValue().getInputs(), 0, nbIn[indexNbIn], 0, INN.FEATURES_PLANES);
+            System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, INN.FEATURES_PLANES);
             indexNbIn++;
         }
     }
@@ -197,8 +197,8 @@ class ServiceNN {
     private int updateCacheValuesAndPolicies(final List<OutputNN> outputsNN) {
         int index = 0;
         for (Map.Entry<Long, InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
-            Move move = entry.getValue().getMove();
-            Alliance color2play = entry.getValue().getColor2play();
+            Move move = entry.getValue().move();
+            Alliance color2play = entry.getValue().color2play();
             long key = entry.getKey();
             double value = outputsNN.get(index).getValue();
             double[] policies = outputsNN.get(index).getPolicies();

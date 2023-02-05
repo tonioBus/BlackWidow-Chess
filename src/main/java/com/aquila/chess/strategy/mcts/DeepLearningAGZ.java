@@ -3,6 +3,8 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
+import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
@@ -114,7 +116,6 @@ public class DeepLearningAGZ {
     }
 
     /**
-     *
      * @param mctsGame
      * @param label
      * @param node
@@ -122,7 +123,8 @@ public class DeepLearningAGZ {
      * @return
      */
     public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
-        if (node.getMove() == null) return addRootState(mctsGame, label, node.getColorState().complementary(), statistic);
+        if (node.getMove() == null)
+            return addRootState(mctsGame, label, node.getColorState().complementary(), statistic);
         final Move possibleMove = node.getMove();
         return addState(mctsGame, label, possibleMove, statistic);
     }
@@ -157,7 +159,6 @@ public class DeepLearningAGZ {
     }
 
     /**
-     *
      * @param mctsGame
      * @param label
      * @param color2play
@@ -280,7 +281,7 @@ public class DeepLearningAGZ {
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
-        double[][][][] inputsForNN = new double[chunkSize][DL4JAlphaGoZeroBuilder.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
         double[][] policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         double[][] valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
@@ -290,10 +291,10 @@ public class DeepLearningAGZ {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
-            inputsForNN[chunkNumber] = oneStepRecord.getInputs();
-            Map<Integer, Double> policies = oneStepRecord.getPolicies();
+            inputsForNN.add(oneStepRecord);
+            Map<Integer, Double> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
-            double actualRewards = getActualRewards(value, oneStepRecord.getColor2play());
+            double actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
@@ -320,7 +321,7 @@ public class DeepLearningAGZ {
             }
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
-        nn.fit(inputsForNN, policiesForNN, valuesForNN);
+        nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
     }
 
     /**

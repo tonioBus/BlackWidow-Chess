@@ -4,6 +4,8 @@ import com.aquila.chess.Game;
 import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private final Game originalGame;
+    private boolean firstStep = true;
     private MCTSGame mctsGame;
     private int nbStep = 0;
     @Setter
@@ -322,7 +325,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     private void storeStepTraining(final MCTSGame mctsGame) {
-        double[][][] inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
+        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
         Map<Integer, Double> policies = calculatePolicies(this.directRoot.getParent());
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
