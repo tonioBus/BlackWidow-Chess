@@ -134,8 +134,9 @@ public class MCTSGame {
 
     public long hash(String str) {
         long hash = 5381;
-        for (byte b : str.getBytes()) {
-            hash = ((hash << 5) + hash) + b; /* hash * 33 + c */
+        byte[] data = str.getBytes();
+        for (byte b : data) {
+            hash = ((hash << 5) + hash) + b;
         }
         return hash;
     }
@@ -193,7 +194,7 @@ public class MCTSGame {
 
     protected void pushNNInput() {
         InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
-        log.info("pushNNInput:\n{}\n", inputs);
+        log.debug("pushNNInput:\n{}\n", inputs);
         this.getLast8Inputs().add(inputs);
     }
 

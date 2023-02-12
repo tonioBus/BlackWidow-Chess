@@ -167,27 +167,27 @@ public class Utils {
                             }
                             switch (piece) {
                                 case InputsNNFactory.PAWN_INDEX:
-                                    log.info("PAWN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("PAWN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new Pawn(color, piecePosition));
                                     break;
                                 case InputsNNFactory.BISHOP_INDEX:
-                                    log.info("BISHOP color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("BISHOP color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new Bishop(color, piecePosition));
                                     break;
                                 case InputsNNFactory.KING_INDEX:
-                                    log.info("KING color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("KING color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new King(color, piecePosition, false, false));
                                     break;
                                 case InputsNNFactory.KNIGHT_INDEX:
-                                    log.info("KNIGHT color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("KNIGHT color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new Knight(color, piecePosition));
                                     break;
                                 case InputsNNFactory.ROOK_INDEX:
-                                    log.info("ROOK color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("ROOK color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new Rook(color, piecePosition));
                                     break;
                                 case InputsNNFactory.QUEEN_INDEX:
-                                    log.info("QUEEN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
+                                    log.trace("QUEEN color:{} position:{} x:{} y:{}", color, piecePosition, x, y);
                                     builder.setPiece(new Queen(color, piecePosition));
                                     break;
                             }

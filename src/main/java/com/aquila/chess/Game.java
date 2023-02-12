@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.Strategy;
-import com.aquila.chess.strategy.mcts.ResultGame;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -11,9 +10,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -178,14 +179,10 @@ public class Game {
         assert (strategyPlayerBlack.getAlliance() == Alliance.BLACK);
         this.strategyWhite = strategyPlayerWhite;
         this.strategyBlack = strategyPlayerBlack;
-        switch (this.board.currentPlayer().getAlliance()) {
-            case WHITE:
-                nextStrategy = strategyPlayerWhite;
-                break;
-            case BLACK:
-                nextStrategy = strategyPlayerBlack;
-                break;
-        }
+        nextStrategy = switch (this.board.currentPlayer().getAlliance()) {
+            case WHITE -> strategyPlayerWhite;
+            case BLACK -> strategyPlayerBlack;
+        };
     }
 
     public Player getNextPlayer() {

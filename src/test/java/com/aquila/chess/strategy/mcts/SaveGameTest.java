@@ -76,7 +76,6 @@ public class SaveGameTest {
         for (int i = 0; i < 5; i++) {
             gameStatus = game.play();
             sequence.play();
-            game.getLastMove();
             log.info("game:\n{}", game);
         }
         log.info("#########################################################################");
@@ -85,7 +84,9 @@ public class SaveGameTest {
         ResultGame resultGame = new ResultGame(1, 1);
         whiteStrategy.saveBatch(resultGame, 666);
         TrainGame trainGame = TrainGame.load(666);
-        assertEquals(5, trainGame.getOneStepRecordList().size());
+        // we play 5 times + the first position:
+        // 0) Initial,  1) First move, etc ...
+        assertEquals(6, trainGame.getOneStepRecordList().size());
     }
 
     @Test

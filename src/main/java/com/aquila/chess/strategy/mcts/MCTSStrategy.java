@@ -54,6 +54,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSStrategy partnerStrategy = null;
 
     public MCTSNode getCurrentRoot() {
+        if (directRoot == null) return null;
         return directRoot.getParent();
     }
 
@@ -102,15 +103,26 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> moves) throws InterruptedException {
+        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
+            OneStepRecord lastOneStepRecord = this.partnerStrategy.createStepTraining(this.partnerStrategy.mctsGame);
+            trainGame.add(lastOneStepRecord);
+        }
         this.root = null;
         this.directRoot = null;
-        final MCTSGame currentMctsGame = new MCTSGame(game);
         final Move move = mctsStep(moveOpponent, moves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
-        this.storeStepTraining(currentMctsGame);
-        currentMctsGame.play(this.directRoot, move);
+
+        if (isTraining()) {
+            OneStepRecord lastOneStepRecord = this.createStepTraining(this.mctsGame);
+            trainGame.add(lastOneStepRecord);
+        }
+        this.mctsGame.play(this.directRoot, move);
         return move;
+    }
+
+    public boolean isTraining() {
+        return this.partnerStrategy != null;
     }
 
     /**
@@ -288,25 +300,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     public ResultGame getResultGame(final Game.GameStatus gameStatus) {
-        ResultGame resultGame = null;
-
-        switch (gameStatus) {
-            case PAT:
-            case DRAW_3:
-            case DRAW_50:
-            case DRAW_300:
-            case DRAW_NOT_ENOUGH_PIECES:
-                resultGame = new ResultGame(1, 1);
-                break;
-            case WHITE_CHESSMATE:
-                resultGame = new ResultGame(0, 1);
-                break;
-            case BLACK_CHESSMATE:
-                resultGame = new ResultGame(1, 0);
-                break;
-        }
-        return resultGame;
-
+        return switch (gameStatus) {
+            case PAT, DRAW_3, DRAW_50, DRAW_300, DRAW_NOT_ENOUGH_PIECES -> new ResultGame(1, 1);
+            case WHITE_CHESSMATE -> new ResultGame(0, 1);
+            case BLACK_CHESSMATE -> new ResultGame(1, 0);
+            default -> null;
+        };
     }
 
     private Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
@@ -324,15 +323,16 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private void storeStepTraining(final MCTSGame mctsGame) {
+    private OneStepRecord createStepTraining(final MCTSGame mctsGame) {
+        final MCTSNode directParent = this.getCurrentRoot();
         InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
-        Map<Integer, Double> policies = calculatePolicies(this.directRoot.getParent());
+        Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 this.alliance,
                 policies);
         log.info("Save inputs:{}", policies.size());
-        trainGame.add(lastOneStepRecord);
+        return lastOneStepRecord;
     }
 
     public void saveBatch(ResultGame resultGame, int numGames) throws IOException {

@@ -120,15 +120,10 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 if (log.isDebugEnabled())
                     log.debug("[{}] IS DONE {}:{} childs:{}", nbStep, nbSearchWalker.intValue(), future.isDone(), this.currentRoot.getChildsAsCollection().size());
                 if (isEnding == false) {
-                    boolean isContinue = false;
-                    switch (this.stopMode) {
-                        case TIMING:
-                            isContinue = (System.currentTimeMillis() - start) < timeMillisPerStep;
-                            break;
-                        case NB_STEP:
-                            isContinue = nbSubmit < nbMaxSearchCalls;
-                            break;
-                    }
+                    boolean isContinue = switch (this.stopMode) {
+                        case TIMING -> (System.currentTimeMillis() - start) < timeMillisPerStep;
+                        case NB_STEP -> nbSubmit < nbMaxSearchCalls;
+                    };
                     if (isContinue) {
                         MCTSSearchWalker MCTSSearchWalker = createSearchWalker(
                                 nbStep,
