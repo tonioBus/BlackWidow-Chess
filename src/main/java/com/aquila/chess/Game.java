@@ -47,18 +47,19 @@ public class Game {
         this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
+        this.getMoves().add(Move.MOVE_DUMMY);
     }
 
-    public Game() {
-    }
+//    public Game() {
+//        this.getMoves().add(Move.MOVE_DUMMY);
+//    }
 
     public Alliance getColor2play() {
         return this.board.currentPlayer().getAlliance();
     }
 
     public boolean isInitialPosition() {
-        // TODO
-        return true;
+        return this.getNbStep() == 0;
     }
 
     public int getNbStep() {
@@ -123,38 +124,7 @@ public class Game {
     }
 
     public String toPGN(final Move move) {
-        final StringBuffer sb = new StringBuffer();
-//        if(move.isCastlingMove()) {
-//
-//        } else {
-        sb.append(move.toString());
-//        }
-//        switch (this.castling) {
-//            case NONE:
-//                sb.append(piece.toPGN());
-//                if ((this.capturePiece != null && piece instanceof Pawn) || this.doubleDestination) {
-//                    sb.append(this.startLocation.coordAlgebrique());
-//                }
-//                if (this.capturePiece != null) {
-//                    sb.append("x");
-//                }
-//                sb.append(this.endLocation.coordAlgebrique());
-//                if (this.promotedPiece != null) {
-//                    sb.append("=");
-//                    sb.append(promotedPiece.toPGN());
-//                }
-//                if (this.isCheck()) {
-//                    sb.append("+");
-//                }
-//                break;
-//            case SHORT:
-//                sb.append(CASTLING_SHORT);
-//                break;
-//            case LONG:
-//                sb.append(CASTLING_LONG);
-//                break;
-//        }
-        return sb.toString();
+        return move.toString();
     }
 
     public Board getLastBoard() {
@@ -164,13 +134,6 @@ public class Game {
 
     public Move getLastMove() {
         return this.getMoves().get(this.getMoves().size() - 1);
-    }
-
-    @Builder(toBuilder = true)
-    @Getter
-    public static class GameTransition {
-        final Board board;
-        final Move fromMove;
     }
 
     public void setup(final Strategy strategyPlayerWhite,
@@ -200,18 +163,21 @@ public class Game {
             this.nbMoveNoAttackAndNoPawn = 0;
         board = getNextPlayer().executeMove(move);
         this.status = calculateStatus();
-        this.nextStrategy = this.nextStrategy == this.strategyBlack ? this.strategyWhite : this.strategyBlack;
+        this.nextStrategy = opponentStrategy(this.nextStrategy);
         moveOpponent = move;
         this.moves.add(move);
         return this.status;
     }
 
-    public Player getPlayer(final Alliance alliance) {
-        return alliance.choosePlayerByAlliance(this.board.whitePlayer(), this.board.blackPlayer());
+    Strategy opponentStrategy(final Strategy strategy) {
+        return switch (strategy.getAlliance()) {
+            case BLACK -> strategyWhite;
+            case WHITE -> strategyBlack;
+        };
     }
 
-    public Strategy getStrategy(final Alliance alliance) {
-        return alliance.isWhite() ? strategyWhite : strategyBlack;
+    public Player getPlayer(final Alliance alliance) {
+        return alliance.choosePlayerByAlliance(this.board.whitePlayer(), this.board.blackPlayer());
     }
 
     public enum GameStatus {

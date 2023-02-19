@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.inputs.Inputs8NN;
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.inputs.InputsOneNN;
 import com.aquila.chess.utils.Utils;
@@ -64,13 +63,18 @@ public class MCTSGame {
 
     private void initLastInputs(final Game game) {
         int nbMoves = game.getMoves().size();
-        if (nbMoves == 0 && this.last8Moves.size() == 0) {
+        if (nbMoves == 0 && this.last8Inputs.size() == 0) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
+            log.info("push inputs init");
             this.last8Inputs.add(inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+            this.last8Inputs.clear();
             game.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(move.execute(), null);
+                final InputsOneNN inputs = move == Move.MOVE_DUMMY ?
+                        InputsNNFactory.createInputsForOnePosition(board, null) :
+                        InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
+                log.info("push input after init");
                 this.last8Inputs.add(inputs);
             });
         }
@@ -147,11 +151,16 @@ public class MCTSGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
+        update(move);
+        return this.status = calculateStatus(board);
+    }
+
+    public void update(final Move move) {
+        if (move == null) return;
         board = move.execute();
         this.moves.add(move);
         this.last8Moves.add(move);
         this.pushNNInput();
-        return this.status = calculateStatus(board);
     }
 
     public Game.GameStatus calculateStatus(final Board board) {
@@ -192,9 +201,12 @@ public class MCTSGame {
         return true;
     }
 
+    /**
+     * push the last board of this game on the list of inputs
+     */
     protected void pushNNInput() {
         InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
-        log.debug("pushNNInput:\n{}\n", inputs);
+        // log.info("pushNNInput:\n{}\n", inputs);
         this.getLast8Inputs().add(inputs);
     }
 

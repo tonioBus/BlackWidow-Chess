@@ -102,19 +102,29 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     @Override
     public Move play(final Game game,
                      final Move moveOpponent,
-                     final List<Move> moves) throws InterruptedException {
+                     final List<Move> possibleMoves) throws InterruptedException {
         if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
-            OneStepRecord lastOneStepRecord = this.partnerStrategy.createStepTraining(this.partnerStrategy.mctsGame);
+            OneStepRecord lastOneStepRecord = createStepTraining(
+                    this.mctsGame,
+                    this.alliance.complementary(),
+                    this.partnerStrategy.getCurrentRoot()
+            );
             trainGame.add(lastOneStepRecord);
         }
         this.root = null;
         this.directRoot = null;
-        final Move move = mctsStep(moveOpponent, moves);
+        createRootNode(originalGame, moveOpponent);
+        this.mctsGame.update(moveOpponent);
+        final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
 
         if (isTraining()) {
-            OneStepRecord lastOneStepRecord = this.createStepTraining(this.mctsGame);
+            OneStepRecord lastOneStepRecord = createStepTraining(
+                    this.mctsGame,
+                    this.alliance,
+                    this.getCurrentRoot()
+            );
             trainGame.add(lastOneStepRecord);
         }
         this.mctsGame.play(this.directRoot, move);
@@ -157,10 +167,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
     }
 
-    protected Move mctsStep(final Move opponentMove,
+    protected Move mctsStep(final Move moveOpponent,
                             final List<Move> currentMoves)
             throws InterruptedException {
-        createRootNode(originalGame, opponentMove);
         statistic.clear();
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
                 this.nbStep,
@@ -190,7 +199,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.warn(
                     "##########################################################################################################");
             log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
-            log.warn("[{}] opponentMove: {}", this.getAlliance(), opponentMove);
+            log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
             log.warn(DotGenerator.toString(directRoot, 10));
             // log.warn("[{}] Game:\n{}", this.getAlliance(), mctsGame.toPGN());
@@ -308,7 +317,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         };
     }
 
-    private Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
         if (!stepNode.isSync()) {
             String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
             log.error(msg);
@@ -323,15 +332,15 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private OneStepRecord createStepTraining(final MCTSGame mctsGame) {
-        final MCTSNode directParent = this.getCurrentRoot();
-        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, this.alliance);
+    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Alliance alliance, final MCTSNode directParent) {
+        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
-                this.alliance,
+                alliance,
                 policies);
-        log.info("Save inputs:{}", policies.size());
+        log.info("[{}] INPUTS:\n{}", alliance, inputs);
+        log.info("CREATE STEP TRAINING -> Save inputs:{}", policies.size());
         return lastOneStepRecord;
     }
 

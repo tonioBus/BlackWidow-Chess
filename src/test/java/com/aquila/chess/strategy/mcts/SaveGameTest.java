@@ -5,7 +5,6 @@ import com.aquila.chess.TrainGame;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
@@ -73,10 +72,14 @@ public class SaveGameTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             gameStatus = game.play();
             sequence.play();
-            log.info("game:\n{}", game);
+            log.info("game step[{}] :\n{}", i, game);
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> {
+                        log.info("TRAIN STEP\n{}", oneStepRecord.inputs());
+                    }
+            );
         }
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);

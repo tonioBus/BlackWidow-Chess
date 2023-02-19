@@ -7,6 +7,18 @@ import com.chess.engine.classic.pieces.Rook;
 
 public abstract class Move {
 
+    public static final Move MOVE_DUMMY = new Move() {
+        @Override
+        public int hashCode() {
+            return 1;
+        }
+
+        @Override
+        public String toString() {
+            return "DUMMY";
+        }
+    };
+
     protected final Board board;
     protected final int destinationCoordinate;
     protected final Piece movedPiece;
@@ -25,6 +37,13 @@ public abstract class Move {
                  final int destinationCoordinate) {
         this.board = board;
         this.destinationCoordinate = destinationCoordinate;
+        this.movedPiece = null;
+        this.isFirstMove = false;
+    }
+
+    private Move() {
+        this.board = null;
+        this.destinationCoordinate = -1;
         this.movedPiece = null;
         this.isFirstMove = false;
     }
@@ -49,8 +68,8 @@ public abstract class Move {
         }
         final Move otherMove = (Move) other;
         return getCurrentCoordinate() == otherMove.getCurrentCoordinate() &&
-               getDestinationCoordinate() == otherMove.getDestinationCoordinate() &&
-               getMovedPiece().equals(otherMove.getMovedPiece());
+                getDestinationCoordinate() == otherMove.getDestinationCoordinate() &&
+                getMovedPiece().equals(otherMove.getMovedPiece());
     }
 
     public Board getBoard() {
@@ -99,9 +118,9 @@ public abstract class Move {
     }
 
     String disambiguationFile() {
-        for(final Move move : this.board.currentPlayer().getLegalMoves()) {
-            if(move.getDestinationCoordinate() == this.destinationCoordinate && !this.equals(move) &&
-               this.movedPiece.getPieceType().equals(move.getMovedPiece().getPieceType())) {
+        for (final Move move : this.board.currentPlayer().getLegalMoves()) {
+            if (move.getDestinationCoordinate() == this.destinationCoordinate && !this.equals(move) &&
+                    this.movedPiece.getPieceType().equals(move.getMovedPiece().getPieceType())) {
                 return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0, 1);
             }
         }
@@ -183,7 +202,7 @@ public abstract class Move {
         @Override
         public String toString() {
             return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()) + "-" +
-                   BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate) + "=" + this.promotionPiece.getPieceType();
+                    BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate) + "=" + this.promotionPiece.getPieceType();
         }
 
     }
@@ -205,7 +224,7 @@ public abstract class Move {
         @Override
         public String toString() {
             return movedPiece.getPieceType().toString() + disambiguationFile() +
-                   BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
+                    BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
         }
 
     }
@@ -229,7 +248,7 @@ public abstract class Move {
         @Override
         public String toString() {
             return movedPiece.getPieceType() + disambiguationFile() + "x" +
-                   BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
+                    BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
         }
 
     }
@@ -255,6 +274,18 @@ public abstract class Move {
 
     }
 
+    public static class MoveDummy extends Move {
+        public MoveDummy(Board board) {
+            super(board, null, -1);
+        }
+
+        @Override
+        public Board execute() {
+            return board;
+        }
+    }
+
+
     public static class PawnAttackMove
             extends AttackMove {
 
@@ -273,7 +304,7 @@ public abstract class Move {
         @Override
         public String toString() {
             return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0, 1) + "x" +
-                   BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
+                    BoardUtils.INSTANCE.getPositionAtCoordinate(this.destinationCoordinate);
         }
 
     }
@@ -307,7 +338,7 @@ public abstract class Move {
         public Board undo() {
             final Board.Builder builder = new Builder();
             this.board.getAllPieces().forEach(builder::setPiece);
-            builder.setEnPassantPawn((Pawn)this.getAttackedPiece());
+            builder.setEnPassantPawn((Pawn) this.getAttackedPiece());
             builder.setMoveMaker(this.board.currentPlayer().getAlliance());
             return builder.build();
         }
@@ -333,7 +364,7 @@ public abstract class Move {
             final Board.Builder builder = new Builder();
             this.board.currentPlayer().getActivePieces().stream().filter(piece -> !this.movedPiece.equals(piece)).forEach(builder::setPiece);
             this.board.currentPlayer().getOpponent().getActivePieces().forEach(builder::setPiece);
-            final Pawn movedPawn = (Pawn)this.movedPiece.movePiece(this);
+            final Pawn movedPawn = (Pawn) this.movedPiece.movePiece(this);
             builder.setPiece(movedPawn);
             builder.setEnPassantPawn(movedPawn);
             builder.setMoveMaker(this.board.currentPlayer().getOpponent().getAlliance());
@@ -566,7 +597,7 @@ public abstract class Move {
                                       final int destinationCoordinate) {
             for (final Move move : board.getAllLegalMoves()) {
                 if (move.getCurrentCoordinate() == currentCoordinate &&
-                    move.getDestinationCoordinate() == destinationCoordinate) {
+                        move.getDestinationCoordinate() == destinationCoordinate) {
                     return move;
                 }
             }

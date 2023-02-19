@@ -124,7 +124,7 @@ public class InputsNNFactory {
      */
     public static InputsOneNN createInputsForOnePosition(Board board, final Move move) {
         final double[][][] nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        if (move != null) {
+        if (move != null && move != Move.MOVE_DUMMY) {
             board = move.execute();
         }
         for (int y = BoardUtils.NUM_TILES_PER_ROW - 1; y >= 0; y--) {
