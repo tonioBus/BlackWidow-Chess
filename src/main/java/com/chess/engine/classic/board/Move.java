@@ -7,7 +7,24 @@ import com.chess.engine.classic.pieces.Rook;
 
 public abstract class Move {
 
-    public static final Move MOVE_DUMMY = new Move() {
+    public static class InitMove extends Move {
+
+        public InitMove(final Board board) {
+            super(board, -1);
+        }
+
+        public Board getBoard() {
+            return board;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof Move move) {
+                return move.destinationCoordinate == -1;
+            }
+            return super.equals(other);
+        }
+
         @Override
         public int hashCode() {
             return 1;
@@ -15,9 +32,12 @@ public abstract class Move {
 
         @Override
         public String toString() {
-            return "DUMMY";
+            return "INIT-MOVE";
         }
-    };
+
+    }
+
+    ;
 
     protected final Board board;
     protected final int destinationCoordinate;

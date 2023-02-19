@@ -72,7 +72,7 @@ public class SaveGameTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 6; i++) {
             gameStatus = game.play();
             sequence.play();
             log.info("game step[{}] :\n{}", i, game);

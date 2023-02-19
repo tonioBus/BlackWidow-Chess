@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts.inputs;
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.utils.Utils;
 
+@Deprecated
 public record Inputs8NN(double[][][] inputs) {
 
     public Inputs8NN {

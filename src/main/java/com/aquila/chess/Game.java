@@ -47,7 +47,8 @@ public class Game {
         this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
-        this.getMoves().add(Move.MOVE_DUMMY);
+        Move.InitMove initMove = new Move.InitMove(board);
+        this.getMoves().add(initMove);
     }
 
 //    public Game() {
@@ -154,8 +155,8 @@ public class Game {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
-        List<Move> moves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
-        Move move = nextStrategy.play(this, moveOpponent, moves);
+        List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
+        Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
         if (move.isAttack() == false &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;

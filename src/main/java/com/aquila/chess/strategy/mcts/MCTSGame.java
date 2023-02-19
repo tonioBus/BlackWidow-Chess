@@ -62,6 +62,7 @@ public class MCTSGame {
     }
 
     private void initLastInputs(final Game game) {
+        log.info("initLastInputs");
         int nbMoves = game.getMoves().size();
         if (nbMoves == 0 && this.last8Inputs.size() == 0) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
@@ -71,10 +72,10 @@ public class MCTSGame {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.last8Inputs.clear();
             game.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final InputsOneNN inputs = move == Move.MOVE_DUMMY ?
+                final InputsOneNN inputs = move.hashCode() == -1 ?
                         InputsNNFactory.createInputsForOnePosition(board, null) :
                         InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
-                log.info("push input after init");
+                log.info("push input after init move:{}:\n{}", move, inputs);
                 this.last8Inputs.add(inputs);
             });
         }
