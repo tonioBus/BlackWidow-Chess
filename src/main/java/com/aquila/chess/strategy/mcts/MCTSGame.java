@@ -20,14 +20,21 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MCTSGame {
 
+//    record Last8Inputs(InputsOneNN, Move) {
+//
+//    }
+//
+//    @Getter
+//    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
+
     @Getter
     protected final CircularFifoQueue<InputsOneNN> last8Inputs = new CircularFifoQueue<>(8);
+    @Getter
+    protected final CircularFifoQueue<Move> last8Moves = new CircularFifoQueue<>(8);
 
     @Getter
     protected final List<Move> moves = new ArrayList<>(127);
 
-    @Getter
-    protected final CircularFifoQueue<Move> last8Moves = new CircularFifoQueue<>(8);
     @Getter
     private int nbMoveNoAttackAndNoPawn = 0;
 
@@ -67,7 +74,7 @@ public class MCTSGame {
         if (nbMoves == 0 && this.last8Inputs.size() == 0) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
             log.info("push inputs init");
-            this.last8Inputs.add(inputs);
+            this.add(inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.last8Inputs.clear();
@@ -76,9 +83,16 @@ public class MCTSGame {
                         InputsNNFactory.createInputsForOnePosition(board, null) :
                         InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
                 log.info("push input after init move:{}:\n{}", move, inputs);
-                this.last8Inputs.add(inputs);
             });
         }
+    }
+
+    private void add(final InputsOneNN inputsOneNN) {
+        if( inputsOneNN.equals(this.getLast8Inputs().peek())) {
+            log.error("Input already inserted in last8inputs");
+            throw new RuntimeException("Inputs already inserted");
+        }
+        this.last8Inputs.add(inputsOneNN);
     }
 
     /**
@@ -208,7 +222,7 @@ public class MCTSGame {
     protected void pushNNInput() {
         InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
         // log.info("pushNNInput:\n{}\n", inputs);
-        this.getLast8Inputs().add(inputs);
+        this.add(inputs);
     }
 
     public int getNbStep() {

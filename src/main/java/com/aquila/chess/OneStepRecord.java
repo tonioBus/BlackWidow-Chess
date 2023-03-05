@@ -2,6 +2,7 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Move;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -11,7 +12,9 @@ import java.util.Map;
  * @param color2play
  * @param policies
  */
-public record OneStepRecord(InputsFullNN inputs, Alliance color2play,
+public record OneStepRecord(InputsFullNN inputs,
+                            String move,
+                            Alliance color2play,
                             Map<Integer, Double> policies) implements Serializable {
 
 }

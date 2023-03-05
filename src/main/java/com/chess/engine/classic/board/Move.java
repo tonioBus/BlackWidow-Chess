@@ -4,6 +4,7 @@ import com.chess.engine.classic.board.Board.Builder;
 import com.chess.engine.classic.pieces.Pawn;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.pieces.Rook;
+import lombok.Getter;
 
 public abstract class Move {
 
@@ -13,16 +14,12 @@ public abstract class Move {
             super(board, -1);
         }
 
-        public Board getBoard() {
-            return board;
-        }
-
         @Override
         public boolean equals(Object other) {
-            if (other instanceof Move move) {
-                return move.destinationCoordinate == -1;
-            }
-            return super.equals(other);
+            return switch (other) {
+                case Move move -> move.destinationCoordinate == -1;
+                default -> super.equals(other);
+            };
         }
 
         @Override
@@ -39,6 +36,7 @@ public abstract class Move {
 
     ;
 
+    @Getter
     protected final Board board;
     protected final int destinationCoordinate;
     protected final Piece movedPiece;

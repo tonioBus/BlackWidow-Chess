@@ -14,4 +14,10 @@ public record InputsOneNN(double[][][] inputs) {
     public String toString() {
         return Utils.displayBoard(inputs, 0);
     }
+
+    public boolean equals(InputsOneNN inputsOneNN) {
+        if (inputsOneNN == null) return false;
+        return Utils.displayBoard(inputs(), 0)
+                .equals(Utils.displayBoard(inputsOneNN.inputs(), 0));
+    }
 }

@@ -106,6 +106,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
+                    moveOpponent,
                     this.alliance.complementary(),
                     this.partnerStrategy.getCurrentRoot()
             );
@@ -122,6 +123,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (isTraining()) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
+                    move,
                     this.alliance,
                     this.getCurrentRoot()
             );
@@ -332,11 +334,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Alliance alliance, final MCTSNode directParent) {
-        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, alliance);
+    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
+        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
+                move.toString(),
                 alliance,
                 policies);
         log.info("CREATE STEP TRAINING -> Save inputs:{}", policies.size());

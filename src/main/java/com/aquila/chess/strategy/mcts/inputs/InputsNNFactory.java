@@ -7,11 +7,14 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public class InputsNNFactory {
 
     public static final int PLANE_COLOR = 108;
@@ -23,9 +26,9 @@ public class InputsNNFactory {
     public static final int QUEEN_INDEX = 4;
     public static final int KING_INDEX = 5;
 
-    public static InputsFullNN createInput(final MCTSGame mctsGame, final Alliance color2play) {
+    public static InputsFullNN createInput(final MCTSGame mctsGame, final Move move, final Alliance color2play) {
         double[][][] inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        InputsNNFactory.createInputs(inputs, mctsGame, color2play);
+        InputsNNFactory.createInputs(inputs, mctsGame, move, color2play);
         return new InputsFullNN(inputs);
     }
 
@@ -94,19 +97,28 @@ public class InputsNNFactory {
      */
     private static void createInputs(final double[][][] inputs,
                                      final MCTSGame mctsGame,
+                                     final Move move,
                                      final Alliance color2play) {
         int destinationOffset = 0;
-        for (InputsOneNN lastInput : mctsGame.getLast8Inputs()) {
+        CircularFifoQueue<InputsOneNN> tmp = new CircularFifoQueue<>(8);
+        tmp.addAll(mctsGame.getLast8Inputs());
+        if (move != null) {
+            InputsOneNN lastInput1 = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            log.info("++ createInouts({}):\n{}", move, lastInput1);
+            tmp.add(lastInput1);
+        }
+        for (InputsOneNN lastInput : tmp) {
+            log.info("createInouts({}):\n{}", destinationOffset, lastInput);
             System.arraycopy(lastInput.inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
         final Board board = mctsGame.getLastBoard();
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
-        Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
-        Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
+        Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
+        Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
         List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
-        Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.KingSideCastleMove).findFirst();
-        Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(move -> move instanceof Move.QueenSideCastleMove).findFirst();
+        Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
+        Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
         fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
@@ -138,7 +150,7 @@ public class InputsNNFactory {
         }
         // FIXME: optimize the copy
         final var nbInNew = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        // copy WHITE pieces as is (player view)
+        // copy WHITE pieces without modification (player view)
         for (int planes = 0; planes < 6; planes++) {
             for (int y = 0; y < BoardUtils.NUM_TILES_PER_ROW; y++) {
                 System.arraycopy(nbIn[planes][y], 0, nbInNew[planes][y], 0, BoardUtils.NUM_TILES_PER_ROW);

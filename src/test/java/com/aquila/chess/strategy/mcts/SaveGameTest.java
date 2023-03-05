@@ -10,6 +10,8 @@ import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 
@@ -18,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 public class SaveGameTest {
 
-    static public final int NB_STEP = 50;
+    static public final int NB_STEP = 5;
 
     /**
      * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
@@ -38,9 +40,10 @@ public class SaveGameTest {
 
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {6, 12})
     @Order(0)
-    void testSaveGame() throws Exception {
+    void testSaveGame(int nbStep) throws Exception {
         GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
@@ -72,12 +75,12 @@ public class SaveGameTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < nbStep; i++) {
             gameStatus = game.play();
             sequence.play();
             log.info("game step[{}] :\n{}", i, game);
             whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> {
-                        log.info("TRAIN STEP\n{}", oneStepRecord.inputs());
+                        log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord.inputs());
                     }
             );
         }
@@ -89,7 +92,7 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load(666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(6, trainGame.getOneStepRecordList().size());
+        assertEquals(nbStep, trainGame.getOneStepRecordList().size());
     }
 
     @Test

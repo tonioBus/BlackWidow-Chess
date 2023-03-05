@@ -89,7 +89,7 @@ public class MainTrainingSimulNN {
                 gameStatus = game.play();
                 sequence.play();
                 Move move = game.getLastMove();
-                log.info("game:\n{}", game.toString());
+                log.info("move:{} game:\n{}", move, game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
