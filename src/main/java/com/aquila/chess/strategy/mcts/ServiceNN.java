@@ -268,7 +268,7 @@ class ServiceNN {
                         possibleMove, color2play.toString()));
             }
         }
-        log.info("InputForBatchJobs(move:{})", possibleMove);
+        log.info("InputForBatchJobs(move:{}) key:{}", possibleMove, key);
         batchJobs2Commit.put(key, new InputForBatchJobs(
                 possibleMove,
                 color2play,

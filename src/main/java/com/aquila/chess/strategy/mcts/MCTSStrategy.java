@@ -23,6 +23,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private final Game originalGame;
     private boolean firstStep = true;
+    @Getter
     private MCTSGame mctsGame;
     private int nbStep = 0;
     @Setter
@@ -115,7 +116,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.root = null;
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
-        this.mctsGame.update(moveOpponent);
+        // FIXME this.mctsGame.add2Last8Inputs(moveOpponent);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;

@@ -35,6 +35,9 @@
 		<appender-ref ref="FILE" />
 	</logger -->
 
+	<logger name="com.aquila.chess.strategy.mcts.inputs.InputsNNFactory" level="WARN" />
+	<logger name="com.aquila.chess.strategy.mcts.ServiceNN" level="WARN" />
+
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
 	</root>

@@ -20,17 +20,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MCTSGame {
 
-//    record Last8Inputs(InputsOneNN, Move) {
-//
-//    }
-//
-//    @Getter
-//    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
+    public static record Last8Inputs(InputsOneNN inputs, Move move) {
+
+    }
 
     @Getter
-    protected final CircularFifoQueue<InputsOneNN> last8Inputs = new CircularFifoQueue<>(8);
-    @Getter
-    protected final CircularFifoQueue<Move> last8Moves = new CircularFifoQueue<>(8);
+    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
 
     @Getter
     protected final List<Move> moves = new ArrayList<>(127);
@@ -46,11 +41,6 @@ public class MCTSGame {
 
     public MCTSGame(final Game game) {
         this.board = game.getBoard();
-        int nbMoves = game.getMoves().size();
-        int start = nbMoves < 8 ? 0 : nbMoves - 8;
-        for (int i = start; i < nbMoves; i++) {
-            last8Moves.add(game.getMoves().get(i));
-        }
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
         this.status = game.calculateStatus();
         initLastInputs(game);
@@ -58,23 +48,24 @@ public class MCTSGame {
 
     public MCTSGame(final MCTSGame game) {
         this.board = game.getBoard();
-        int nbMoves = game.getMoves().size();
-        int start = nbMoves < 8 ? 0 : nbMoves - 8;
-        for (int i = start; i < nbMoves; i++) {
-            last8Moves.add(game.getMoves().get(i));
-        }
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
         this.status = game.calculateStatus(this.board);
         this.last8Inputs.addAll(game.getLast8Inputs());
     }
 
     private void initLastInputs(final Game game) {
-        log.info("initLastInputs");
+        if (log.isInfoEnabled()) {
+            Move move = game.getLastMove();
+            if (move.getMovedPiece() == null)
+                log.info("INIT POSITION");
+            else
+                log.info("[{}:{}] initLastInputs", move.getMovedPiece().getPieceAllegiance(), move);
+        }
         int nbMoves = game.getMoves().size();
         if (nbMoves == 0 && this.last8Inputs.size() == 0) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
             log.info("push inputs init");
-            this.add(inputs);
+            this.add(null, inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.last8Inputs.clear();
@@ -83,16 +74,43 @@ public class MCTSGame {
                         InputsNNFactory.createInputsForOnePosition(board, null) :
                         InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
                 log.info("push input after init move:{}:\n{}", move, inputs);
+                this.add(move, inputs);
             });
         }
     }
 
-    private void add(final InputsOneNN inputsOneNN) {
-        if( inputsOneNN.equals(this.getLast8Inputs().peek())) {
-            log.error("Input already inserted in last8inputs");
-            throw new RuntimeException("Inputs already inserted");
+    private void add(final Move move, final InputsOneNN inputsOneNN) {
+        int size = this.getLast8Inputs().size();
+        if (size > 1 && move != null) {
+            Last8Inputs lastInput = this.getLast8Inputs().get(size - 1);
+            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            if (lastInput != null) {
+                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance())) {
+                    log.error("Move already inserted as last position, moves:{}", moves);
+                    throw new RuntimeException("Move already inserted as last position");
+                }
+                if (lastInput.move().toString().equals(move.toString())) {
+                    log.error("Move already inserted as last position, moves:{}", moves);
+                    throw new RuntimeException("Move already inserted as last position");
+                }
+                if (inputsOneNN.equals(lastInput.inputs().inputs())) {
+                    log.error("Input already inserted as last position, moves:{}", moves);
+                    throw new RuntimeException("Input already inserted as last position");
+                }
+            }
         }
-        this.last8Inputs.add(inputsOneNN);
+        this.last8Inputs.add(new Last8Inputs(inputsOneNN, move));
+        if (this.getLast8Inputs().size() > 1) {
+            size = this.getLast8Inputs().size();
+            for (int i = 0; i < size - 1; i++) {
+                Move move1 = this.getLast8Inputs().get(i).move();
+                Move move2 = this.getLast8Inputs().get(i + 1).move();
+                if (move1.toString().equals(move2.toString())) {
+                    log.error("Move already inserted as last position, moves:{}", moves);
+                    throw new RuntimeException("Move already inserted as last position");
+                }
+            }
+        }
     }
 
     /**
@@ -112,8 +130,8 @@ public class MCTSGame {
      */
     public synchronized long hashCode(final Alliance color2play, final Move move) {
         String hashCodeString = getHashCodeString(color2play, move);
-        if (log.isDebugEnabled()) log.debug("HASH:{}", hashCodeString);
         long ret = hash(hashCodeString);
+        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
         if (log.isDebugEnabled())
             log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
         return ret;
@@ -131,9 +149,11 @@ public class MCTSGame {
     public String getHashCodeString(final Alliance color2play, final Move move) {
         StringBuilder sb = new StringBuilder();
         Board board = getLastBoard();
+        List<Move> moves8inputs = this.last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null) {
             try {
                 board = move.execute();
+                moves8inputs.add(move);
             } catch (Exception e) {
                 log.error("[{}] move:{}", move.getMovedPiece().getPieceAllegiance(), move);
                 log.error("\n{}\n{}\n",
@@ -145,7 +165,7 @@ public class MCTSGame {
         }
         sb.append(board.toString());
         sb.append("\nM:");
-        sb.append(this.last8Moves.stream().map(Object::toString).collect(Collectors.joining(",")));
+        sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
         sb.append(color2play);
         return sb.toString();
@@ -166,16 +186,20 @@ public class MCTSGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        update(move);
+        add2Last8Inputs(move);
         return this.status = calculateStatus(board);
     }
 
-    public void update(final Move move) {
+    /**
+     * Add to lastInputs fhe given move
+     * @param move
+     */
+    public void add2Last8Inputs(final Move move) {
         if (move == null) return;
-        board = move.execute();
         this.moves.add(move);
-        this.last8Moves.add(move);
-        this.pushNNInput();
+        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), move);
+        this.last8Inputs.add(new Last8Inputs(inputs, move));
+        board = move.execute();
     }
 
     public Game.GameStatus calculateStatus(final Board board) {
@@ -214,15 +238,6 @@ public class MCTSGame {
                 (blackKingAlone || blackHasOnly2knights || blackHasOnly1knight || blackHasOnly1Bishop))
             return false;
         return true;
-    }
-
-    /**
-     * push the last board of this game on the list of inputs
-     */
-    protected void pushNNInput() {
-        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), null);
-        // log.info("pushNNInput:\n{}\n", inputs);
-        this.add(inputs);
     }
 
     public int getNbStep() {

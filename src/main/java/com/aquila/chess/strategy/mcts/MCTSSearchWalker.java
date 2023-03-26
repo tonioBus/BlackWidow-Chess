@@ -76,9 +76,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
         cpuct = updateCpuct.update(mctsGame.getMoves().size());
         SearchResult searchResult = search(currentRoot, 0, true);
         if (searchResult == null) {
-            if (log.isDebugEnabled()) log.debug("[{}] END SEARCH: NULL", nbStep);
+            log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
-            if (log.isDebugEnabled())
                 log.debug("[{}] END SEARCH: {} <- {}", nbStep, searchResult.getValue(), searchResult.getSource());
         }
         getStatistic().nbCalls++;

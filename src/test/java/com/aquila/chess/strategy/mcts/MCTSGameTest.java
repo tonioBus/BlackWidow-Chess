@@ -31,10 +31,10 @@ public class MCTSGameTest {
         while (game.play() == Game.GameStatus.IN_PROGRESS && game.getNbStep() < nbStep) ;
         MCTSGame mctsGame = new MCTSGame(game);
         assertEquals(nbStep, game.getMoves().size());
-        assertEquals(Integer.min(nbStep, 8), mctsGame.getLast8Moves().size());
+        assertEquals(Integer.min(nbStep, 8), mctsGame.getLast8Inputs().size());
         int len = nbStep < 8 ? 0 : nbStep - 8;
         String gameMoves = game.getMoves().stream().skip(len).map(move -> move.toString()).collect(Collectors.joining(","));
-        String mctsGameMoves = mctsGame.getLast8Moves().stream().map(move -> move.toString()).collect(Collectors.joining(","));
+        String mctsGameMoves = mctsGame.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
         log.info("game {} <-> {} mctsGame", gameMoves, mctsGameMoves);
         assertEquals(gameMoves, mctsGameMoves);
     }
@@ -52,7 +52,7 @@ public class MCTSGameTest {
         log.info("board:\n{}\n", game.toPGN());
         MCTSGame mctsGame = new MCTSGame(game);
         // mctsGame.nextMoves("c1-f4", "g8-f6");
-       // mctsGame.play();
+        // mctsGame.play();
         // mctsGame.play();
 
         game.play();
@@ -88,9 +88,9 @@ public class MCTSGameTest {
             assertEquals(hashcode, mctsGame.hashCode(game.getColor2play(), null));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
-                String currentLastMoves = mctsGame.getLast8Moves().stream().map(move -> move.toString()).collect(Collectors.joining(","));
+                String currentLastMoves = mctsGame.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
                 MCTSGame oldMctsGame = hashcodes.get(hashcode);
-                String oldLastMoves = oldMctsGame.getLast8Moves().stream().map(move -> move.toString()).collect(Collectors.joining(","));
+                String oldLastMoves = oldMctsGame.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
                 if (!currentLastMoves.equals(oldLastMoves)) {
                     StringBuffer sb = new StringBuffer();
                     sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));

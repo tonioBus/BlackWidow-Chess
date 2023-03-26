@@ -1,12 +1,35 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.Coordinate2D;
+import com.aquila.chess.strategy.mcts.MCTSGame;
+import com.aquila.chess.strategy.mcts.MCTSStrategy;
 import com.chess.engine.classic.board.BoardUtils;
+import com.chess.engine.classic.board.Move;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Slf4j
 public class UtilsTest {
+
+    public static boolean verify8inputs(final MCTSStrategy strategy) {
+        if (strategy.getMctsGame() == null) return true;
+        CircularFifoQueue<MCTSGame.Last8Inputs> last8Inputs = strategy.getMctsGame().getLast8Inputs();
+        Move lastMove = null;
+        for (MCTSGame.Last8Inputs last8Input : last8Inputs) {
+            Move move = last8Input.move();
+            if (lastMove != null) {
+                if (move.equals(lastMove)) {
+                    log.error("[{}] currentMove:{} lastMove:{}", strategy.getAlliance(), move, lastMove);
+                    return false;
+                }
+            }
+            lastMove = move;
+        }
+        return true;
+    }
 
     /**
      * y=7   "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",

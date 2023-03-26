@@ -13,6 +13,7 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class InputsNNFactory {
@@ -100,16 +101,31 @@ public class InputsNNFactory {
                                      final Move move,
                                      final Alliance color2play) {
         int destinationOffset = 0;
-        CircularFifoQueue<InputsOneNN> tmp = new CircularFifoQueue<>(8);
+        CircularFifoQueue<MCTSGame.Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(mctsGame.getLast8Inputs());
         if (move != null) {
-            InputsOneNN lastInput1 = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
-            log.info("++ createInouts({}):\n{}", move, lastInput1);
-            tmp.add(lastInput1);
+            int size = mctsGame.getLast8Inputs().size();
+            Move lastMove = mctsGame.getLast8Inputs().get(size - 1).move();
+            String moves = mctsGame.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            boolean addInputs = true;
+            if (lastMove != null) {
+                log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
+                if (lastMove.equals(move)) {
+//                    log.error("MOVE EQUALS({})", lastMove);
+                    addInputs = false;
+                }
+            }
+            if (addInputs) {
+                InputsOneNN lastInput1 = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+                // log.info("++ SIZE:{} MOVES:{} createInouts(offset:{} move:{} color:{}):\n{}", tmp.size(), moves, destinationOffset, move, move.getMovedPiece().getPieceAllegiance(), lastInput1);
+                tmp.add(new MCTSGame.Last8Inputs(lastInput1, move));
+            }
         }
-        for (InputsOneNN lastInput : tmp) {
-            log.info("createInouts({}):\n{}", destinationOffset, lastInput);
-            System.arraycopy(lastInput.inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
+        for (MCTSGame.Last8Inputs lastInput : tmp) {
+            Piece piece = lastInput.move().getMovedPiece();
+            String color = piece == null ? "null" : piece.getPieceAllegiance().toString();
+            log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
+            System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
         final Board board = mctsGame.getLastBoard();

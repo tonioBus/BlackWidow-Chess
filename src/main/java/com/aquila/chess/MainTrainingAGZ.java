@@ -90,7 +90,7 @@ public class MainTrainingAGZ {
                 gameStatus = game.play();
                 sequence.play();
                 Move move = game.getLastMove();
-                log.info("game:\n{}", game);
+                log.warn("game:\n{}", game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
