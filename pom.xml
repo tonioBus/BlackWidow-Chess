@@ -9,14 +9,14 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.java.version>1.11</project.java.version>
+        <maven.compiler.source>19</maven.compiler.source>
+        <maven.compiler.target>19</maven.compiler.target>
+        <!-- project.java.version>1.11</project.java.version -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <nd4j.version>1.0.0-M2.1</nd4j.version>
         <dl4j.version>1.0.0-M2.1</dl4j.version>
-        <java.version>17</java.version>
+        <java.version>19</java.version>
         <native.maven.plugin.version>0.9.19</native.maven.plugin.version>
     </properties>
 
