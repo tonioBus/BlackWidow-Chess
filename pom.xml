@@ -39,17 +39,17 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.4.4</version>
+            <version>1.4.6</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.4</version>
+            <version>1.4.6</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
+            <version>1.18.26</version>
             <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ca.umontreal.iro.simul/ssj -->
@@ -108,7 +108,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>5.9.0</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -142,6 +142,7 @@
                 <configuration>
                     <source>19</source>
                     <target>19</target>
+                    <compilerArgs>--enable-preview</compilerArgs>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <release>19</release>
                     <annotationProcessorPaths>
