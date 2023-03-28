@@ -104,7 +104,7 @@ public class DeepLearningAGZ {
 
     public void clearAllCaches() {
         serviceNN.clearAll();
-        cacheValues.clearCache();
+        // cacheValues.clearCache();
     }
 
     public Object getNetwork() {
@@ -200,7 +200,7 @@ public class DeepLearningAGZ {
 
     public CacheValues.CacheValue getBatchedValue(long key, final Move possibleMove, final Statistic statistic) {
         if (!cacheValues.containsKey(key)) {
-            String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED MOVE:%s", key, possibleMove);
+            String msg = String.format("KEY:%d SHOULD HAVE CREATED MOVE:%s", key, possibleMove);
             log.error(msg);
             log.error("- {}",
                     cacheValues.getValues()
@@ -210,6 +210,7 @@ public class DeepLearningAGZ {
             throw new RuntimeException(msg);
         }
         CacheValues.CacheValue cacheValue = cacheValues.get(key);
+        statistic.nbRetrieveNNValues++;
         return cacheValue;
     }
 

@@ -342,12 +342,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
         }
     }
 
-    protected List<Move> getPossibleMoves(final Game game) {
-        List<Move> moves = game.getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
-        getStatistic().nbPossibleMoves += moves.size();
-        return moves;
-    }
-
     protected String sequenceMoves(MCTSNode node) {
         if (node == this.currentRoot)
             return "";

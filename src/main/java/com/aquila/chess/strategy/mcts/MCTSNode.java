@@ -269,7 +269,7 @@ public class MCTSNode implements Serializable {
     private void clearChildrens() {
         for (Move move : this.childNodes.keySet()) {
             MCTSNode oldNode = this.childNodes.replace(move, null);
-            oldNode.parent = null;
+            if (oldNode != null) oldNode.parent = null;
         }
     }
 

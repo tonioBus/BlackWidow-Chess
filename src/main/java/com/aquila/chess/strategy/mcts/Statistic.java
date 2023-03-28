@@ -31,8 +31,19 @@ public class Statistic {
 
     @Override
     public String toString() {
-        return String.format("calls:%d play:%d possibleMovesCalls:%d SubmitJobs:%d NNCached:%d NNPolicies:%d NNretrieved:%d\nnbGoodSelection:%d maxRandomSelection:%d minRandomSelection:%d nbRandomSelection:%d nbRandomSelectionBestMoves:%d average:%f",
-                nbCalls, nbPlay, nbPossibleMoves, nbSubmitJobs, nbRetrieveNNCachedValues, nbRetrieveNNCachedPolicies,
-                nbRetrieveNNValues, nbGoodSelection, maxRandomSelectionBestMoves, minRandomSelectionBestMoves, nbRandomSelection, nbRandomSelectionBestMoves, nbRandomSelection == 0 ? 100000.0 : nbRandomSelectionBestMoves / nbRandomSelection);
+        return String.format("nbCalls:%d\n nbPlay:%d\n nbPossibleMoves:%d\n nbSubmitJobs:%d\n nbRetrieveNNCachedValues:%d\n nbRetrieveNNCachedPolicies:%d\n nbRetrieveNNValues:%d\n nbGoodSelection:%d\n MAXRandomSelectionBestMoves:%d\n MINRandomSelectionBestMoves:%d\n nbRandomSelection:%d\n nbRandomSelectionBestMoves:%d\n average:%f",
+                nbCalls,
+                nbPlay,
+                nbPossibleMoves,
+                nbSubmitJobs,
+                nbRetrieveNNCachedValues,
+                nbRetrieveNNCachedPolicies,
+                nbRetrieveNNValues,
+                nbGoodSelection,
+                maxRandomSelectionBestMoves,
+                minRandomSelectionBestMoves,
+                nbRandomSelection,
+                nbRandomSelectionBestMoves,
+                nbRandomSelection == 0 ? Double.POSITIVE_INFINITY : nbRandomSelectionBestMoves / nbRandomSelection);
     }
 }
