@@ -22,10 +22,6 @@ import java.util.Date;
 @Slf4j
 public class MainTrainingSimulNN {
 
-    static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
-
-    static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
-    private static final int BATCH_SIZE = 1;
     static public final int NB_STEP = 800;
 
     /**
@@ -85,7 +81,6 @@ public class MainTrainingSimulNN {
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
-            TrainGame trainGame = new TrainGame();
             do {
                 gameStatus = game.play();
                 sequence.play();

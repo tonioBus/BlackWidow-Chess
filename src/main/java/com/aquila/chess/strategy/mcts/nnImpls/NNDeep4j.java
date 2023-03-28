@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts.nnImpls;
 import com.aquila.chess.strategy.mcts.*;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 import org.deeplearning4j.nn.conf.CacheMode;
+import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
@@ -37,22 +38,21 @@ public class NNDeep4j implements INN {
                 // key option enabled
                 .allowMultiGPU(false) //
                 .setFirstMemory(AllocationStatus.DEVICE)
-                .setAllocationModel(Configuration.AllocationModel.DIRECT
-                )
+                .setAllocationModel(Configuration.AllocationModel.DIRECT)
                 .setMaximumDeviceMemoryUsed(0.90) //
                 .setMemoryModel(Configuration.MemoryModel.IMMEDIATE) //
                 // cross-device access is used for faster model averaging over pcie
-                .allowCrossDeviceAccess(false) //
+                .allowCrossDeviceAccess(true) //
                 .setNumberOfGcThreads(4)
-                .setMaximumBlockSize(128)
+                // .setMaximumBlockSize(-1)
                 .setMaximumGridSize(256)
                 .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
                 .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCache(8L * 1024 * 1024 * 1024L)
                 .setNoGcWindowMs(100)
-                .enableDebug(true)
-                .setVerbose(true);
+                .enableDebug(false)
+                .setVerbose(false);
         logger.info("getMaximumDeviceCache: {}", CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
         this.filename = filename;
         try {
@@ -65,6 +65,11 @@ public class NNDeep4j implements INN {
         }
         network.setListeners(new PerformanceListener(1));
         network.setCacheMode(CacheMode.DEVICE);
+        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+    }
+
+    public void train(boolean train) {
+        network.getConfiguration().setTrainingWorkspaceMode(train ? WorkspaceMode.ENABLED : WorkspaceMode.NONE);
     }
 
     @Override

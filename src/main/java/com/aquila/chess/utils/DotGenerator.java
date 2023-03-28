@@ -83,7 +83,7 @@ public class DotGenerator {
                 node.getChildMoves().size(),
                 color == null ? "no color" : color.toString(), //
                 szMove, //
-                String.format("ret:%d Prop:%d", node.getRet(), node.getPropagate()),
+                String.format("ret:%d Prop:%d", node.getNbReturn(), node.getPropagate()),
                 node.getValue(), //
                 node.getExpectedReward(false), //
                 node.getVirtualLoss(), //

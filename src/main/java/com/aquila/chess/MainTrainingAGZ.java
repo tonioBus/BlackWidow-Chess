@@ -27,6 +27,8 @@ public class MainTrainingAGZ {
     private static final int BATCH_SIZE = 5;
     static public final int NB_STEP = 800;
 
+    static public final int NB_THREADS = -1;
+
     /**
      * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
@@ -73,7 +75,7 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
-                    .withNbThread(1)
+                    .withNbThread(NB_THREADS)
                     .withDirichlet(dirichlet);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
@@ -83,7 +85,7 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
-                    .withNbThread(1)
+                    .withNbThread(NB_THREADS)
                     .withDirichlet(dirichlet);
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);

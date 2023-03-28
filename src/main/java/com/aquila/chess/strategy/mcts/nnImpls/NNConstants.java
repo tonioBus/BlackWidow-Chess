@@ -43,6 +43,11 @@ public class NNConstants implements INN {
     }
 
     @Override
+    public void train(boolean train) {
+
+    }
+
+    @Override
     public void close() {
     }
 

@@ -21,7 +21,7 @@ public class MCTSNode implements Serializable {
     static private int nbBuild = 0;
 
     @Getter
-    public int ret;
+    public int nbReturn;
 
     @Getter
     private double virtualLoss = 0.0;
@@ -120,7 +120,6 @@ public class MCTSNode implements Serializable {
             log.debug("CREATE ROOT NODE[key:{}] -> cacheValue:{}", key, this.getCacheValue());
     }
 
-
     /**
      * @param move
      * @param childMoves
@@ -134,10 +133,10 @@ public class MCTSNode implements Serializable {
         // this.childNodes.keySet().addAll(childMoves);
         this.dirichlet = false;
         this.creator = Thread.currentThread();
-        if (cacheValue.getNode() != null) {
-            throw new RuntimeException(String.format("CONNECTION PROBLEM [%s] ! cacheValue:%s already connected to node:%s",
-                    move, cacheValue, cacheValue.getNode()));
-        }
+//        if (cacheValue.getNode() != null) {
+//            throw new RuntimeException(String.format("CONNECTION PROBLEM [%s] ! cacheValue:%s already connected to node:%s",
+//                    move, cacheValue, cacheValue.getNode()));
+//        }
         this.key = key;
         this.cacheValue = cacheValue;
         this.cacheValue.setNode(this);
@@ -180,7 +179,6 @@ public class MCTSNode implements Serializable {
                 if (ret == parent) {
                     throw new RuntimeException(String.format("The children:%s is the same as the parent:%s", ret, parent));
                 }
-                return ret;
             }
             final Board selectBoard = move == null ? rootBoard : move.execute();
             final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
@@ -280,8 +278,8 @@ public class MCTSNode implements Serializable {
         });
     }
 
-    public void incRet() {
-        this.ret++;
+    public void incNbReturn() {
+        this.nbReturn++;
     }
 
     public List<MCTSNode> allChildNodes() {
@@ -400,8 +398,8 @@ public class MCTSNode implements Serializable {
             throw new RuntimeException("Adding a child to a node that already have this child ");
         }
         if (childNode.parent != null) {
-            log.error("Child:{}", childNode);
-            throw new RuntimeException("child has already a parent");
+            log.warn("Child already builded:{}", childNode);
+            // throw new RuntimeException("child has already a parent");
         }
         childNode.parent = this;
     }

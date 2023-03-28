@@ -288,8 +288,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     public MCTSStrategy withNbThread(int nbThreads) {
-        this.nbThreads = nbThreads;
-        log.warn("change nb threads: {}", nbThreads);
+        if (nbThreads > 0) {
+            this.nbThreads = nbThreads;
+            log.warn("change nb threads: {}", nbThreads);
+        }
         return this;
     }
 

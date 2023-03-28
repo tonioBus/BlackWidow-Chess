@@ -17,10 +17,8 @@
 
 package com.aquila.chess.strategy.mcts;
 
-import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
-import org.deeplearning4j.nn.conf.ConvolutionMode;
-import org.deeplearning4j.nn.conf.InputPreProcessor;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.nn.conf.graph.ElementWiseVertex;
 import org.deeplearning4j.nn.conf.graph.ElementWiseVertex.Op;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -104,6 +102,8 @@ public class DL4JAlphaGoZeroBuilder {
         this.convolutionMode = mode;
 
         this.conf = new NeuralNetConfiguration.Builder()
+                .trainingWorkspaceMode(WorkspaceMode.NONE)
+                .cacheMode(CacheMode.DEVICE)
                 .cudnnAlgoMode(ConvolutionLayer.AlgoMode.PREFER_FASTEST)
                 .updater(new Sgd(1e-4))
                 .weightInit(WeightInit.RELU)

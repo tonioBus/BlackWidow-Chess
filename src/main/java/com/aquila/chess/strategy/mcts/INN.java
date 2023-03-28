@@ -57,5 +57,7 @@ public interface INN {
 
     void reset();
 
+    public void train(boolean train);
+
     void close();
 }

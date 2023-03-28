@@ -78,7 +78,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         if (searchResult == null) {
             log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
-                log.debug("[{}] END SEARCH: {} <- {}", nbStep, searchResult.getValue(), searchResult.getSource());
+            log.debug("[{}] END SEARCH: {} <- {}", nbStep, searchResult.getValue(), searchResult.getSource());
         }
         getStatistic().nbCalls++;
         return numThread;
@@ -124,6 +124,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 selectedNode.syncSum();
                 if (log.isDebugEnabled()) log.debug("END synchronized 1.1 ({})", opponentNode);
                 return null;
+            } else {
+                // log.info("found child:{} node:{}", selectedMove, selectedNode);
             }
         }
         // evaluate
@@ -255,7 +257,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
-                    node.incRet();
+                    node.incNbReturn();
+                    log.info("[{}] WIN:{}", this.colorStrategy, selectedMove);
                     return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
@@ -271,7 +274,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
-                    node.incRet();
+                    node.incNbReturn();
+                    log.info("[{}] LOOSE:{}", this.colorStrategy, selectedMove);
                     return new SearchResult(node, -LOOSE_VALUE);
                 }
             case PAT:
@@ -302,7 +306,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
         }
         long key = mctsGame.hashCode(simulatedPlayerColor);
         this.deepLearning.addTerminalNodeToPropagate(key, node);
-        node.incRet();
+        node.incNbReturn();
+        log.info("[{}] DRAWN:{}", this.colorStrategy, selectedMove);
         return new SearchResult(node, 0);
     }
 

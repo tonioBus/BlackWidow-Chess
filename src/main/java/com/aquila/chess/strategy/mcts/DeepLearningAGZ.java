@@ -62,14 +62,16 @@ public class DeepLearningAGZ {
 
     static final int FIT_CHUNK = 50;
 
-    static final int BATCH_SIZE = 250;
+    static final int BATCH_SIZE = 300;
+
+    static final int CACHE_VALUES_SIZE = 100000;
 
     private final boolean train;
 
     final INN nn;
 
     @Getter
-    private final CacheValues cacheValues = new CacheValues(40000);
+    private final CacheValues cacheValues = new CacheValues(CACHE_VALUES_SIZE);
 
     @Setter
     @Getter
@@ -266,6 +268,7 @@ public class DeepLearningAGZ {
 
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
+        this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
         int nbChunk = nbStep / FIT_CHUNK;
