@@ -62,7 +62,7 @@ public class DeepLearningAGZ {
 
     static final int FIT_CHUNK = 50;
 
-    static final int BATCH_SIZE = 300;
+    static final int BATCH_SIZE = 200;
 
     static final int CACHE_VALUES_SIZE = 100000;
 
