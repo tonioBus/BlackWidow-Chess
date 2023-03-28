@@ -102,8 +102,8 @@ public class DL4JAlphaGoZeroBuilder {
         this.convolutionMode = mode;
 
         this.conf = new NeuralNetConfiguration.Builder()
-                .trainingWorkspaceMode(WorkspaceMode.NONE)
-                .cacheMode(CacheMode.DEVICE)
+                .trainingWorkspaceMode(WorkspaceMode.ENABLED)
+                .cacheMode(CacheMode.HOST)
                 .cudnnAlgoMode(ConvolutionLayer.AlgoMode.PREFER_FASTEST)
                 .updater(new Sgd(1e-4))
                 .weightInit(WeightInit.RELU)

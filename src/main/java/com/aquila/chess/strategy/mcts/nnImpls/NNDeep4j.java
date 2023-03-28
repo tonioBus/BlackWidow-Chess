@@ -63,7 +63,6 @@ public class NNDeep4j implements INN {
         if (network == null) {
             network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
         }
-        network.setCacheMode(CacheMode.HOST);
         // network.setListeners(new PerformanceListener(1));
         // network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
     }
