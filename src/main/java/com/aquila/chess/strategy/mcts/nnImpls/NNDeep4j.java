@@ -63,13 +63,13 @@ public class NNDeep4j implements INN {
         if (network == null) {
             network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
         }
-        network.setListeners(new PerformanceListener(1));
-        network.setCacheMode(CacheMode.DEVICE);
-        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+        network.setCacheMode(CacheMode.HOST);
+        // network.setListeners(new PerformanceListener(1));
+        // network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
     }
 
     public void train(boolean train) {
-        network.getConfiguration().setTrainingWorkspaceMode(train ? WorkspaceMode.ENABLED : WorkspaceMode.NONE);
+        // network.getConfiguration().setTrainingWorkspaceMode(train ? WorkspaceMode.ENABLED : WorkspaceMode.NONE);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class NNDeep4j implements INN {
     }
 
     @Override
-    public void fit(final double[][][][] inputs, final double[][] policies, final double[][] values) {
+    public void fit(final float[][][][] inputs, final float[][] policies, final float[][] values) {
         if (this.network.score() == Double.NaN) throw new RuntimeException("network broken !!");
         INDArray[] inputsArray = new INDArray[]{Nd4j.create(inputs)};
         INDArray[] labelsArray = new INDArray[]{Nd4j.create(policies), Nd4j.create(values)};
@@ -150,14 +150,14 @@ public class NNDeep4j implements INN {
     }
 
     @Override
-    public List<OutputNN> outputs(double[][][][] nbIn, final int len) {
+    public List<OutputNN> outputs(float[][][][] nbIn, final int len) {
         System.gc();
         List<OutputNN> ret = new ArrayList<>();
         INDArray[] outputs = output(nbIn);
         System.out.printf("%%");
         for (int i = 0; i < len; i++) {
-            double value = outputs[1].getColumn(0).getDouble(i);
-            double[] policies = outputs[0].getRow(i).toDoubleVector();
+            float value = outputs[1].getColumn(0).getFloat(i);
+            float[] policies = outputs[0].getRow(i).toFloatVector();
             ret.add(new OutputNN(value, policies));
         }
         return ret;
@@ -169,7 +169,7 @@ public class NNDeep4j implements INN {
     }
 
 
-    private INDArray[] output(double[][][][] nbIn) {
+    private INDArray[] output(float[][][][] nbIn) {
         INDArray inputsArray = Nd4j.create(nbIn);
         INDArray[] ret = network.output(inputsArray);
         // System.gc();

@@ -322,16 +322,16 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         };
     }
 
-    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+    private static Map<Integer, Float> calculatePolicies(final MCTSNode stepNode) {
         if (!stepNode.isSync()) {
             String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
             log.error(msg);
             throw new RuntimeException(msg);
         }
-        final Map<Integer, Double> probabilities = new HashMap<>();
+        final Map<Integer, Float> probabilities = new HashMap<>();
         stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
             int index = PolicyUtils.indexFromMove(child.getMove());
-            double probability = (double) child.getVisits() / (double) stepNode.getVisits();
+            float probability = (float) child.getVisits() / (float) stepNode.getVisits();
             probabilities.put(index, probability);
         });
         return probabilities;
@@ -339,7 +339,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
         InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, alliance);
-        Map<Integer, Double> policies = calculatePolicies(directParent);
+        Map<Integer, Float> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 move.toString(),

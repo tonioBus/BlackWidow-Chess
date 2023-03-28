@@ -5,7 +5,7 @@ import com.aquila.chess.utils.Utils;
 
 import java.io.Serializable;
 
-public record InputsFullNN(double[][][] inputs) implements Serializable {
+public record InputsFullNN(float[][][] inputs) implements Serializable {
 
     public InputsFullNN {
         if (inputs.length != INN.FEATURES_PLANES)

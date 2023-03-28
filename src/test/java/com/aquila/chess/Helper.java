@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,8 +55,9 @@ public class Helper {
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
-        double[] policies = node.getCacheValue().getPolicies();
-        double sumPolicies = Arrays.stream(policies).sum();
+        float[] policies = node.getCacheValue().getPolicies();
+        float sumPolicies = 0.0F;
+        for (int i = 0; i < policies.length; i++) sumPolicies += policies[i];
         if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("sum of policies should be ~= 1. (sum:%f)", sumPolicies));
         }

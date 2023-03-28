@@ -17,9 +17,9 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 @Getter
 public class MCTSSearchWalker implements Callable<Integer> {
-    protected static final double WIN_VALUE = 1;
-    protected static final double LOOSE_VALUE = -1;
-    private static final double DRAWN_VALUE = 0;
+    protected static final float WIN_VALUE = 1;
+    protected static final float LOOSE_VALUE = -1;
+    private static final float DRAWN_VALUE = 0;
 
     private final int numThread;
 
@@ -172,7 +172,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 label,
                 opponentNode,
                 statistic);
-        final double[] policies = deepLearning.getBatchedPolicies(
+        final float[] policies = deepLearning.getBatchedPolicies(
                 key,
                 moves,
                 isRootNode & withDirichlet,

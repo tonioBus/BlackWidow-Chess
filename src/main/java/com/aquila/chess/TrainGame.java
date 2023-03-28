@@ -24,7 +24,7 @@ public class TrainGame implements Serializable {
     }
 
     @Getter
-    Double value = null;
+    Float value = null;
 
     @Getter
     final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();

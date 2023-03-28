@@ -20,13 +20,13 @@ public class NNSimul extends NNConstants {
     }
 
     @Override
-    public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
+    public synchronized List<OutputNN> outputs(float[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
-            double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
+            float value = mediumValue + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+            float[] policies = new float[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                policies[policyIndex] = mediumPolicies + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
+                policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
                 if (offsets.containsKey(policyIndex)) {
                     double offset = offsets.get(policyIndex);
                     policies[policyIndex] += offset;
@@ -58,7 +58,7 @@ public class NNSimul extends NNConstants {
     }
 
     @Override
-    public void fit(double[][][][] inputs, double[][] policies, double[][] values) {
+    public void fit(float[][][][] inputs, float[][] policies, float[][] values) {
         throw new RuntimeException("fit not allow with this implementation");
     }
 
@@ -82,7 +82,7 @@ public class NNSimul extends NNConstants {
         return null;
     }
 
-    public void addIndexOffset(double offset, int... indexes) {
+    public void addIndexOffset(float offset, int... indexes) {
         for (int index : indexes) {
             this.offsets.put(index, offset);
         }

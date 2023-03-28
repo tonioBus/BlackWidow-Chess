@@ -321,7 +321,7 @@ public class MCTSNode implements Serializable {
         }
     }
 
-    void resetExpectedReward(double value) {
+    void resetExpectedReward(float value) {
         this.cacheValue.value = value;
         this.cacheValue.setInitialised(true);
         syncSum();

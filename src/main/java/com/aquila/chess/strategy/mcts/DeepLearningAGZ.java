@@ -62,7 +62,7 @@ public class DeepLearningAGZ {
 
     static final int FIT_CHUNK = 50;
 
-    static final int BATCH_SIZE = 200;
+    static final int BATCH_SIZE = 250;
 
     static final int CACHE_VALUES_SIZE = 100000;
 
@@ -216,7 +216,7 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public float[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
@@ -286,21 +286,21 @@ public class DeepLearningAGZ {
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
         final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
-        double[][] policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
-        double[][] valuesForNN = new double[chunkSize][1];
+        float[][] policiesForNN = new float[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
+        float[][] valuesForNN = new float[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
-        Double value = trainGame.getValue();
+        Float value = trainGame.getValue();
         List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
-            Map<Integer, Double> policies = oneStepRecord.policies();
+            Map<Integer, Float> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
-            double actualRewards = getActualRewards(value, oneStepRecord.color2play());
+            float actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
-            double trainPolicy = -actualRewards;
+            float trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
@@ -333,7 +333,7 @@ public class DeepLearningAGZ {
      * @param color2play
      * @return
      */
-    public static double getActualRewards(final double value, final Alliance color2play) {
+    public static float getActualRewards(final float value, final Alliance color2play) {
         int sign = 0;
         if (color2play.isWhite()) {
             sign = -1;

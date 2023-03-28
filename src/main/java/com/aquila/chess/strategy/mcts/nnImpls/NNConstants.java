@@ -19,15 +19,15 @@ import java.util.stream.Stream;
 @Slf4j
 public class NNConstants implements INN {
 
-    static private final double valueRangeMin = -0.400;
-    static private final double valueRangeMax = 0.400;
-    static private final double policyRangeMin = 0.100;
-    static private final double policyRangeMax = 0.500;
+    static private final float valueRangeMin = -0.400F;
+    static private final float valueRangeMax = 0.400F;
+    static private final float policyRangeMin = 0.100F;
+    static private final float policyRangeMax = 0.500F;
     final Random randomGenerator = new Random();
-    double mediumValue;
-    double mediumPolicies;
+    float mediumValue;
+    float mediumPolicies;
 
-    protected final Map<Integer, Double> offsets = new HashMap<>();
+    protected final Map<Integer, Float> offsets = new HashMap<>();
 
     public NNConstants(long seed) {
         randomGenerator.setSeed(seed);
@@ -36,8 +36,8 @@ public class NNConstants implements INN {
 
     @Override
     public void reset() {
-        mediumValue = valueRangeMin + (valueRangeMax - valueRangeMin) * randomGenerator.nextDouble();
-        mediumPolicies = policyRangeMin + (policyRangeMax - policyRangeMin) * randomGenerator.nextDouble();
+        mediumValue = valueRangeMin + (valueRangeMax - valueRangeMin) * randomGenerator.nextFloat();
+        mediumPolicies = policyRangeMin + (policyRangeMax - policyRangeMin) * randomGenerator.nextFloat();
         log.warn("mediumValue: {}", mediumValue);
         log.warn("mediumPolicies: {}", mediumPolicies);
     }
@@ -52,15 +52,15 @@ public class NNConstants implements INN {
     }
 
     @Override
-    public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
+    public synchronized List<OutputNN> outputs(float[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue;
-            double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
+            float value = mediumValue;
+            float[] policies = new float[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
                 policies[policyIndex] = mediumPolicies;
                 if (offsets.containsKey(policyIndex)) {
-                    double offset = offsets.get(policyIndex);
+                    float offset = offsets.get(policyIndex);
                     policies[policyIndex] += offset;
                 }
             }
@@ -90,7 +90,7 @@ public class NNConstants implements INN {
     }
 
     @Override
-    public void fit(double[][][][] inputs, double[][] policies, double[][] values) {
+    public void fit(float[][][][] inputs, float[][] policies, float[][] values) {
         throw new RuntimeException("fit not allow with this implementation");
     }
 
@@ -115,13 +115,13 @@ public class NNConstants implements INN {
     }
 
     @Deprecated
-    public void addIndexOffset(double offset, String s, int... indexes) {
+    public void addIndexOffset(float offset, String s, int... indexes) {
         for (int index : indexes) {
             this.offsets.put(index, offset);
         }
     }
 
-    public void addIndexOffset(double offset, final String movesSz, final Board board) {
+    public void addIndexOffset(float offset, final String movesSz, final Board board) {
         Stream.of(movesSz.toLowerCase().split(";")).forEach(moveSz -> {
             String[] splittedMove = moveSz.split("-");
             String startSz = splittedMove[0];
@@ -132,7 +132,7 @@ public class NNConstants implements INN {
         });
     }
 
-    public void addIndexOffset(double offset, final String movesSz, final Piece piece) {
+    public void addIndexOffset(float offset, final String movesSz, final Piece piece) {
         Stream.of(movesSz.toLowerCase().split(";")).forEach(moveSz -> {
             String[] splittedMove = moveSz.split("-");
             String startSz = splittedMove[0];

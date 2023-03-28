@@ -40,7 +40,7 @@ public interface INN {
 
     void save() throws IOException;
 
-    void fit(double[][][][] inputs, double[][] policies, double[][] values);
+    void fit(float[][][][] inputs, float[][] policies, float[][] values);
 
     /**
      * @return the filename
@@ -51,7 +51,7 @@ public interface INN {
 
     void setLR(double lr);
 
-    List<OutputNN> outputs(double[][][][] nbIn, int len);
+    List<OutputNN> outputs(float[][][][] nbIn, int len);
 
     NeuralNetwork getNetwork();
 

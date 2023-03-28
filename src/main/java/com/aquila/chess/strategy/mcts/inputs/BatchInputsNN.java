@@ -11,10 +11,10 @@ public class BatchInputsNN {
     int index = 0;
 
     @Getter
-    final double[][][][] inputs;
+    final float[][][][] inputs;
 
     public BatchInputsNN(int batchSize) {
-        this.inputs = new double[batchSize][][][];
+        this.inputs = new float[batchSize][][][];
     }
 
     public void add(final OneStepRecord oneStepRecord) {

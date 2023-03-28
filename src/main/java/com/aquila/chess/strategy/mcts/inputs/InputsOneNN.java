@@ -3,7 +3,7 @@ package com.aquila.chess.strategy.mcts.inputs;
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.utils.Utils;
 
-public record InputsOneNN(double[][][] inputs) {
+public record InputsOneNN(float[][][] inputs) {
 
     public InputsOneNN {
         if (inputs.length != INN.SIZE_POSITION)

@@ -15,6 +15,6 @@ import java.util.Map;
 public record OneStepRecord(InputsFullNN inputs,
                             String move,
                             Alliance color2play,
-                            Map<Integer, Double> policies) implements Serializable {
+                            Map<Integer, Float> policies) implements Serializable {
 
 }

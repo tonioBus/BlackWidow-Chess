@@ -52,7 +52,7 @@ public class CacheValues {
         return ret;
     }
 
-    public synchronized CacheValue updateValueAndPolicies(long key, double value, double[] notNormalisedPolicies) {
+    public synchronized CacheValue updateValueAndPolicies(long key, float value, float[] notNormalisedPolicies) {
         CacheValue cacheValue = this.lruMap.get(key);
         if (cacheValue == null) {
             throw new RuntimeException("node for key:" + key + " not found");
@@ -64,10 +64,10 @@ public class CacheValues {
     @Getter
     static public class CacheValue extends OutputNN implements Serializable {
 
-        private static final double NOT_INITIALIZED_VALUE = 0;
+        private static final float NOT_INITIALIZED_VALUE = 0;
 
         private static final CacheValue getNotInitialized(final String label) {
-            return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
+            return new CacheValue(NOT_INITIALIZED_VALUE, label, new float[PolicyUtils.MAX_POLICY_INDEX]);
         }
 
         @Setter
@@ -84,7 +84,7 @@ public class CacheValues {
 
         private int nbPropagate = 1;
 
-        private CacheValue(double value, String label, double[] policies) {
+        private CacheValue(float value, String label, float[] policies) {
             super(value, policies);
             this.label = label;
         }
@@ -101,16 +101,16 @@ public class CacheValues {
             this.type = CacheValueType.ROOT;
         }
 
-        public synchronized void normalise(double[] policies) {
+        public synchronized void normalise(float[] policies) {
             int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
             boolean isDirichlet =node.getState() == MCTSNode.State.ROOT;
             isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
-            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
-            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
-                throw new RuntimeException("ERROR, some policy with NaN value");
-            }
+            float[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
+//            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
+//                throw new RuntimeException("ERROR, some policy with NaN value");
+//            }
             this.policies = normalisedPolicies;
         }
 
@@ -118,7 +118,7 @@ public class CacheValues {
             this.type = CacheValueType.LEAF;
         }
 
-        public OutputNN setTrueValuesAndPolicies(final double value, final double[] policies) {
+        public OutputNN setTrueValuesAndPolicies(final float value, final float[] policies) {
             this.value = value;
             this.policies = policies;
             log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
