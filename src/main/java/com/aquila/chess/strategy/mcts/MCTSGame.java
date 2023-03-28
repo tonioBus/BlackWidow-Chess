@@ -85,17 +85,10 @@ public class MCTSGame {
             Last8Inputs lastInput = this.getLast8Inputs().get(size - 1);
             String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             if (lastInput != null) {
-                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance())) {
-                    log.error("Move already inserted as last position, moves:{}", moves);
+                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance()) &&
+                        lastInput.move().toString().equals(move.toString())) {
+                    log.error("Move:{} already inserted as last position, moves:{}", move, moves);
                     throw new RuntimeException("Move already inserted as last position");
-                }
-                if (lastInput.move().toString().equals(move.toString())) {
-                    log.error("Move already inserted as last position, moves:{}", moves);
-                    throw new RuntimeException("Move already inserted as last position");
-                }
-                if (inputsOneNN.equals(lastInput.inputs().inputs())) {
-                    log.error("Input already inserted as last position, moves:{}", moves);
-                    throw new RuntimeException("Input already inserted as last position");
                 }
             }
         }
