@@ -54,7 +54,7 @@ public class MCTSGame {
     }
 
     private void initLastInputs(final Game game) {
-        if (log.isInfoEnabled()) {
+        if (log.isDebugEnabled()) {
             Move move = game.getLastMove();
             if (move.getMovedPiece() == null)
                 log.info("INIT POSITION");
@@ -64,7 +64,7 @@ public class MCTSGame {
         int nbMoves = game.getMoves().size();
         if (nbMoves == 0 && this.last8Inputs.size() == 0) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
-            log.info("push inputs init");
+            log.debug("push inputs init");
             this.add(null, inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
@@ -73,7 +73,7 @@ public class MCTSGame {
                 final InputsOneNN inputs = move.hashCode() == -1 ?
                         InputsNNFactory.createInputsForOnePosition(board, null) :
                         InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
-                log.info("push input after init move:{}:\n{}", move, inputs);
+                log.debug("push input after init move:{}:\n{}", move, inputs);
                 this.add(move, inputs);
             });
         }

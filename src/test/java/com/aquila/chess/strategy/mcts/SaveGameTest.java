@@ -45,7 +45,7 @@ public class SaveGameTest {
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
 
     @ParameterizedTest
-    @ValueSource(ints = {6, 12})
+    @ValueSource(ints = {6, 12, 30})
     @Order(0)
     void testSaveGame(int nbStep) throws Exception {
         GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
@@ -97,11 +97,18 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch(resultGame, 666);
-        TrainGame trainGame = TrainGame.load(666);
+        whiteStrategy.saveBatch(resultGame, -666);
+        TrainGame trainGame = TrainGame.load(-666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep, trainGame.getOneStepRecordList().size());
+        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
+            log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
+            log.info("move:{}", oneStepRecord.move());
+            log.info("policiies.size:", oneStepRecord.policies().size());
+            log.info("color2play:", oneStepRecord.color2play());
+            log.info("----------------------------------------");
+        });
     }
 
     @ParameterizedTest

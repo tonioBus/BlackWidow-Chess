@@ -73,6 +73,7 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
+                    .withNbThread(1)
                     .withDirichlet(dirichlet);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
@@ -82,10 +83,11 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
+                    .withNbThread(1)
                     .withDirichlet(dirichlet);
+            whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
-
             do {
                 gameStatus = game.play();
                 sequence.play();

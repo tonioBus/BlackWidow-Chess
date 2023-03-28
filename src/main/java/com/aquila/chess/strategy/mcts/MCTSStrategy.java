@@ -343,8 +343,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 move.toString(),
                 alliance,
                 policies);
-        log.info("CREATE STEP TRAINING -> Save inputs:{}", policies.size());
-        log.info("CREATE STEP TRAINING ->[{}] INPUTS:\n{}", alliance, inputs);
+        log.debug("CREATE STEP TRAINING -> Save inputs:{}", policies.size());
+        log.debug("CREATE STEP TRAINING ->[{}] INPUTS:\n{}", alliance, inputs);
         return lastOneStepRecord;
     }
 

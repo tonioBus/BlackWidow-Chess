@@ -82,6 +82,7 @@ public class MainTrainingSimulNN {
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
                     // .withNbThread(1);
+            whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             TrainGame trainGame = new TrainGame();
