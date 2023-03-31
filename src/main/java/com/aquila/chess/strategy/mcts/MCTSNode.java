@@ -165,21 +165,21 @@ public class MCTSNode implements Serializable {
      */
     public static MCTSNode createNode(final MCTSNode parent, final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
-            final MCTSNode ret = cacheValue.getNode();
-            if (ret != null) {
-                if (log.isDebugEnabled())
-                    log.debug("RETURN MADE NODE[key:{}] -> move: {} cacheValue.Move:{}", key, move, ret.getMove());
-                if (!ret.getMove().equals(move)) {
-                    log.error("[CTX ERROR] createNode(\nparent=[{}],\nmove=[{}],\nkey={},\ncacheValue={})", parent, move, key, cacheValue);
-                    log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move, ret.getMove());
-                    log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
-                    throw new RuntimeException(String.format("[key:%s] CONNECTION PROBLEM [%s]\n! cacheValue:%s already connected to node:%s",
-                            key, move, cacheValue, cacheValue.getNode()));
-                }
-                if (ret == parent) {
-                    throw new RuntimeException(String.format("The children:%s is the same as the parent:%s", ret, parent));
-                }
-            }
+//            final MCTSNode ret = cacheValue.getNode();
+//            if (ret != null) {
+//                if (log.isDebugEnabled())
+//                    log.debug("RETURN MADE NODE[key:{}] -> move: {} cacheValue.Move:{}", key, move, ret.getMove());
+//                if (!ret.getMove().equals(move)) {
+//                    log.error("[CTX ERROR] createNode(\nparent=[{}],\nmove=[{}],\nkey={},\ncacheValue={})", parent, move, key, cacheValue);
+//                    log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move, ret.getMove());
+//                    log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
+//                    throw new RuntimeException(String.format("[key:%s] CONNECTION PROBLEM [%s]\n! cacheValue:%s already connected to node:%s",
+//                            key, move, cacheValue, cacheValue.getNode()));
+//                }
+//                if (ret == parent) {
+//                    throw new RuntimeException(String.format("The children:%s is the same as the parent:%s", ret, parent));
+//                }
+//            }
             final Board selectBoard = move == null ? rootBoard : move.execute();
             final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
             return new MCTSNode(move, childMoves, key, cacheValue);
