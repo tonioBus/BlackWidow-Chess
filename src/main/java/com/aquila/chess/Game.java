@@ -108,6 +108,7 @@ public class Game {
         int nbCol = 0;
 
         final ListIterator<Move> it = this.getMoves().listIterator();
+        it.next(); // to remove the initial move INIT
         while (it.hasNext()) {
             nbCol += ("" + i).length() + 9;
             if (nbCol > 70) {

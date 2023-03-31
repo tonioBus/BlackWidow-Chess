@@ -171,7 +171,6 @@ public class NNDeep4j implements INN {
     private INDArray[] output(float[][][][] nbIn) {
         INDArray inputsArray = Nd4j.create(nbIn);
         INDArray[] ret = network.output(inputsArray);
-        // System.gc();
         return ret;
     }
 }
