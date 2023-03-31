@@ -24,7 +24,7 @@ public class MainTrainingAGZ {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
 
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
-    private static final int BATCH_SIZE = 5;
+    private static final int BATCH_SIZE = 50000;
     static public final int NB_STEP = 800;
 
     static public final int NB_THREADS = -1;
