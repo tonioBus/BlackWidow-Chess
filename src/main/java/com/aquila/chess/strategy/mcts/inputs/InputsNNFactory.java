@@ -129,10 +129,10 @@ public class InputsNNFactory {
             destinationOffset += INN.SIZE_POSITION;
         }
         final Board board = mctsGame.getLastBoard();
-        List<Move> moveWhites = board.whitePlayer().getLegalMoves();
+        List<Move> moveWhites = board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE);
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
-        List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
+        List<Move> moveBlacks = board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE);
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
         fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0F : 0.0F);
