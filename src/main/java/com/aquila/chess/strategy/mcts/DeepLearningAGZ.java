@@ -298,6 +298,7 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Float> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
+            // if color2play is WHITE, the current node is BLACK, so -reward
             float actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             float trainPolicy = -actualRewards;
