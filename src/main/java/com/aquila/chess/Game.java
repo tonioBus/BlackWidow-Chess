@@ -242,7 +242,7 @@ public class Game {
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         sb.append(String.format("current legal move:%s\n", this
                 .getNextPlayer()
-                .getLegalMoves()
+                .getLegalMoves(Move.MoveStatus.DONE)
                 .stream()
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));

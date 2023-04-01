@@ -32,7 +32,7 @@ class DeepLearningAGZTest {
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
         game.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 1000));
-        List<Move> legalMovesBlack = game.getPlayer(Alliance.BLACK).getLegalMoves();
+        List<Move> legalMovesBlack = game.getPlayer(Alliance.BLACK).getLegalMoves(Move.MoveStatus.DONE);
         assertEquals(97, PolicyUtils.indexFromMove(BoardUtils.getMove("a7-a6", legalMovesBlack).get()));
         assertEquals(161, PolicyUtils.indexFromMove(BoardUtils.getMove("b7-b6", legalMovesBlack).get()));
         assertEquals(225, PolicyUtils.indexFromMove(BoardUtils.getMove("c7-c6", legalMovesBlack).get()));
@@ -79,7 +79,7 @@ class DeepLearningAGZTest {
                 updateCpuct,
                 2000);
         game.setup(whitePlayer, new RandomStrategy(Alliance.BLACK, 1000));
-        final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
+        final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves(Move.MoveStatus.DONE);
         MCTSGame mctsGame = new MCTSGame(game);
         for (final Move move : moves) {
             final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
