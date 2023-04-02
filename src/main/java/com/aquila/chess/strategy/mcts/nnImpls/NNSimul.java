@@ -1,13 +1,10 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
-import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
-import com.aquila.chess.strategy.mcts.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;

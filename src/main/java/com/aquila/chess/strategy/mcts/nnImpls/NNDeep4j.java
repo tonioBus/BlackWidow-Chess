@@ -1,11 +1,11 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
+import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import org.deeplearning4j.nn.api.NeuralNetwork;
-import org.deeplearning4j.nn.conf.CacheMode;
-import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
@@ -24,7 +24,8 @@ public class NNDeep4j implements INN {
 
     static private final Logger logger = LoggerFactory.getLogger(NNDeep4j.class);
     private final String filename;
-    public final int NUM_RESIDUAL_BLOCKS = 20;
+    // public final int NUM_RESIDUAL_BLOCKS = 20;
+    public final int NUM_RESIDUAL_BLOCKS = 10;
     public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
     private UpdateLr updateLr;
 
@@ -155,7 +156,7 @@ public class NNDeep4j implements INN {
         INDArray[] outputs = output(nbIn);
         System.out.printf("%%");
         for (int i = 0; i < len; i++) {
-            float value = outputs[1].getColumn(0).getFloat(i);
+            float value = ConvertValueOutput.convertFromSigmoid(outputs[1].getColumn(0).getFloat(i));
             float[] policies = outputs[0].getRow(i).toFloatVector();
             ret.add(new OutputNN(value, policies));
         }

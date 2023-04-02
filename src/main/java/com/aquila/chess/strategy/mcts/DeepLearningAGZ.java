@@ -4,8 +4,9 @@ import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -302,7 +303,7 @@ public class DeepLearningAGZ {
             float actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             float trainPolicy = -actualRewards;
-            valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
+            valuesForNN[chunkNumber][0] = ConvertValueOutput.convertToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
                 // we train the policy only when we will move from the loosing player

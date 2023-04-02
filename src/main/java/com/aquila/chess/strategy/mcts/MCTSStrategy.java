@@ -6,6 +6,8 @@ import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;

@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;

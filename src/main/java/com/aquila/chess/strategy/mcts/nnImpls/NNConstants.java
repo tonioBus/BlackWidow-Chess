@@ -2,13 +2,11 @@ package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
-import com.aquila.chess.strategy.mcts.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
-import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
-import com.chess.engine.classic.player.Player;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 

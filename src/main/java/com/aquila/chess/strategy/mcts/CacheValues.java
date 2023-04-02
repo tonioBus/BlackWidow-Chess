@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.MCTSStrategyConfig;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +11,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 

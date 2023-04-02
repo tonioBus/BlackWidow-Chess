@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import lombok.extern.slf4j.Slf4j;
 

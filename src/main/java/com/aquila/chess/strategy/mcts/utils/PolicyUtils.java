@@ -1,6 +1,5 @@
-package com.aquila.chess.strategy.mcts;
+package com.aquila.chess.strategy.mcts.utils;
 
-import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;

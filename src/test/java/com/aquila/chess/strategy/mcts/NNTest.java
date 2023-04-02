@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 
 import java.io.IOException;

@@ -7,6 +7,7 @@ import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
