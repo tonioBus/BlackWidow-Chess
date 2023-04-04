@@ -27,7 +27,7 @@ public class MainTrainingAGZ {
     private static final int BATCH_SIZE = 50000;
     static public final int NB_STEP = 800;
 
-    static public final int NB_THREADS = -1;
+    static public final int NB_THREADS = 1;
 
     /**
      * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
