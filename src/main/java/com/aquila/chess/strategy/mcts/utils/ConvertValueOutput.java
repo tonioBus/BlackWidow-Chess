@@ -7,7 +7,7 @@ public class ConvertValueOutput {
      * @param value
      * @return
      */
-    public static float convertFromSigmoid(float value) {
+    public static double convertFromSigmoid(double value) {
         return value * 2 - 1;
     }
 
@@ -16,7 +16,7 @@ public class ConvertValueOutput {
      * @param value
      * @return
      */
-    public static float convertToSigmoid(float value) {
+    public static double convertToSigmoid(double value) {
         return (value + 1) / 2;
     }
 }

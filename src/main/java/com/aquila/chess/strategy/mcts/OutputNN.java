@@ -6,14 +6,14 @@ import java.io.Serializable;
 
 public class OutputNN implements Serializable {
     @Getter
-    protected float value;
+    protected double value;
 
     @Getter
-    protected float[] policies;
+    protected double[] policies;
 
     protected OutputNN() {}
 
-    public OutputNN(float value, float[] policies) {
+    public OutputNN(double value, double[] policies) {
         this.value = value;
         this.policies = policies;
     }

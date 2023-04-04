@@ -92,7 +92,7 @@ class ServiceNN {
 
     private void retrieveValuesPoliciesFromNN(int length) {
         log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
-        final float[][][][] nbIn = new float[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
@@ -186,7 +186,7 @@ class ServiceNN {
         return nodes2propagate.size() == 0 ? null : nodes2propagate;
     }
 
-    private void createInputs(float[][][][] nbIn) {
+    private void createInputs(double[][][][] nbIn) {
         int indexNbIn = 0;
         for (Map.Entry<Long, InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
             System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, INN.FEATURES_PLANES);
@@ -200,8 +200,8 @@ class ServiceNN {
             Move move = entry.getValue().move();
             Alliance color2play = entry.getValue().color2play();
             long key = entry.getKey();
-            float value = outputsNN.get(index).getValue();
-            float[] policies = outputsNN.get(index).getPolicies();
+            double value = outputsNN.get(index).getValue();
+            double[] policies = outputsNN.get(index).getPolicies();
             CacheValues.CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
             if (propagationValues.containsKey(key)) {
                 CacheValues.CacheValue oldCacheValue = propagationValues.get(key);

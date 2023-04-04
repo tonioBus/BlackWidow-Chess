@@ -28,7 +28,7 @@ public class InputsNNFactory {
     public static final int KING_INDEX = 5;
 
     public static InputsFullNN createInput(final MCTSGame mctsGame, final Move move, final Alliance color2play) {
-        float[][][] inputs = new float[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         InputsNNFactory.createInputs(inputs, mctsGame, move, color2play);
         return new InputsFullNN(inputs);
     }
@@ -96,7 +96,7 @@ public class InputsNNFactory {
      * @param mctsGame
      * @param color2play
      */
-    private static void createInputs(final float[][][] inputs,
+    private static void createInputs(final double[][][] inputs,
                                      final MCTSGame mctsGame,
                                      final Move move,
                                      final Alliance color2play) {
@@ -135,11 +135,11 @@ public class InputsNNFactory {
         List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
-        fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0F : 0.0F);
-        fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0F : 0.0F);
-        fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0F : 0.0F);
-        fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0F : 0.0F);
-        fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0F : 0.0F);
+        fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
         // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[111], 1.0F);
     }
@@ -151,7 +151,7 @@ public class InputsNNFactory {
      * [13][NB_COL][NB_COL]
      */
     public static InputsOneNN createInputsForOnePosition(Board board, final Move move) {
-        final float[][][] nbIn = new float[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
         }
@@ -165,7 +165,7 @@ public class InputsNNFactory {
             }
         }
         // FIXME: optimize the copy
-        final var nbInNew = new float[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbInNew = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         // copy WHITE pieces without modification (player view)
         for (int planes = 0; planes < 6; planes++) {
             for (int y = 0; y < BoardUtils.NUM_TILES_PER_ROW; y++) {
@@ -203,7 +203,7 @@ public class InputsNNFactory {
         return -100; // sure this will failed at least
     }
 
-    private static void fill(float[][] planes, float value) {
+    private static void fill(double[][] planes, double value) {
         if (value == 0.0) return;
         for (int i = 0; i < 8; i++) {
             Arrays.fill(planes[i], value);

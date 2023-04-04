@@ -20,5 +20,5 @@ public class ResultGame {
      *     <li>draw      -> 0</li>
      * </ul>
      */
-    public final float reward;
+    public final double reward;
 }

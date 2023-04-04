@@ -10,7 +10,7 @@ import java.util.*;
 public class NNTest implements INN {
 
     double step = 0.000001;
-    private float value = 0.1F;
+    private double value = 0.1F;
 
     private final Map<Integer, Double> offsets = new HashMap<>();
 
@@ -50,7 +50,7 @@ public class NNTest implements INN {
     }
 
     @Override
-    public void fit(float[][][][] inputs, float[][] policies, float[][] values) {
+    public void fit(double[][][][] inputs, double[][] policies, double[][] values) {
 
     }
 
@@ -70,11 +70,11 @@ public class NNTest implements INN {
     }
 
     @Override
-    public synchronized List<OutputNN> outputs(float[][][][] nbIn, int len) {
+    public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
             this.value += step;
-            float[] policies = new float[PolicyUtils.MAX_POLICY_INDEX];
+            double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             Arrays.fill(policies, 0.2F);
             for (Map.Entry<Integer, Double> entry : this.offsets.entrySet()) {
                 policies[entry.getKey()] += entry.getValue();

@@ -39,9 +39,9 @@ public class MainFitNN {
         for (numGame = startGame; numGame <= endGame; numGame++) {
             deepLearningWhite.setUpdateLr(updateLr, numGame);
             logger.info("load game:{}", numGame);
-            TrainGame trainGame = null;
+            TrainGameFloat trainGame = null;
             try {
-                trainGame = TrainGame.load(numGame);
+                trainGame = TrainGameFloat.load(numGame);
                 deepLearningWhite.train(trainGame);
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Error for the training game: " + numGame, e);

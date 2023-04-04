@@ -83,8 +83,8 @@ public class Utils {
      * @param isDirichlet
      * @return
      */
-    public static float[] toDistribution(float[] policies, int[] indexes, boolean isDirichlet) {
-        float sum = 0;
+    public static double[] toDistribution(double[] policies, int[] indexes, boolean isDirichlet) {
+        double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
                 sum += policies[i];
@@ -150,7 +150,7 @@ public class Utils {
      * @param boardIndex
      * @return
      */
-    static public String displayBoard(float[][][] inputs, int boardIndex) {
+    static public String displayBoard(double[][][] inputs, int boardIndex) {
         Board.Builder builder = new Board.Builder();
         boolean empty = true;
         for (Alliance color : Arrays.asList(Alliance.WHITE, Alliance.BLACK)) {

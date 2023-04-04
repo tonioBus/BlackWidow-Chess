@@ -1,7 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.OneStepRecord;
-import com.aquila.chess.TrainGame;
+import com.aquila.chess.OneStepRecordFloat;
+import com.aquila.chess.TrainGameFloat;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
@@ -217,7 +217,7 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public float[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
+    public double[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
         CacheValues.CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
@@ -266,7 +266,7 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    public void train(final TrainGame trainGame) throws IOException {
+    public void train(final TrainGameFloat trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
@@ -284,24 +284,24 @@ public class DeepLearningAGZ {
         if ("NaN".equals(score + "")) throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
     }
 
-    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
+    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGameFloat trainGame) {
         final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
-        float[][] policiesForNN = new float[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
-        float[][] valuesForNN = new float[chunkSize][1];
+        final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
+        final var valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
-        Float value = trainGame.getValue();
-        List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
+        final double value = trainGame.getValue();
+        List<OneStepRecordFloat> inputsList = trainGame.getOneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
-            OneStepRecord oneStepRecord = inputsList.get(gameRound);
+            OneStepRecordFloat oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
             Map<Integer, Float> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
-            float actualRewards = getActualRewards(value, oneStepRecord.color2play());
+            double actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
-            float trainPolicy = -actualRewards;
+            double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
@@ -334,7 +334,7 @@ public class DeepLearningAGZ {
      * @param color2play
      * @return
      */
-    public static float getActualRewards(final float value, final Alliance color2play) {
+    public static double getActualRewards(final double value, final Alliance color2play) {
         int sign = 0;
         if (color2play.isWhite()) {
             sign = -1;

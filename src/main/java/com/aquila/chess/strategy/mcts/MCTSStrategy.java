@@ -1,8 +1,9 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.OneStepRecord;
-import com.aquila.chess.TrainGame;
+import com.aquila.chess.OneStepRecordDouble;
+import com.aquila.chess.OneStepRecordFloat;
+import com.aquila.chess.TrainGameDouble;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
@@ -43,7 +44,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private final UpdateCpuct updateCpuct;
 
     @Getter
-    private Statistic statistic = new Statistic();
+    final private Statistic statistic = new Statistic();
 
     private MCTSNode root = null;
 
@@ -51,7 +52,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSNode directRoot = null;
 
     @Getter
-    private TrainGame trainGame = new TrainGame();
+    final private TrainGameDouble trainGame = new TrainGameDouble();
 
     @Setter
     private MCTSStrategy partnerStrategy = null;
@@ -107,7 +108,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
         if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
+            OneStepRecordDouble lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
                     this.alliance.complementary(),
@@ -124,7 +125,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.nbStep++;
 
         if (isTraining()) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
+            OneStepRecordDouble lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,
                     this.alliance,
@@ -324,25 +325,25 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         };
     }
 
-    private static Map<Integer, Float> calculatePolicies(final MCTSNode stepNode) {
+    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
         if (!stepNode.isSync()) {
             String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
             log.error(msg);
             throw new RuntimeException(msg);
         }
-        final Map<Integer, Float> probabilities = new HashMap<>();
+        final Map<Integer, Double> probabilities = new HashMap<>();
         stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
             int index = PolicyUtils.indexFromMove(child.getMove());
-            float probability = (float) child.getVisits() / (float) stepNode.getVisits();
+            double probability = (double) child.getVisits() / (double) stepNode.getVisits();
             probabilities.put(index, probability);
         });
         return probabilities;
     }
 
-    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
+    private static OneStepRecordDouble createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
         InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, alliance);
-        Map<Integer, Float> policies = calculatePolicies(directParent);
-        OneStepRecord lastOneStepRecord = new OneStepRecord(
+        Map<Integer, Double> policies = calculatePolicies(directParent);
+        OneStepRecordDouble lastOneStepRecord = new OneStepRecordDouble(
                 inputs,
                 move.toString(),
                 alliance,

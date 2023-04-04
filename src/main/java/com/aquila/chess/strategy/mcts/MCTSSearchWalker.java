@@ -174,7 +174,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 label,
                 opponentNode,
                 statistic);
-        final float[] policies = deepLearning.getBatchedPolicies(
+        final double[] policies = deepLearning.getBatchedPolicies(
                 key,
                 moves,
                 isRootNode & withDirichlet,
