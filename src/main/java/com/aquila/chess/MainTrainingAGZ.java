@@ -53,11 +53,11 @@ public class MainTrainingAGZ {
     public static void main(final String[] args) throws Exception {
         int lastSaveGame = Utils.maxGame("train/") + 1;
         log.info("START MainTrainingAGZ: game {}", lastSaveGame);
-        GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40, 55);
+        GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
-        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
+        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
         deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
         DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
@@ -66,7 +66,7 @@ public class MainTrainingAGZ {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder().board(board).build();
             Sequence sequence = gameManager.createSequence();
-            long seed = System.nanoTime();
+            long seed = 0;
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
                     game,
                     Alliance.WHITE,
@@ -104,8 +104,8 @@ public class MainTrainingAGZ {
             if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
                 MainFitNN.trainGames(lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
                 nnWhite.close();
-                nnWhite = new NNDeep4j(NN_REFERENCE, true);
-                deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+                nnWhite = new NNDeep4j(NN_REFERENCE, false);
+                deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
                 deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
             }
             lastSaveGame++;
@@ -123,7 +123,7 @@ public class MainTrainingAGZ {
                 log.info("Switching DP {} <-> {}", reference, opponent);
                 nnBlack.close();
                 nnBlack = new NNDeep4j(NN_OPPONENT, false);
-                deepLearningBlack = new DeepLearningAGZ(nnBlack, true);
+                deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
                 deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
             }
         }

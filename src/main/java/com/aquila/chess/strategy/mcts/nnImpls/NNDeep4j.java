@@ -4,7 +4,10 @@ import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.deeplearning4j.nn.api.NeuralNetwork;
+import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
@@ -65,7 +68,8 @@ public class NNDeep4j implements INN {
             network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
         }
         // network.setListeners(new PerformanceListener(1));
-        // network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+        network.setListeners();
     }
 
     public void train(boolean train) {
@@ -100,7 +104,7 @@ public class NNDeep4j implements INN {
         final File file = new File(filename);
         if (!file.canRead()) return null;
         final ComputationGraph ret = ComputationGraph.load(file, loadUpdater);
-        logger.info("LOADED ComputationGraph");
+        logger.info("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(ret.getConfiguration(), ToStringStyle.JSON_STYLE));
         return ret;
     }
 
