@@ -223,7 +223,6 @@ public class DeepLearningAGZ {
             if (log.isDebugEnabled())
                 log.debug("getBatchedPolicies(): key:{} type:{}", key, output.getType());
             statistic.nbRetrieveNNCachedPolicies++;
-            if (!output.isInitialised()) return output.getPolicies();
             return output.getPolicies();
         } else {
             String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
