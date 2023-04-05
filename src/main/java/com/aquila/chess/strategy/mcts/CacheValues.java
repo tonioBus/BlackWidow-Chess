@@ -143,7 +143,7 @@ public class CacheValues {
             setTrueValuesAndPolicies();
         }
 
-        public static enum CacheValueType {
+        public enum CacheValueType {
             INTERMEDIATE, ROOT, LEAF
         }
 

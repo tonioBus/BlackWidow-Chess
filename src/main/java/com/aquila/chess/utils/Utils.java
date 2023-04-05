@@ -101,6 +101,7 @@ public class Utils {
             }
         }
         if (isDirichlet) {
+            log.info("Policy > 0: {}", Arrays.stream(policies).filter(policy -> policy > 0).count());
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
@@ -113,7 +114,7 @@ public class Utils {
                 if (ArrayUtils.contains(indexes, i)) {
                     p = policies[i];
                     double newP = (1 - epsilon) * p + epsilon * d[index];
-                    policies[i] = (float)newP;
+                    policies[i] = (float) newP;
                     index++;
                 }
             }
@@ -160,7 +161,7 @@ public class Utils {
                     for (int y = 0; y < Board.NB_COL; y++) {
                         if (inputs[indexInput][x][y] != 0.0) {
                             int piecePosition;
-                            if(color.isWhite()) {
+                            if (color.isWhite()) {
                                 piecePosition = 64 - ((8 - x) + y * 8);
                             } else {
                                 piecePosition = ((7 - x) + y * 8);
