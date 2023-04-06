@@ -307,25 +307,9 @@ public class DeepLearningAGZ {
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
-                // we train the policy only when we will move from the loosing player
-                // if (trainPolicy > 0) {
-                    policies.forEach((indexFromMove, previousPolicies) -> {
-                        policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
-                    });
-             //   }
-            /*else if (trainPolicy < 0) {
-                    // complement the distribution of policies
-                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
-                    policies.forEach((indexFromMove, probability) -> {
-                        double policy = 2 * average - probability;
-                        policiesForNN[atomicInteger.get()][indexFromMove] = policy;
-                    });
-                } else if (trainPolicy == 0) {
-                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
-                    policies.forEach((indexFromMove, childrenVisits) -> {
-                        policiesForNN[atomicInteger.get()][indexFromMove] = average;
-                    });
-                }*/
+                policies.forEach((indexFromMove, previousPolicies) -> {
+                    policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
+                });
             }
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
