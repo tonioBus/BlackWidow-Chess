@@ -18,38 +18,39 @@ public class MainFitNNFloat {
     static private final Logger logger = LoggerFactory.getLogger(MainFitNNFloat.class);
 
     public static void main(final String[] args) throws Exception {
-        UpdateLr updateLr = MainTrainingAGZ.updateLr;
-        Properties appProps = new Properties();
-        appProps.load(new FileInputStream(TRAIN_SETTINGS));
-        logger.info("START MainFitNN");
-        int startGame = Integer.valueOf(appProps.getProperty("start.game"));
-        int endGame = Integer.valueOf(appProps.getProperty("end.game"));
-        logger.info("startGame: {}", startGame);
-        logger.info("endGame: {}", endGame);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
-        nnWhite.setUpdateLr(updateLr, startGame);
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-        int nbGames = trainGames(startGame, endGame, updateLr, deepLearningWhite);
-        logger.info("Train {} games.", nbGames - startGame);
+//        UpdateLr updateLr = MainTrainingAGZ.updateLr;
+//        Properties appProps = new Properties();
+//        appProps.load(new FileInputStream(TRAIN_SETTINGS));
+//        logger.info("START MainFitNN");
+//        int startGame = Integer.valueOf(appProps.getProperty("start.game"));
+//        int endGame = Integer.valueOf(appProps.getProperty("end.game"));
+//        logger.info("startGame: {}", startGame);
+//        logger.info("endGame: {}", endGame);
+//        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
+//        nnWhite.setUpdateLr(updateLr, startGame);
+//        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+//        int nbGames = trainGames(startGame, endGame, updateLr, deepLearningWhite);
+//        logger.info("Train {} games.", nbGames - startGame);
     }
 
     public static int trainGames(final int startGame, final int endGame, final UpdateLr updateLr, final DeepLearningAGZ deepLearningWhite) throws IOException {
-        logger.info("train games from {} to {}", startGame, endGame);
-        int numGame;
-        for (numGame = startGame; numGame <= endGame; numGame++) {
-            deepLearningWhite.setUpdateLr(updateLr, numGame);
-            logger.info("load game:{}", numGame);
-            TrainGameFloat trainGame = null;
-            try {
-                trainGame = TrainGameFloat.load(numGame);
-                TrainGameDouble trainGameDouble = new TrainGameDouble(trainGame);
-                deepLearningWhite.train(trainGameDouble);
-            } catch (IOException | ClassNotFoundException e) {
-                logger.error("Error for the training game: " + numGame, e);
-            }
-        }
-        deepLearningWhite.save();
-        return numGame;
+//        logger.info("train games from {} to {}", startGame, endGame);
+//        int numGame;
+//        for (numGame = startGame; numGame <= endGame; numGame++) {
+//            deepLearningWhite.setUpdateLr(updateLr, numGame);
+//            logger.info("load game:{}", numGame);
+//            TrainGameFloat trainGame = null;
+//            try {
+//                trainGame = TrainGameFloat.load(subDir, numGame);
+//                TrainGameDouble trainGameDouble = new TrainGameDouble(trainGame);
+//                deepLearningWhite.train(trainGameDouble);
+//            } catch (IOException | ClassNotFoundException e) {
+//                logger.error("Error for the training game: " + numGame, e);
+//            }
+//        }
+//        deepLearningWhite.save();
+//        return numGame;
+        return -1;
     }
 
 }

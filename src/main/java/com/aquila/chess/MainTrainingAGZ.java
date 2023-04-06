@@ -102,7 +102,7 @@ public class MainTrainingAGZ {
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
             whiteStrategy.saveBatch(resultGame, lastSaveGame);
             if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-                MainFitNN.trainGames(lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
+                MainFitNN.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
                 nnWhite.close();
                 nnWhite = new NNDeep4j(NN_REFERENCE, false);
                 deepLearningWhite = new DeepLearningAGZ(nnWhite, false);

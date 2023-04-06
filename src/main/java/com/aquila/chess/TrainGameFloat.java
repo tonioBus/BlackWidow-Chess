@@ -21,9 +21,9 @@ public class TrainGameFloat implements Serializable {
     public TrainGameFloat() {
     }
 
-    public static TrainGameFloat load(int num) throws IOException, ClassNotFoundException {
+    public static TrainGameFloat load(String subDir, int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
-                = new FileInputStream("train/" + num);
+                = new FileInputStream(subDir + "/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         Object object = objectInputStream.readObject();

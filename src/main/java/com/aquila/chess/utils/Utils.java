@@ -117,7 +117,7 @@ public class Utils {
                     index++;
                 }
             }
-            log.warn("dirichlet: indexes: {} <-> {] : policies>0",
+            log.warn("dirichlet: indexes: {} <-> {} : policies>0",
                     indexes.length,
                     Arrays.stream(policies).filter(policy -> policy > 0).count());
         }

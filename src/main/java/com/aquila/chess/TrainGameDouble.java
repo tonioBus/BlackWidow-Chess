@@ -37,9 +37,9 @@ public class TrainGameDouble implements Serializable {
         }
     }
 
-    public static TrainGameDouble load(int num) throws IOException, ClassNotFoundException {
+    public static TrainGameDouble load(String subDir, int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
-                = new FileInputStream("train/" + num);
+                = new FileInputStream(subDir+"/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         TrainGameDouble ret = (TrainGameDouble) objectInputStream.readObject();
