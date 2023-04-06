@@ -308,11 +308,12 @@ public class DeepLearningAGZ {
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
                 // we train the policy only when we will move from the loosing player
-                if (trainPolicy > 0) {
+                // if (trainPolicy > 0) {
                     policies.forEach((indexFromMove, previousPolicies) -> {
                         policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
                     });
-                } /*else if (trainPolicy < 0) {
+             //   }
+            /*else if (trainPolicy < 0) {
                     // complement the distribution of policies
                     double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
                     policies.forEach((indexFromMove, probability) -> {
