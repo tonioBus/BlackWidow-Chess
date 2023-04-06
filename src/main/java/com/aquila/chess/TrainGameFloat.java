@@ -13,17 +13,8 @@ public class TrainGameFloat implements Serializable {
 
     static final long serialVersionUID = -2638786203240540104L;
 
-    static {
-        Path path = Paths.get("train/");
-
-        try {
-            Files.createDirectories(path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
     @Getter
-    Double value = null;
+    Float value = null;
     @Getter
     final LinkedList<OneStepRecordFloat> oneStepRecordList = new LinkedList<>();
 
@@ -35,13 +26,14 @@ public class TrainGameFloat implements Serializable {
                 = new FileInputStream("train/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
-        TrainGameFloat ret = (TrainGameFloat) objectInputStream.readObject();
+        Object object = objectInputStream.readObject();
+        TrainGameFloat ret = (TrainGameFloat) object;
         objectInputStream.close();
         return ret;
     }
 
     public void save(int num, final ResultGame resultGame) throws IOException {
-        this.value = resultGame.reward;
+        this.value = (float) resultGame.reward;
         FileOutputStream fileOutputStream
                 = new FileOutputStream("train/" + num);
         ObjectOutputStream objectOutputStream
@@ -60,4 +52,13 @@ public class TrainGameFloat implements Serializable {
         value = null;
     }
 
+    static {
+        Path path = Paths.get("train/");
+
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

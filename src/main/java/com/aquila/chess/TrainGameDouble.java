@@ -30,11 +30,12 @@ public class TrainGameDouble implements Serializable {
     public TrainGameDouble() {
     }
 
-//    public TrainGameDouble(TrainGameFloat trainGameFloat) {
-//        this.oneStepRecordList.add(trainGameFloat.getOneStepRecordList().stream().map(oneStepRecordFloat -> {
-//
-//        }));
-//    }
+    public TrainGameDouble(TrainGameFloat trainGameFloat) {
+        this.value = Double.valueOf(trainGameFloat.getValue());
+        for(OneStepRecordFloat oneStepRecordFloat:trainGameFloat.getOneStepRecordList())  {
+            this.oneStepRecordList.add(new OneStepRecordDouble(oneStepRecordFloat));
+        }
+    }
 
     public static TrainGameDouble load(int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream

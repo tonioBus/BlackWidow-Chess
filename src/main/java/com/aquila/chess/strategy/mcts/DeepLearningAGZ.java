@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.OneStepRecordDouble;
 import com.aquila.chess.OneStepRecordFloat;
+import com.aquila.chess.TrainGameDouble;
 import com.aquila.chess.TrainGameFloat;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
@@ -266,8 +268,8 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    public void train(final TrainGameFloat trainGame) throws IOException {
-        if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
+    public void train(final TrainGameDouble trainGame) throws IOException {
+        if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
@@ -284,19 +286,19 @@ public class DeepLearningAGZ {
         if ("NaN".equals(score + "")) throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
     }
 
-    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGameFloat trainGame) {
+    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGameDouble trainGame) {
         final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
         final double value = trainGame.getValue();
-        List<OneStepRecordFloat> inputsList = trainGame.getOneStepRecordList();
+        List<OneStepRecordDouble> inputsList = trainGame.getOneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
-            OneStepRecordFloat oneStepRecord = inputsList.get(gameRound);
+            OneStepRecordDouble oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
-            Map<Integer, Float> policies = oneStepRecord.policies();
+            Map<Integer, Double> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
             double actualRewards = getActualRewards(value, oneStepRecord.color2play());

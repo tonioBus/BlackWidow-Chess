@@ -9,14 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.util.Properties;
 
-public class MainFitNN {
+public class MainFitNNFloat {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
     public static final String TRAIN_SETTINGS = "train/train-settings.properties";
     @SuppressWarnings("unused")
-    static private final Logger logger = LoggerFactory.getLogger(MainFitNN.class);
+    static private final Logger logger = LoggerFactory.getLogger(MainFitNNFloat.class);
 
     public static void main(final String[] args) throws Exception {
         UpdateLr updateLr = MainTrainingAGZ.updateLr;
@@ -34,19 +33,17 @@ public class MainFitNN {
         logger.info("Train {} games.", nbGames - startGame);
     }
 
-    public static int trainGames(final int startGame, final int endGame, final UpdateLr updateLr, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
+    public static int trainGames(final int startGame, final int endGame, final UpdateLr updateLr, final DeepLearningAGZ deepLearningWhite) throws IOException {
         logger.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
             deepLearningWhite.setUpdateLr(updateLr, numGame);
             logger.info("load game:{}", numGame);
+            TrainGameFloat trainGame = null;
             try {
-                TrainGameDouble trainGame = TrainGameDouble.load(numGame);
-                // deepLearningWhite.train(trainGame);
-            } catch(InvalidObjectException e) {
-                TrainGameFloat trainGameFloat = TrainGameFloat.load(numGame);
-                TrainGameDouble trainGameDouble = new TrainGameDouble(trainGameFloat);
-                // deepLearningWhite.train(trainGame);
+                trainGame = TrainGameFloat.load(numGame);
+                TrainGameDouble trainGameDouble = new TrainGameDouble(trainGame);
+                deepLearningWhite.train(trainGameDouble);
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Error for the training game: " + numGame, e);
             }

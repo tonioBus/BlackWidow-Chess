@@ -101,7 +101,6 @@ public class Utils {
             }
         }
         if (isDirichlet) {
-            log.info("Policy > 0: {}", Arrays.stream(policies).filter(policy -> policy > 0).count());
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
@@ -118,7 +117,9 @@ public class Utils {
                     index++;
                 }
             }
-            log.warn("dirichlet: indexes: {}", indexes.length);
+            log.warn("dirichlet: indexes: {} <-> {] : policies>0",
+                    indexes.length,
+                    Arrays.stream(policies).filter(policy -> policy > 0).count());
         }
         return policies;
     }
