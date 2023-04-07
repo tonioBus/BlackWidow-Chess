@@ -63,7 +63,7 @@ public class DeepLearningAGZ {
     @Getter
     final private ServiceNN serviceNN;
 
-    static final int FIT_CHUNK = 50;
+    static final int FIT_CHUNK = 20;
 
     static final int BATCH_SIZE = 250;
 

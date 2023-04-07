@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class MainFitNN {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
@@ -19,12 +20,23 @@ public class MainFitNN {
     static private final Logger logger = LoggerFactory.getLogger(MainFitNN.class);
 
     public static void main(final String[] args) throws Exception {
+        train("train");
+        waitForKey();
+        train("train.1080");
+        waitForKey();
+        train("train.grospc");
+        waitForKey();
+    }
+
+    private static void waitForKey() {
+        Scanner input = new Scanner(System.in);
+        System.out.print("Press Enter to quit...");
+        input.nextLine();
+    }
+
+    public static void train(String subDir) throws IOException, ClassNotFoundException {
         UpdateLr updateLr = MainTrainingAGZ.updateLr;
         Properties appProps = new Properties();
-        // String subDir = "train";
-        String subDir = "train.1080";
-         // String subDir = "train.grospc";
-
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
         logger.info("START MainFitNN");
         int startGame = Integer.valueOf(appProps.getProperty("start.game"));
