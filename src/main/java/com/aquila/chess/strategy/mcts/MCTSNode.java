@@ -1,6 +1,5 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -14,6 +13,8 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 
 @Slf4j
 public class MCTSNode implements Serializable {
@@ -257,7 +258,7 @@ public class MCTSNode implements Serializable {
     public void setAsRoot() {
         log.warn("[{}] SET AS ROOT:{} {}", this.getColorState(), getCacheValue().value, this);
         getCacheValue().setAsRoot();
-        this.state = State.ROOT;
+        this.state = ROOT;
         if (this.parent != null) {
             this.parent.clearChildrens();
             this.parent = null;
@@ -308,6 +309,21 @@ public class MCTSNode implements Serializable {
 
     public int getNumberOfChilds() {
         return (int) this.childNodes.values().stream().filter(node -> node != null).count();
+    }
+
+    public String getMovesFromRootAsString() {
+        return this.getMovesFromRoot().stream().map(move -> String.format("%s-%s", move.getMovedPiece().getPieceAllegiance(), move)).collect(Collectors.joining(","));
+    }
+
+    public List<Move> getMovesFromRoot() {
+        MCTSNode tmpNode = this;
+        final List<Move> ret = new ArrayList<>();
+        while (tmpNode != null && tmpNode.state != ROOT) {
+            if (tmpNode.move != null) ret.add(tmpNode.move);
+            tmpNode = tmpNode.parent;
+        }
+        Collections.reverse(ret);
+        return ret;
     }
 
     static public enum PropragateSrc {
@@ -405,7 +421,7 @@ public class MCTSNode implements Serializable {
     }
 
     public static MCTSNode getFirstRoot(final MCTSNode node) {
-        if (node.getState() == State.ROOT) return node;
+        if (node.getState() == ROOT) return node;
         return getFirstRoot(node.getParent());
     }
 

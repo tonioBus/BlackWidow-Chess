@@ -18,9 +18,4 @@ public class BasicTest {
         log.info("gameMoves:{}", gameMoves);
     }
 
-    @Test
-    void testLimitedList() {
-
-
-    }
 }

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -260,7 +261,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] WIN:{}", this.colorStrategy, selectedMove);
+                    log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
@@ -277,7 +278,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] LOOSE:{}", this.colorStrategy, selectedMove);
+                    log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, -LOOSE_VALUE);
                 }
             case PAT:
@@ -309,7 +310,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         long key = mctsGame.hashCode(simulatedPlayerColor);
         this.deepLearning.addTerminalNodeToPropagate(key, node);
         node.incNbReturn();
-        log.info("[{}] DRAWN:{}", this.colorStrategy, selectedMove);
+        log.info("[{}] DRAWN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
         return new SearchResult(node, 0);
     }
 
