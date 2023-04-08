@@ -67,6 +67,8 @@ public class MainTrainingAGZ {
             final Game game = Game.builder().board(board).build();
             Sequence sequence = gameManager.createSequence();
             long seed = 0;
+            deepLearningWhite.clearAllCaches();
+            deepLearningBlack.clearAllCaches();
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
                     game,
                     Alliance.WHITE,

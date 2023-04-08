@@ -109,7 +109,7 @@ public class DeepLearningAGZ {
 
     public void clearAllCaches() {
         serviceNN.clearAll();
-        // cacheValues.clearCache();
+        cacheValues.clearCache();
     }
 
     public Object getNetwork() {
