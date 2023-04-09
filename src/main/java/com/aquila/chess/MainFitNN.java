@@ -30,11 +30,11 @@ public class MainFitNN {
 
     private static void waitForKey() {
         Scanner input = new Scanner(System.in);
-        System.out.print("Press Enter to quit...");
+        System.out.print("Press Enter to continue...");
         input.nextLine();
     }
 
-    public static void train(String subDir) throws IOException, ClassNotFoundException {
+    public static void train(final String subDir) throws IOException, ClassNotFoundException {
         UpdateLr updateLr = MainTrainingAGZ.updateLr;
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
@@ -47,7 +47,7 @@ public class MainFitNN {
         nnWhite.setUpdateLr(updateLr, startGame);
         final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         int nbGames = trainGames(subDir, startGame, endGame, updateLr, deepLearningWhite);
-        logger.info("Train {} games.", nbGames - startGame);
+        logger.info("{} -> Train {} games.", subDir, nbGames - startGame);
     }
 
     public static int trainGames(String subDir, final int startGame, final int endGame, final UpdateLr updateLr, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
