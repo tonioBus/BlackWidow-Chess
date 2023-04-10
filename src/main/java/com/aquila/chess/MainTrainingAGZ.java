@@ -66,14 +66,17 @@ public class MainTrainingAGZ {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder().board(board).build();
             Sequence sequence = gameManager.createSequence();
-            long seed = 0;
+            long seed1 = System.currentTimeMillis();
+            log.info("SEED WHITE:{}", seed1);
             deepLearningWhite.clearAllCaches();
             deepLearningBlack.clearAllCaches();
+            long seed2 = System.nanoTime();
+            log.info("SEED BLACK:{}", seed2);
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
                     game,
                     Alliance.WHITE,
                     deepLearningWhite,
-                    seed,
+                    seed1,
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
@@ -83,7 +86,7 @@ public class MainTrainingAGZ {
                     game,
                     Alliance.BLACK,
                     deepLearningBlack,
-                    seed,
+                    seed2,
                     updateCpuct,
                     -1)
                     .withNbSearchCalls(NB_STEP)
