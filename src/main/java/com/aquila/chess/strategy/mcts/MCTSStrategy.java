@@ -2,7 +2,6 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.OneStepRecordDouble;
-import com.aquila.chess.OneStepRecordFloat;
 import com.aquila.chess.TrainGameDouble;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;

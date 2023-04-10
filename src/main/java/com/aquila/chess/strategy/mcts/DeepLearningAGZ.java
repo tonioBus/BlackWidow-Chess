@@ -1,9 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.OneStepRecordDouble;
-import com.aquila.chess.OneStepRecordFloat;
 import com.aquila.chess.TrainGameDouble;
-import com.aquila.chess.TrainGameFloat;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
@@ -304,7 +302,7 @@ public class DeepLearningAGZ {
             double actualRewards = getActualRewards(value, oneStepRecord.color2play());
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
-            valuesForNN[chunkNumber][0] = ConvertValueOutput.convertToSigmoid(actualRewards); // CHOICES
+            valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
                 policies.forEach((indexFromMove, previousPolicies) -> {

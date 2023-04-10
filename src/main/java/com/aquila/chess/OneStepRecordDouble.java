@@ -18,10 +18,6 @@ public record OneStepRecordDouble(InputsFullNN inputs,
                                   Alliance color2play,
                                   Map<Integer, Double> policies) implements Serializable {
 
-    public OneStepRecordDouble(OneStepRecordFloat oneStepRecordFloat) {
-        this(convertInputFloat(oneStepRecordFloat.inputs()), oneStepRecordFloat.move(), oneStepRecordFloat.color2play(), convertPoliciesFloat(oneStepRecordFloat.policies()));
-    }
-
     private static Map<Integer, Double> convertPoliciesFloat(Map<Integer, Float> policies) {
         Map<Integer, Double> ret = new HashMap<>();
         for (int key : policies.keySet()) {

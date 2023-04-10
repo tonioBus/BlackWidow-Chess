@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts.inputs;
 
 import com.aquila.chess.OneStepRecordDouble;
-import com.aquila.chess.OneStepRecordFloat;
 import lombok.Getter;
 
 public class BatchInputsNN {
