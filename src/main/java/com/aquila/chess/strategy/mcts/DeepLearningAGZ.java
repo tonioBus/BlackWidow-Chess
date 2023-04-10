@@ -299,7 +299,8 @@ public class DeepLearningAGZ {
             Map<Integer, Double> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
-            double actualRewards = getActualRewards(value, oneStepRecord.color2play());
+            Alliance playedColor = oneStepRecord.color2play();
+            double actualRewards = getActualRewards(value, playedColor);
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
@@ -322,9 +323,9 @@ public class DeepLearningAGZ {
     public static double getActualRewards(final double value, final Alliance color2play) {
         int sign = 0;
         if (color2play.isWhite()) {
-            sign = -1;
-        } else {
             sign = 1;
+        } else {
+            sign = -1;
         }
         return sign * value;
     }
