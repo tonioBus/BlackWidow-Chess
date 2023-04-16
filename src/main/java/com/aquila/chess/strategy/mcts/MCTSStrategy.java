@@ -1,8 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.OneStepRecordDouble;
-import com.aquila.chess.TrainGameDouble;
+import com.aquila.chess.OneStepRecord;
+import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
@@ -51,7 +51,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSNode directRoot = null;
 
     @Getter
-    final private TrainGameDouble trainGame = new TrainGameDouble();
+    final private TrainGame trainGame = new TrainGame();
 
     @Setter
     private MCTSStrategy partnerStrategy = null;
@@ -106,8 +106,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
-            OneStepRecordDouble lastOneStepRecord = createStepTraining(
+        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame!=null) {
+            OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
                     this.alliance.complementary(),
@@ -124,7 +124,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.nbStep++;
 
         if (isTraining()) {
-            OneStepRecordDouble lastOneStepRecord = createStepTraining(
+            OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,
                     this.alliance,
@@ -338,10 +338,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private static OneStepRecordDouble createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
+    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
         InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
-        OneStepRecordDouble lastOneStepRecord = new OneStepRecordDouble(
+        OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 move.toString(),
                 alliance,

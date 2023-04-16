@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Slf4j
-public class MainTrainingAGZ {
+public class MainTrainingAGZTest {
 
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
 
@@ -34,11 +34,10 @@ public class MainTrainingAGZ {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 5000) return 1e-7
-                ;
-        if (nbGames > 3000) return 1e-6;
-        if (nbGames > 1000) return 1e-5;
-        return 1e-4;
+        if (nbGames > 5000) return 1e-6;
+        if (nbGames > 3000) return 1e-5;
+        if (nbGames > 1000) return 1e-4;
+        return 1e-3;
     };
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
@@ -64,7 +63,7 @@ public class MainTrainingAGZ {
         DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
         deepLearningBlack = DeepLearningAGZ.initFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
         while (true) {
-            final Board board = Board.createStandardBoard();
+            final Board board = Board.createBoard("kh1,pg6", "pa4,kg3", Alliance.BLACK);
             final Game game = Game.builder().board(board).build();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
@@ -101,6 +100,9 @@ public class MainTrainingAGZ {
                 sequence.play();
                 Move move = game.getLastMove();
                 log.warn("game:\n{}", game);
+                if(sequence.nbStep > 20) {
+                    gameStatus= Game.GameStatus.DRAW_300;
+                }
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
@@ -108,7 +110,7 @@ public class MainTrainingAGZ {
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
             whiteStrategy.saveBatch(resultGame, lastSaveGame);
             if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-                // MainFitNN.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
+//                MainFitNN.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
 //                nnWhite.close();
 //                nnWhite = new NNDeep4j(NN_REFERENCE, false);
 //                deepLearningWhite = new DeepLearningAGZ(nnWhite, false);

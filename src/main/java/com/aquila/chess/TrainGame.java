@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
-public class TrainGameDouble implements Serializable {
+public class TrainGame implements Serializable {
 
     static final long serialVersionUID = -2638786203240540104L;
 
@@ -25,17 +25,17 @@ public class TrainGameDouble implements Serializable {
     @Getter
     Double value = null;
     @Getter
-    final LinkedList<OneStepRecordDouble> oneStepRecordList = new LinkedList<>();
+    final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
-    public TrainGameDouble() {
+    public TrainGame() {
     }
 
-    public static TrainGameDouble load(String subDir, int num) throws IOException, ClassNotFoundException {
+    public static TrainGame load(String subDir, int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
                 = new FileInputStream(subDir+"/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
-        TrainGameDouble ret = (TrainGameDouble) objectInputStream.readObject();
+        TrainGame ret = (TrainGame) objectInputStream.readObject();
         objectInputStream.close();
         return ret;
     }
@@ -51,7 +51,7 @@ public class TrainGameDouble implements Serializable {
         objectOutputStream.close();
     }
 
-    public void add(final OneStepRecordDouble oneStepRecord) {
+    public void add(final OneStepRecord oneStepRecord) {
         this.oneStepRecordList.add(oneStepRecord);
     }
 

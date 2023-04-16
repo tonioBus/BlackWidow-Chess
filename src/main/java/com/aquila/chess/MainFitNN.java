@@ -18,13 +18,24 @@ public class MainFitNN {
     @SuppressWarnings("unused")
     static private final Logger logger = LoggerFactory.getLogger(MainFitNN.class);
 
+    /**
+     * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
+     * and 0.0002 after 100, 300, and 500 thousand steps for chess
+     */
     public static void main(final String[] args) throws Exception {
-        train("train");
-        waitForKey();
-        train("train.1080");
-        waitForKey();
-        train("train.grospc");
-        waitForKey();
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
+        UpdateLr updateLr = nbGames -> {
+            return 1e-4;
+        };
+        nnWhite.setUpdateLr(updateLr, 1);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+        train("train.main", deepLearningWhite);
+//        waitForKey();
+        train("train.1080", deepLearningWhite);
+//        waitForKey();
+        train("train.grospc", deepLearningWhite);
+//        waitForKey();
+        deepLearningWhite.save();
     }
 
     private static void waitForKey() {
@@ -33,8 +44,7 @@ public class MainFitNN {
         input.nextLine();
     }
 
-    public static void train(final String subDir) throws IOException, ClassNotFoundException {
-        UpdateLr updateLr = MainTrainingAGZ.updateLr;
+    public static void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
         logger.info("START MainFitNN");
@@ -42,27 +52,22 @@ public class MainFitNN {
         int endGame = Integer.valueOf(appProps.getProperty("end.game"));
         logger.info("startGame: {}", startGame);
         logger.info("endGame: {}", endGame);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
-        nnWhite.setUpdateLr(updateLr, startGame);
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-        int nbGames = trainGames(subDir, startGame, endGame, updateLr, deepLearningWhite);
+        int nbGames = trainGames(subDir, startGame, endGame, deepLearningWhite);
         logger.info("{} -> Train {} games.", subDir, nbGames - startGame);
     }
 
-    public static int trainGames(String subDir, final int startGame, final int endGame, final UpdateLr updateLr, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
+    public static int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite) {
         logger.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
-            deepLearningWhite.setUpdateLr(updateLr, numGame);
             logger.info("load game:{}", numGame);
             try {
-                TrainGameDouble trainGame = TrainGameDouble.load(subDir, numGame);
+                TrainGame trainGame = TrainGame.load(subDir, numGame);
                 deepLearningWhite.train(trainGame);
             } catch (Exception e) {
                 logger.error("Error for the training game: " + numGame, e);
             }
         }
-        deepLearningWhite.save();
         return numGame;
     }
 
