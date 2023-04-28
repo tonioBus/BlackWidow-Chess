@@ -84,10 +84,10 @@ public class Game {
         String result = "*";
         switch (this.status) {
             case WHITE_CHESSMATE:
-                result = "1-0";
+                result = "0-1";
                 break;
             case BLACK_CHESSMATE:
-                result = "0-1";
+                result = "1-0";
                 break;
             case DRAW_50:
             case DRAW_300:

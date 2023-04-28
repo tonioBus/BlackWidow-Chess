@@ -116,22 +116,22 @@ public class MainTrainingAGZ {
             }
             lastSaveGame++;
             Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
-            if (status == Status.SWITCHING) {
-                final Path reference = Paths.get(NN_REFERENCE);
-                final Path opponent = Paths.get(NN_OPPONENT);
-                SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm-ss");
-                final Path backupOpponent = Paths.get(NN_OPPONENT + "_" + format.format(new Date()));
-                log.info("BACKUP PARTNER {} -> {}", opponent, backupOpponent);
-                if (opponent.toFile().canRead()) {
-                    Files.copy(opponent, backupOpponent, StandardCopyOption.REPLACE_EXISTING);
-                }
-                Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
-                log.info("Switching DP {} <-> {}", reference, opponent);
-                nnBlack.close();
-                nnBlack = new NNDeep4j(NN_OPPONENT, false);
-                deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
-                deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
+//            if (status == Status.SWITCHING) {
+//                final Path reference = Paths.get(NN_REFERENCE);
+//                final Path opponent = Paths.get(NN_OPPONENT);
+//                SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm-ss");
+//                final Path backupOpponent = Paths.get(NN_OPPONENT + "_" + format.format(new Date()));
+//                log.info("BACKUP PARTNER {} -> {}", opponent, backupOpponent);
+//                if (opponent.toFile().canRead()) {
+//                    Files.copy(opponent, backupOpponent, StandardCopyOption.REPLACE_EXISTING);
+//                }
+//                Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
+//                log.info("Switching DP {} <-> {}", reference, opponent);
+//                nnBlack.close();
+//                nnBlack = new NNDeep4j(NN_OPPONENT, false);
+//                deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
+//                deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
+//            }
         }
     }
 }
