@@ -1,6 +1,6 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.Coordinate2D;
+import com.aquila.chess.strategy.mcts.utils.Coordinate2D;
 import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.mcts.MCTSStrategy;
 import com.chess.engine.classic.board.BoardUtils;

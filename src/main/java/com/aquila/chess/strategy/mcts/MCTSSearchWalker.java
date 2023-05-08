@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
@@ -13,13 +15,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 public class MCTSSearchWalker implements Callable<Integer> {
-    protected static final double WIN_VALUE = 1;
-    protected static final double LOOSE_VALUE = -1;
-    private static final double DRAWN_VALUE = 0;
+    protected static final float WIN_VALUE = 1;
+    protected static final float LOOSE_VALUE = -1;
+    private static final float DRAWN_VALUE = 0;
 
     private final int numThread;
 
@@ -258,7 +261,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] WIN:{}", this.colorStrategy, selectedMove);
+                    log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, WIN_VALUE);
                 } else {
                     if (node.getState() != MCTSNode.State.LOOSE) {
@@ -275,7 +278,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] LOOSE:{}", this.colorStrategy, selectedMove);
+                    log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, -LOOSE_VALUE);
                 }
             case PAT:
@@ -307,7 +310,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         long key = mctsGame.hashCode(simulatedPlayerColor);
         this.deepLearning.addTerminalNodeToPropagate(key, node);
         node.incNbReturn();
-        log.info("[{}] DRAWN:{}", this.colorStrategy, selectedMove);
+        log.info("[{}] DRAWN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
         return new SearchResult(node, 0);
     }
 

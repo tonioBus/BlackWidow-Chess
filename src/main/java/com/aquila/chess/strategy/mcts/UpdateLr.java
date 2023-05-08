@@ -19,13 +19,13 @@ public interface UpdateLr {
 			@Override
 			public double update(int nbGames) {
 				if (nbGames < 100)
-					return 1e-4;
+					return 1e-4F;
 				else if (nbGames < 300)
-					return 1e-5;
+					return 1e-5F;
 				else if (nbGames < 500)
-					return 1e-6;
+					return 1e-6F;
 				else
-					return 1e-7;
+					return 1e-7F;
 			}
 		};
 	}

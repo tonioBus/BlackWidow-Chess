@@ -1,4 +1,4 @@
-package com.aquila.chess.strategy.mcts;
+package com.aquila.chess.strategy.mcts.utils;
 
 import lombok.Getter;
 

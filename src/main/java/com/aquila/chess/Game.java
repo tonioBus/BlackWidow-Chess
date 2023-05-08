@@ -84,10 +84,10 @@ public class Game {
         String result = "*";
         switch (this.status) {
             case WHITE_CHESSMATE:
-                result = "1-0";
+                result = "0-1";
                 break;
             case BLACK_CHESSMATE:
-                result = "0-1";
+                result = "1-0";
                 break;
             case DRAW_50:
             case DRAW_300:
@@ -108,6 +108,7 @@ public class Game {
         int nbCol = 0;
 
         final ListIterator<Move> it = this.getMoves().listIterator();
+        it.next(); // to remove the initial move INIT
         while (it.hasNext()) {
             nbCol += ("" + i).length() + 9;
             if (nbCol > 70) {
@@ -241,7 +242,7 @@ public class Game {
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         sb.append(String.format("current legal move:%s\n", this
                 .getNextPlayer()
-                .getLegalMoves()
+                .getLegalMoves(Move.MoveStatus.DONE)
                 .stream()
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
