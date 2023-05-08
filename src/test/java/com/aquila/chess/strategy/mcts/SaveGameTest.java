@@ -26,17 +26,6 @@ public class SaveGameTest {
 
     static public final int NB_STEP = 2;
 
-    /**
-     * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
-     * and 0.0002 after 100, 300, and 500 thousand steps for chess
-     */
-    public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 500000) return 1e-6;
-        if (nbGames > 300000) return 1e-5;
-        if (nbGames > 100000) return 1e-4;
-        return 1e-3;
-    };
-
     private static final UpdateCpuct updateCpuct = nbStep -> {
         if (nbStep <= 30) return 2.5;
         else return 0.0025;
@@ -88,9 +77,7 @@ public class SaveGameTest {
             assertTrue(UtilsTest.verify8inputs(blackStrategy));
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> {
-                        log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord);
-                    }
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord)
             );
         }
         log.info("#########################################################################");
@@ -105,8 +92,8 @@ public class SaveGameTest {
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
-            log.info("policiies.size:", oneStepRecord.policies().size());
-            log.info("color2play:", oneStepRecord.color2play());
+            log.info("policies.size:{}", oneStepRecord.policies().size());
+            log.info("color2play:{}", oneStepRecord.color2play());
             log.info("----------------------------------------");
         });
     }
@@ -160,9 +147,7 @@ public class SaveGameTest {
             sequence.play();
             log.info("----------------------------------------------------");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> {
-                        log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord);
-                    }
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord)
             );
         }
         assertEquals(nbStep, whiteStrategy.getTrainGame().getOneStepRecordList().size());
@@ -181,9 +166,7 @@ public class SaveGameTest {
     @Order(1)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load(666);
-        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
-            log.info("board(0):\n{}", oneStepRecord);
-        });
+        trainGame.getOneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
     }
 
 }
