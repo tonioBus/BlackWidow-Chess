@@ -5,12 +5,12 @@ public class ResultGame {
         assert (whiteWin == 0 || whiteWin == 1);
         assert (blackWin == 0 || blackWin == 1);
         if (whiteWin == 1 && blackWin == 1)
-            reward = 0.0;
+            reward = 0.0F;
         else if (whiteWin == 1)
-            reward = 1.0; // 1
+            reward = 1.0F; // 1
         else if (blackWin == 1)
-            reward = -1.0; // 1
-        else reward = 0.0;
+            reward = -1.0F; // 1
+        else reward = 0.0F;
     }
 
     /**

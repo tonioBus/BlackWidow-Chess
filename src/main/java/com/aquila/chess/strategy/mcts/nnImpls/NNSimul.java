@@ -1,13 +1,10 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
-import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
-import com.aquila.chess.strategy.mcts.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,10 +20,10 @@ public class NNSimul extends NNConstants {
     public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
+            double value = mediumValue + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                policies[policyIndex] = mediumPolicies + (-0.000001 + 0.000002 * randomGenerator.nextDouble());
+                policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
                 if (offsets.containsKey(policyIndex)) {
                     double offset = offsets.get(policyIndex);
                     policies[policyIndex] += offset;

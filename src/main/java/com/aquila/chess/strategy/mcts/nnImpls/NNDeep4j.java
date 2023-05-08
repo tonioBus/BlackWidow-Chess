@@ -1,11 +1,15 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
+import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.deeplearning4j.nn.api.NeuralNetwork;
-import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
@@ -20,11 +24,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class NNDeep4j implements INN {
-
-    static private final Logger logger = LoggerFactory.getLogger(NNDeep4j.class);
     private final String filename;
-    public final int NUM_RESIDUAL_BLOCKS = 20;
+    // public final int NUM_RESIDUAL_BLOCKS = 20;
+    public final int NUM_RESIDUAL_BLOCKS = 15;
     public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
     private UpdateLr updateLr;
 
@@ -53,23 +57,23 @@ public class NNDeep4j implements INN {
                 .setNoGcWindowMs(100)
                 .enableDebug(false)
                 .setVerbose(false);
-        logger.info("getMaximumDeviceCache: {}", CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
+        log.info("getMaximumDeviceCache: {}", CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
         this.filename = filename;
         try {
             network = load(loadUpdater);
         } catch (final IOException e) {
-            logger.error(String.format("Exception when trying to load [%s], creating a default", filename), e);
+            log.error(String.format("Exception when trying to load [%s], creating a default", filename), e);
         }
         if (network == null) {
             network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
         }
-        network.setListeners(new PerformanceListener(1));
-        network.setCacheMode(CacheMode.DEVICE);
+        // network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+        network.setListeners();
     }
 
     public void train(boolean train) {
-        network.getConfiguration().setTrainingWorkspaceMode(train ? WorkspaceMode.ENABLED : WorkspaceMode.NONE);
+        // network.getConfiguration().setTrainingWorkspaceMode(train ? WorkspaceMode.ENABLED : WorkspaceMode.NONE);
     }
 
     @Override
@@ -91,16 +95,16 @@ public class NNDeep4j implements INN {
     @Override
     public void updateLr(int nbGames) {
         double lr = updateLr.update(nbGames);
-        logger.info("[{}] Setting learning rate: {}", nbGames, lr);
+        log.info("[{}] Setting learning rate: {}", nbGames, lr);
         this.setLR(lr);
-        logger.info("[{}] Getting learning rate: {}", nbGames, this.getLR());
+        log.info("[{}] Getting learning rate: {}", nbGames, this.getLR());
     }
 
     private ComputationGraph load(final boolean loadUpdater) throws IOException {
         final File file = new File(filename);
         if (!file.canRead()) return null;
         final ComputationGraph ret = ComputationGraph.load(file, loadUpdater);
-        logger.info("LOADED ComputationGraph");
+        log.info("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(ret.getConfiguration(), ToStringStyle.JSON_STYLE));
         return ret;
     }
 
@@ -156,7 +160,7 @@ public class NNDeep4j implements INN {
         INDArray[] outputs = output(nbIn);
         System.out.printf("%%");
         for (int i = 0; i < len; i++) {
-            double value = outputs[1].getColumn(0).getDouble(i);
+            double value = ConvertValueOutput.convertFromSigmoid(outputs[1].getColumn(0).getDouble(i));
             double[] policies = outputs[0].getRow(i).toDoubleVector();
             ret.add(new OutputNN(value, policies));
         }
@@ -172,7 +176,6 @@ public class NNDeep4j implements INN {
     private INDArray[] output(double[][][][] nbIn) {
         INDArray inputsArray = Nd4j.create(nbIn);
         INDArray[] ret = network.output(inputsArray);
-        // System.gc();
         return ret;
     }
 }

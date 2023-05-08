@@ -113,11 +113,13 @@ public class Utils {
                 if (ArrayUtils.contains(indexes, i)) {
                     p = policies[i];
                     double newP = (1 - epsilon) * p + epsilon * d[index];
-                    policies[i] = newP;
+                    policies[i] = (float) newP;
                     index++;
                 }
             }
-            log.warn("dirichlet: indexes: {}", indexes.length);
+            log.warn("dirichlet: indexes: {} <-> {} : policies>0",
+                    indexes.length,
+                    Arrays.stream(policies).filter(policy -> policy > 0).count());
         }
         return policies;
     }
@@ -160,7 +162,7 @@ public class Utils {
                     for (int y = 0; y < Board.NB_COL; y++) {
                         if (inputs[indexInput][x][y] != 0.0) {
                             int piecePosition;
-                            if(color.isWhite()) {
+                            if (color.isWhite()) {
                                 piecePosition = 64 - ((8 - x) + y * 8);
                             } else {
                                 piecePosition = ((7 - x) + y * 8);

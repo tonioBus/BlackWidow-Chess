@@ -92,7 +92,7 @@ class ServiceNN {
 
     private void retrieveValuesPoliciesFromNN(int length) {
         log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
-        final double[][][][] nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
@@ -202,10 +202,6 @@ class ServiceNN {
             long key = entry.getKey();
             double value = outputsNN.get(index).getValue();
             double[] policies = outputsNN.get(index).getPolicies();
-            if (Arrays.stream(policies).sum() == 0) {
-                log.error("ERROR, no policy > 0");
-                throw new Error("ERROR, no policy > 0");
-            }
             CacheValues.CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
             if (propagationValues.containsKey(key)) {
                 CacheValues.CacheValue oldCacheValue = propagationValues.get(key);

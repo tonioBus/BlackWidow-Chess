@@ -7,6 +7,7 @@ import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -88,7 +89,7 @@ public class MCTSExerciceTest {
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5, index1, index2);
+        nnBlack.addIndexOffset(0.5F, index1, index2);
         for (int i = 0; i < 5; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -144,7 +145,7 @@ public class MCTSExerciceTest {
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5, index1, index2);
+        nnBlack.addIndexOffset(0.5F, index1, index2);
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -244,7 +245,7 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
-        nnBlack.addIndexOffset(0.1, "a6-a7;a7-a8", piece);
+        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", piece);
         boolean good = false;
         Move move = null;
         for (int i = 0; i < 3; i++) {
@@ -483,9 +484,9 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece rootA8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a8"));
-        nnBlack.addIndexOffset(1, "a8-a3", board);
-        nnBlack.addIndexOffset(0.5, "g2-g3", board);
-        nnBlack.addIndexOffset(0.1, "a3-a1", rootA8);
+        nnBlack.addIndexOffset(1F, "a8-a3", board);
+        nnBlack.addIndexOffset(0.5F, "g2-g3", board);
+        nnBlack.addIndexOffset(0.1F, "a3-a1", rootA8);
         Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 5; i++) {
@@ -727,7 +728,7 @@ public class MCTSExerciceTest {
                 .withNbThread(1)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        nnWhite.addIndexOffset(0.1, "e8-e1", board);
+        nnWhite.addIndexOffset(0.1F, "e8-e1", board);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);

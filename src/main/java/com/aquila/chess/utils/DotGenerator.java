@@ -7,7 +7,7 @@ package com.aquila.chess.utils;
 import com.aquila.chess.strategy.mcts.CacheValues;
 import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.aquila.chess.strategy.mcts.MCTSStrategy;
-import com.aquila.chess.strategy.mcts.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import info.leadinglight.jdot.Edge;
 import info.leadinglight.jdot.Graph;

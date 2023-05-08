@@ -22,19 +22,17 @@ public class TrainGame implements Serializable {
             throw new RuntimeException(e);
         }
     }
-
     @Getter
     Double value = null;
-
     @Getter
     final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
     public TrainGame() {
     }
 
-    public static TrainGame load(int num) throws IOException, ClassNotFoundException {
+    public static TrainGame load(String subDir, int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
-                = new FileInputStream("train/" + num);
+                = new FileInputStream(subDir+"/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         TrainGame ret = (TrainGame) objectInputStream.readObject();

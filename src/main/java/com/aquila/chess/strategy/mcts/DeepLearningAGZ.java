@@ -4,8 +4,9 @@ import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -60,11 +61,11 @@ public class DeepLearningAGZ {
     @Getter
     final private ServiceNN serviceNN;
 
-    static final int FIT_CHUNK = 50;
+    static final int FIT_CHUNK = 20;
 
-    static final int BATCH_SIZE = 200;
+    static final int BATCH_SIZE = 150;
 
-    static final int CACHE_VALUES_SIZE = 100000;
+    static final int CACHE_VALUES_SIZE = 40000;
 
     private final boolean train;
 
@@ -106,7 +107,7 @@ public class DeepLearningAGZ {
 
     public void clearAllCaches() {
         serviceNN.clearAll();
-        // cacheValues.clearCache();
+        cacheValues.clearCache();
     }
 
     public Object getNetwork() {
@@ -222,7 +223,6 @@ public class DeepLearningAGZ {
             if (log.isDebugEnabled())
                 log.debug("getBatchedPolicies(): key:{} type:{}", key, output.getType());
             statistic.nbRetrieveNNCachedPolicies++;
-            if (!output.isInitialised()) return output.getPolicies();
             return output.getPolicies();
         } else {
             String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
@@ -267,7 +267,7 @@ public class DeepLearningAGZ {
     }
 
     public void train(final TrainGame trainGame) throws IOException {
-        if (!train) throw new RuntimeException("DeepLearningAGZ nbot in train mode");
+        if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
@@ -286,10 +286,10 @@ public class DeepLearningAGZ {
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
         final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
-        double[][] policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
-        double[][] valuesForNN = new double[chunkSize][1];
+        final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
+        final var valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
-        Double value = trainGame.getValue();
+        final double value = trainGame.getValue();
         List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
@@ -298,30 +298,17 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
-            double actualRewards = getActualRewards(value, oneStepRecord.color2play());
+            // if color2play is WHITE, the current node is BLACK, so -reward
+            Alliance playedColor = oneStepRecord.color2play();
+            double actualRewards = getActualRewards(value, playedColor);
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
-            valuesForNN[chunkNumber][0] = actualRewards; // CHOICES
+            valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
-                // we train the policy only when we will move from the loosing player
-                if (trainPolicy > 0) {
-                    policies.forEach((indexFromMove, previousPolicies) -> {
-                        policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
-                    });
-                } /*else if (trainPolicy < 0) {
-                    // complement the distribution of policies
-                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
-                    policies.forEach((indexFromMove, probability) -> {
-                        double policy = 2 * average - probability;
-                        policiesForNN[atomicInteger.get()][indexFromMove] = policy;
-                    });
-                } else if (trainPolicy == 0) {
-                    double average = policies.values().stream().mapToDouble(Double::doubleValue).average().getAsDouble();
-                    policies.forEach((indexFromMove, childrenVisits) -> {
-                        policiesForNN[atomicInteger.get()][indexFromMove] = average;
-                    });
-                }*/
+                policies.forEach((indexFromMove, previousPolicies) -> {
+                    policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
+                });
             }
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
@@ -336,9 +323,9 @@ public class DeepLearningAGZ {
     public static double getActualRewards(final double value, final Alliance color2play) {
         int sign = 0;
         if (color2play.isWhite()) {
-            sign = -1;
-        } else {
             sign = 1;
+        } else {
+            sign = -1;
         }
         return sign * value;
     }

@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.MCTSStrategyConfig;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,9 +11,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Slf4j
 public class CacheValues {
@@ -64,7 +65,7 @@ public class CacheValues {
     @Getter
     static public class CacheValue extends OutputNN implements Serializable {
 
-        private static final double NOT_INITIALIZED_VALUE = 0;
+        private static final float NOT_INITIALIZED_VALUE = 0;
 
         private static final CacheValue getNotInitialized(final String label) {
             return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
@@ -108,9 +109,9 @@ public class CacheValues {
             boolean isDirichlet =node.getState() == MCTSNode.State.ROOT;
             isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
             double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
-            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
-                throw new RuntimeException("ERROR, some policy with NaN value");
-            }
+//            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
+//                throw new RuntimeException("ERROR, some policy with NaN value");
+//            }
             this.policies = normalisedPolicies;
         }
 
@@ -142,7 +143,7 @@ public class CacheValues {
             setTrueValuesAndPolicies();
         }
 
-        public static enum CacheValueType {
+        public enum CacheValueType {
             INTERMEDIATE, ROOT, LEAF
         }
 

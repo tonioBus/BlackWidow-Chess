@@ -97,12 +97,20 @@
             <version>${nd4j.version}</version>
             <classifier>linux-x86_64-cudnn</classifier>
         </dependency>
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>tensorrt-platform-redist</artifactId>
-            <version>8.2-1.5.7</version>
-        </dependency>
         <!-- END CUDA -->
+
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>tensorflow-core-api</artifactId>
+            <version>0.5.0</version>
+            <classifier>windows-x86_64-gpu</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tensorflow</groupId>
+            <artifactId>tensorflow-core-platform</artifactId>
+            <version>0.5.0</version>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -119,19 +127,19 @@
 
     </dependencies>
 
-<!--    <pluginRepositories>-->
-<!--        <pluginRepository>-->
-<!--            <id>graalvm-native-build-tools-snapshots</id>-->
-<!--            <name>GraalVM native-build-tools Snapshots</name>-->
-<!--            <url>https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots</url>-->
-<!--            <releases>-->
-<!--                <enabled>false</enabled>-->
-<!--            </releases>-->
-<!--            <snapshots>-->
-<!--                <enabled>true</enabled>-->
-<!--            </snapshots>-->
-<!--        </pluginRepository>-->
-<!--    </pluginRepositories>-->
+    <!--    <pluginRepositories>-->
+    <!--        <pluginRepository>-->
+    <!--            <id>graalvm-native-build-tools-snapshots</id>-->
+    <!--            <name>GraalVM native-build-tools Snapshots</name>-->
+    <!--            <url>https://raw.githubusercontent.com/graalvm/native-build-tools/snapshots</url>-->
+    <!--            <releases>-->
+    <!--                <enabled>false</enabled>-->
+    <!--            </releases>-->
+    <!--            <snapshots>-->
+    <!--                <enabled>true</enabled>-->
+    <!--            </snapshots>-->
+    <!--        </pluginRepository>-->
+    <!--    </pluginRepositories>-->
 
     <build>
         <plugins>
@@ -173,39 +181,39 @@
                     </includes>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.graalvm.buildtools</groupId>-->
-<!--                <artifactId>native-maven-plugin</artifactId>-->
-<!--                <version>${native.maven.plugin.version}</version>-->
-<!--                <extensions>true</extensions>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>build-native</id>-->
-<!--                        <goals>-->
-<!--                            <goal>build</goal>-->
-<!--                        </goals>-->
-<!--                        <phase>package</phase>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <configuration>-->
-<!--                    <skip>false</skip>-->
-<!--                    <imageName>MCTSTrain</imageName>-->
-<!--                    <mainClass>com.aquila.chess.MainTrainingAGZ</mainClass>-->
-<!--                    <buildArgs>-->
-<!--                        <buildArg>&#45;&#45;no-fallback</buildArg>-->
-<!--                        <buildArg>&#45;&#45;report-unsupported-elements-at-runtime</buildArg>-->
-<!--                        <buildArg>&#45;&#45;diagnostics-mode</buildArg>-->
-<!--                        <buildArg>&#45;&#45;initialize-at-build-time</buildArg>-->
-<!--                        <buildArg>-O0</buildArg>-->
-<!--                        <buildArg>&#45;&#45;initialize-at-run-time=java.util.Random</buildArg>-->
-<!--                        &lt;!&ndash; buildArg>report-unsupported-elements-at-compile</buildArg &ndash;&gt;-->
-<!--                    </buildArgs>-->
-<!--                    <jvmArgs>-->
-<!--                        <arg>-Xmx30G</arg>-->
-<!--                        <arg>-XX:-UseGCOverheadLimit</arg>-->
-<!--                    </jvmArgs>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>org.graalvm.buildtools</groupId>-->
+            <!--                <artifactId>native-maven-plugin</artifactId>-->
+            <!--                <version>${native.maven.plugin.version}</version>-->
+            <!--                <extensions>true</extensions>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <id>build-native</id>-->
+            <!--                        <goals>-->
+            <!--                            <goal>build</goal>-->
+            <!--                        </goals>-->
+            <!--                        <phase>package</phase>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--                <configuration>-->
+            <!--                    <skip>false</skip>-->
+            <!--                    <imageName>MCTSTrain</imageName>-->
+            <!--                    <mainClass>com.aquila.chess.MainTrainingAGZ</mainClass>-->
+            <!--                    <buildArgs>-->
+            <!--                        <buildArg>&#45;&#45;no-fallback</buildArg>-->
+            <!--                        <buildArg>&#45;&#45;report-unsupported-elements-at-runtime</buildArg>-->
+            <!--                        <buildArg>&#45;&#45;diagnostics-mode</buildArg>-->
+            <!--                        <buildArg>&#45;&#45;initialize-at-build-time</buildArg>-->
+            <!--                        <buildArg>-O0</buildArg>-->
+            <!--                        <buildArg>&#45;&#45;initialize-at-run-time=java.util.Random</buildArg>-->
+            <!--                        &lt;!&ndash; buildArg>report-unsupported-elements-at-compile</buildArg &ndash;&gt;-->
+            <!--                    </buildArgs>-->
+            <!--                    <jvmArgs>-->
+            <!--                        <arg>-Xmx30G</arg>-->
+            <!--                        <arg>-XX:-UseGCOverheadLimit</arg>-->
+            <!--                    </jvmArgs>-->
+            <!--                </configuration>-->
+            <!--            </plugin>-->
         </plugins>
     </build>
 

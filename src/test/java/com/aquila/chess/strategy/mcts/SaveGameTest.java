@@ -98,7 +98,7 @@ public class SaveGameTest {
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
         whiteStrategy.saveBatch(resultGame, -666);
-        TrainGame trainGame = TrainGame.load(-666);
+        TrainGame trainGame = TrainGame.load("tmp", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep, trainGame.getOneStepRecordList().size());
@@ -171,7 +171,7 @@ public class SaveGameTest {
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
         whiteStrategy.saveBatch(resultGame, 666);
-        TrainGame trainGame = TrainGame.load(666);
+        TrainGame trainGame = TrainGame.load("tmp", 666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep, trainGame.getOneStepRecordList().size());
@@ -180,7 +180,7 @@ public class SaveGameTest {
     @Test
     @Order(1)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load(666);
+        TrainGame trainGame = TrainGame.load("tmp", 666);
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("board(0):\n{}", oneStepRecord);
         });

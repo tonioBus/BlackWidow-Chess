@@ -93,17 +93,17 @@ public class MCTSGame {
             }
         }
         this.last8Inputs.add(new Last8Inputs(inputsOneNN, move));
-        if (this.getLast8Inputs().size() > 1) {
-            size = this.getLast8Inputs().size();
-            for (int i = 0; i < size - 1; i++) {
-                Move move1 = this.getLast8Inputs().get(i).move();
-                Move move2 = this.getLast8Inputs().get(i + 1).move();
-                if (move1.toString().equals(move2.toString())) {
-                    log.error("Move already inserted as last position, moves:{}", moves);
-                    throw new RuntimeException("Move already inserted as last position");
-                }
-            }
-        }
+//        if (this.getLast8Inputs().size() > 1) {
+//            size = this.getLast8Inputs().size();
+//            for (int i = 0; i < size - 1; i++) {
+//                Move move1 = this.getLast8Inputs().get(i).move();
+//                Move move2 = this.getLast8Inputs().get(i + 1).move();
+//                if (move1.toString().equals(move2.toString())) {
+//                    log.error("Move already inserted as last position, moves:{}", moves);
+//                    throw new RuntimeException("Move already inserted as last position");
+//                }
+//            }
+//        }
     }
 
     /**

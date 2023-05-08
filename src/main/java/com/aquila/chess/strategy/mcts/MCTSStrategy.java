@@ -6,6 +6,8 @@ import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
@@ -41,7 +43,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private final UpdateCpuct updateCpuct;
 
     @Getter
-    private Statistic statistic = new Statistic();
+    final private Statistic statistic = new Statistic();
 
     private MCTSNode root = null;
 
@@ -49,7 +51,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSNode directRoot = null;
 
     @Getter
-    private TrainGame trainGame = new TrainGame();
+    final private TrainGame trainGame = new TrainGame();
 
     @Setter
     private MCTSStrategy partnerStrategy = null;
@@ -104,7 +106,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null) {
+        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame!=null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
@@ -144,10 +146,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      * @return
      */
     protected void createRootNode(final Game game, final Move opponentMove) {
-        deepLearning.clearAllCaches();
+        deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
         if (this.root == null) {
-            // assert (opponentMove == null);
             long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             this.root = MCTSNode.createRootNode(mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
             this.directRoot = this.root;
