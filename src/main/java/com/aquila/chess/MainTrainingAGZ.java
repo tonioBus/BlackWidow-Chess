@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquila.chess.manager.GameManager;
-import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
@@ -11,20 +10,12 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 @Slf4j
 public class MainTrainingAGZ {
 
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
 
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
-    private static final int BATCH_SIZE = 50000;
     static public final int NB_STEP = 800;
 
     static public final int NB_THREADS = 1;
@@ -107,31 +98,8 @@ public class MainTrainingAGZ {
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
             whiteStrategy.saveBatch(resultGame, lastSaveGame);
-            if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-                // MainFitNN.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
-//                nnWhite.close();
-//                nnWhite = new NNDeep4j(NN_REFERENCE, false);
-//                deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
-//                deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
             lastSaveGame++;
-            Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
-//            if (status == Status.SWITCHING) {
-//                final Path reference = Paths.get(NN_REFERENCE);
-//                final Path opponent = Paths.get(NN_OPPONENT);
-//                SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm-ss");
-//                final Path backupOpponent = Paths.get(NN_OPPONENT + "_" + format.format(new Date()));
-//                log.info("BACKUP PARTNER {} -> {}", opponent, backupOpponent);
-//                if (opponent.toFile().canRead()) {
-//                    Files.copy(opponent, backupOpponent, StandardCopyOption.REPLACE_EXISTING);
-//                }
-//                Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
-//                log.info("Switching DP {} <-> {}", reference, opponent);
-//                nnBlack.close();
-//                nnBlack = new NNDeep4j(NN_OPPONENT, false);
-//                deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
-//                deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
-//            }
+            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
         }
     }
 }
