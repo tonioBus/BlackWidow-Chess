@@ -309,7 +309,7 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(false, 50));
+                    log.info(whiteStrategy.mctsTree4log(false, 50));
                     Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
@@ -322,10 +322,11 @@ public class MCTSExerciceTest {
                     assertTrue(wins.size() > 0);
                     break;
             }
-            assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
+            if( status ==Game.GameStatus.WHITE_CHESSMATE ) {
+                assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
+            }
             assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
         log.info("GAME:\n{}\n", game.toPGN());
     }
 

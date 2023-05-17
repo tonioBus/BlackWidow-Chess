@@ -109,7 +109,7 @@ public class InputsNNFactory {
             String moves = mctsGame.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             boolean addInputs = true;
             if (lastMove != null) {
-                log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
+                // log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
                 if (lastMove.equals(move)) {
 //                    log.error("MOVE EQUALS({})", lastMove);
                     addInputs = false;
@@ -124,7 +124,7 @@ public class InputsNNFactory {
         for (MCTSGame.Last8Inputs lastInput : tmp) {
             Piece piece = lastInput.move().getMovedPiece();
             String color = piece == null ? "null" : piece.getPieceAllegiance().toString();
-            log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
+            // log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
             System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
             destinationOffset += INN.SIZE_POSITION;
         }
