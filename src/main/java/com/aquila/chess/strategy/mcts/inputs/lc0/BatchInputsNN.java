@@ -1,4 +1,4 @@
-package com.aquila.chess.strategy.mcts.inputs;
+package com.aquila.chess.strategy.mcts.inputs.lc0;
 
 import com.aquila.chess.OneStepRecord;
 import lombok.Getter;

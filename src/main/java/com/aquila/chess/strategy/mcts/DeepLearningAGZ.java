@@ -3,7 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
-import com.aquila.chess.strategy.mcts.inputs.BatchInputsNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.BatchInputsNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;

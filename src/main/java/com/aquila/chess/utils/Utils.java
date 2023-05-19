@@ -3,7 +3,7 @@
  */
 package com.aquila.chess.utils;
 
-import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.pieces.*;

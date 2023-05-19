@@ -1,7 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;

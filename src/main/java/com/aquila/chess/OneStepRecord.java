@@ -1,6 +1,6 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsFullNN;
 import com.chess.engine.classic.Alliance;
 
 import java.io.Serializable;
