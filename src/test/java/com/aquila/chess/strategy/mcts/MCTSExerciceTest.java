@@ -279,8 +279,9 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
-    void testAvoidEndWithBlackPromotion() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {10, 50, 100, 800})
+    void testAvoidEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kf1", "pa2,rd3,kf3", WHITE);
         final Game game = Game.builder().board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -300,7 +301,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(4)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Move move = null;
         for (int i = 0; i < 4; i++) {
@@ -309,7 +310,7 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    log.info(whiteStrategy.mctsTree4log(false, 50));
+                    log.info(whiteStrategy.mctsTree4log(false, 3));
                     Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
@@ -322,7 +323,7 @@ public class MCTSExerciceTest {
                     assertTrue(wins.size() > 0);
                     break;
             }
-            if( status ==Game.GameStatus.WHITE_CHESSMATE ) {
+            if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
             }
             assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
@@ -396,18 +397,18 @@ public class MCTSExerciceTest {
 
     /**
      * @formatter:off <pre>
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * 8  R-B --- --- --- --- --- --- ---  8
-     * 7  --- --- --- --- --- --- --- ---  7
-     * 6  --- --- --- --- --- --- --- ---  6
-     * 5  --- --- --- --- --- --- --- ---  5
-     * 4  --- --- --- --- --- --- --- ---  4
-     * 3  --- --- --- --- --- --- --- ---  3
-     * 2  --- --- --- --- K-W --- K-B R-B  2
-     * 1  --- --- --- --- --- --- --- ---  1
-     *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * </pre>
-     * @formatter:on
+         *    [a] [b] [c] [d] [e] [f] [g] [h]
+         * 8  R-B --- --- --- --- --- --- ---  8
+         * 7  --- --- --- --- --- --- --- ---  7
+         * 6  --- --- --- --- --- --- --- ---  6
+         * 5  --- --- --- --- --- --- --- ---  5
+         * 4  --- --- --- --- --- --- --- ---  4
+         * 3  --- --- --- --- --- --- --- ---  3
+         * 2  --- --- --- --- K-W --- K-B R-B  2
+         * 1  --- --- --- --- --- --- --- ---  1
+         *    [a] [b] [c] [d] [e] [f] [g] [h]
+         * </pre>
+         * @formatter:on
      */
     @Test
     void testAvoidWhiteChessMate() throws Exception {
@@ -421,6 +422,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(4)
+//                .withNbSearchCalls(50);
                 .withNbSearchCalls(800);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
@@ -441,7 +443,7 @@ public class MCTSExerciceTest {
             assertNotEquals(Game.GameStatus.WHITE_CHESSMATE, status, "We should not have a white chessmate");
             assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(false, 50));
+        if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(false, 5));
         log.info("GAME:\n{}\n", game.toPGN());
     }
 
@@ -599,8 +601,9 @@ public class MCTSExerciceTest {
      *
      * @formatter:on
      */
-    @Test
-    void testChessCheck2Move() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {10, 50, 100, 800})
+    void testChessCheck2Move(int nbStep) throws Exception {
         final Board board = Board.createBoard(
                 "PA2,PB2,PD4,QE7,PF2,KG2,PG3,NG5",
                 "PA5,PB6,PE4,PE6,PG6,QH5,KH6",
@@ -614,7 +617,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(4)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
         Move move;
@@ -703,8 +706,9 @@ public class MCTSExerciceTest {
      * PGN format to use with -> https://lichess.org/paste
      * @formatter:on
      */
-    @Test
-    void testAvoidWhiteChessMate1Move() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {10, 50, 100, 800})
+    void testAvoidWhiteChessMate1Move(int nbStep) throws Exception {
         final Board board = Board.createBoard(
                 "kg1",
                 "re8,kg3",
@@ -727,7 +731,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         nnWhite.addIndexOffset(0.1F, "e8-e1", board);
         Game.GameStatus status = null;

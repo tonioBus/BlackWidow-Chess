@@ -2,8 +2,8 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.RandomStrategy;
-import com.aquila.chess.strategy.mcts.inputs.InputsNNFactory;
-import com.aquila.chess.strategy.mcts.inputs.InputsOneNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputsOneNN;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;

@@ -51,7 +51,8 @@ class GameTest {
             log.info("[{}] BEGIN", label);
             final MCTSGame mctsGame = new MCTSGame(gameOriginal);
             // final Game gameCopy = gameOriginal.copy( Alliance.WHITE, new FixMCTSTreeStrategy(Alliance.WHITE), new FixMCTSTreeStrategy(Alliance.BLACK));
-            if (!gameOriginal.isInitialPosition()) throw new RuntimeException("Not initial position");
+            if (!gameOriginal.isInitialPosition()) throw
+                    new RuntimeException("Not initial position");
             for (int i = 0; i < 100; i++) {
                 Collection<Move> moves = mctsGame.getLastBoard().currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
                 assertEquals(20, moves.size());
