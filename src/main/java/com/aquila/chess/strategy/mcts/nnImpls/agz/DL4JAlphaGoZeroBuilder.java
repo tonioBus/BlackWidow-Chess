@@ -107,7 +107,6 @@ public class DL4JAlphaGoZeroBuilder {
                 .cudnnAlgoMode(ConvolutionLayer.AlgoMode.PREFER_FASTEST)
                 .updater(new Sgd())
                 .weightInit(WeightInit.LECUN_NORMAL)
-                // .weightInit(WeightInit.XAVIER_FAN_IN) // (WeightInit.XAVIER_UNIFORM)
                 .graphBuilder().setInputTypes(InputType.convolutional(8, 8, FEATURES_PLANES));
     }
 
@@ -233,7 +232,6 @@ public class DL4JAlphaGoZeroBuilder {
         preProcessorMap.put(denseName, new CnnToFeedForwardPreProcessor(8, 8, 1));
         conf.setInputPreProcessors(preProcessorMap);
         conf.addLayer(outputName, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).activation(Activation.SIGMOID).nIn(256).nOut(1).build(), denseName);
-//        conf.addLayer(outputName, new OutputLayer.Builder(LossFunctions.LossFunction.RECONSTRUCTION_CROSSENTROPY).activation(Activation.TANH).nIn(256).nOut(1).build(), denseName);
         return outputName;
     }
 

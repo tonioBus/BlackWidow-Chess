@@ -25,8 +25,7 @@ public class MainTrainingAGZ {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 5000) return 1e-7
-                ;
+        if (nbGames > 5000) return 1e-7;
         if (nbGames > 3000) return 1e-6;
         if (nbGames > 1000) return 1e-5;
         return 1e-4;
