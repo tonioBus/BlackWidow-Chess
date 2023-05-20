@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.Game;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -56,6 +57,10 @@ public class MCTSNode implements Serializable {
 
     @Getter
     private transient MCTSNode parent;
+
+    @Getter
+    @Setter
+    public boolean looseOptimise = false;
 
     @Getter
     @Setter
@@ -283,6 +288,10 @@ public class MCTSNode implements Serializable {
         this.nbReturn++;
     }
 
+    /**
+     *
+     * @return all childs and descendant of child until leaf
+     */
     public List<MCTSNode> allChildNodes() {
         List<MCTSNode> allDescendances = new ArrayList<>();
         allChildNodes(this, allDescendances);
@@ -324,6 +333,29 @@ public class MCTSNode implements Serializable {
         }
         Collections.reverse(ret);
         return ret;
+    }
+
+    public MCTSNode getRoot() {
+        MCTSNode tmpNode = this;
+        while (tmpNode.state != ROOT && tmpNode.getParent() != null) {
+            tmpNode = tmpNode.parent;
+        }
+        return tmpNode;
+    }
+
+    public Game.GameStatus getStatus(Alliance color2play) {
+        return switch (this.getState()) {
+            case WIN ->
+                    color2play == Alliance.WHITE ? Game.GameStatus.BLACK_CHESSMATE : Game.GameStatus.WHITE_CHESSMATE;
+            case LOOSE ->
+                    color2play == Alliance.WHITE ? Game.GameStatus.WHITE_CHESSMATE : Game.GameStatus.WHITE_CHESSMATE;
+            case PAT -> Game.GameStatus.PAT;
+            case NB_MOVES_300 -> Game.GameStatus.DRAW_300;
+            case NOT_ENOUGH_PIECES -> Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
+            case REPEAT_50 -> Game.GameStatus.DRAW_50;
+            case REPETITION_X3 -> Game.GameStatus.DRAW_3;
+            default -> Game.GameStatus.IN_PROGRESS;
+        };
     }
 
     static public enum PropragateSrc {

@@ -101,10 +101,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
         long key = 0;
         synchronized (opponentNode) {
             log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
-            if (opponentNode.getChildsAsCollection().size() == 0) {
+            if (opponentNode.getState() != MCTSNode.State.INTERMEDIATE && opponentNode.getState() != MCTSNode.State.ROOT) {
                 // end of game
-                log.error("END OF GAME: {}", opponentNode);
-                // throw new RuntimeException("END OF GAME");
+//                log.error("END OF GAME: {}", opponentNode);
+//                return null;
+//                opponentNode.decVirtualLoss();
+//                opponentNode.incVisits();
+//                return returnEndOfSimulatedGame(opponentNode, depth, color2play, opponentNode.getMove(), opponentNode.getStatus(color2play)); //.negate();
             }
             selectedMove = selection(opponentNode, isRootNode, depth);
             if (selectedMove == null) return null;
@@ -264,20 +267,24 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, WIN_VALUE);
                 } else {
-                    if (node.getParent().getState() != MCTSNode.State.ROOT) {
-                        String sequence = sequenceMoves(node);
-                        log.warn("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1 (OPTIMISE)", depth, colorStrategy, simulatedPlayerColor,
-                                sequence);
-                        MCTSNode parentNode = node.getParent();
-                        removePropagation(node, simulatedPlayerColor, selectedMove);
-                        parentNode.createLeaf();
-                        parentNode.setState(MCTSNode.State.LOOSE);
-                        parentNode.resetExpectedReward(LOOSE_VALUE);
-                        parentNode.getCacheValue().setPropagated(false);
-                        parentNode.incNbReturn();
-                        log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, parentNode.getMovesFromRootAsString());
-                        return new SearchResult(parentNode, LOOSE_VALUE);
-                    }
+//                    if (node.getParent().getState() != MCTSNode.State.ROOT) {
+//                        String sequence = sequenceMoves(node);
+//                        log.warn("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1 (OPTIMISE)", depth, colorStrategy, simulatedPlayerColor,
+//                                sequence);
+//                        MCTSNode parentNode = node.getParent();
+//                        // take care of all childrens
+//                        parentNode.allChildNodes().forEach(childNode ->{
+//                            removePropagation(childNode);
+//                            this.deepLearning.addTerminalNodeToPropagate(parentNode.getKey(), parentNode);
+//                        });
+//                        parentNode.createLeaf();
+//                        parentNode.setState(MCTSNode.State.LOOSE);
+//                        parentNode.resetExpectedReward(LOOSE_VALUE);
+//                        parentNode.getCacheValue().setPropagated(false);
+//                        parentNode.incNbReturn();
+//                        log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, parentNode.getMovesFromRootAsString());
+//                        return new SearchResult(parentNode, LOOSE_VALUE);
+//                    }
                     if (node.getState() != MCTSNode.State.LOOSE) {
                         String sequence = sequenceMoves(node);
                         if (log.isDebugEnabled())
@@ -326,6 +333,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
         node.incNbReturn();
         log.info("[{}] DRAWN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
         return new SearchResult(node, DRAWN_VALUE);
+    }
+
+    private void removePropagation(final MCTSNode node) {
+        removePropagation(node, node.getColorState(), node.getMove());
     }
 
     private void removePropagation(final MCTSNode node, final Alliance simulatedPlayerColor, final Move selectedMove) {
