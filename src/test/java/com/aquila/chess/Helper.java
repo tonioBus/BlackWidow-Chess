@@ -40,17 +40,17 @@ public class Helper {
     }
 
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
-//        final MCTSNode root = mctsStrategy.getCurrentRoot();
-//        final List<String> ret = new ArrayList<>();
-//        if (mctsStrategy.getNbSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbSearchCalls()) {
-//            String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbSearchCalls());
-//            log.warn(msg);
-//        }
-//        checkMCTSTreePoliciesAndValues(mctsStrategy.getCurrentRoot(), ret);
-//        Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
-//        addNodes2NotTest(root, notTestedNodes);
-//        checkMCTSTreeVisits(root, ret, notTestedNodes);
-//        assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
+        final MCTSNode root = mctsStrategy.getCurrentRoot();
+        final List<String> ret = new ArrayList<>();
+        if (mctsStrategy.getNbSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbSearchCalls()) {
+            String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbSearchCalls());
+            log.warn(msg);
+        }
+        checkMCTSTreePoliciesAndValues(mctsStrategy.getCurrentRoot(), ret);
+        Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
+        addNodes2NotTest(root, notTestedNodes);
+        checkMCTSTreeVisits(root, ret, notTestedNodes);
+        assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n")));
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
