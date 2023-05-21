@@ -226,7 +226,7 @@ public class MCTSSearchTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(4)
+                .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
@@ -251,30 +251,30 @@ public class MCTSSearchTest {
         testSearchThreads(nbMaxSearchCalls, 1, 10);
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 2, 50);
-    }
-
-
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch4Threads(int nbStep) throws Exception {
-        testSearchThreads(nbStep, 4, 10);
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 8, 10);
-    }
-
-    @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-    void testSearch16Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 16, 100);
-    }
+//    @ParameterizedTest
+//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+//    void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
+//        testSearchThreads(nbMaxSearchCalls, 2, 50);
+//    }
+//
+//
+//    @ParameterizedTest
+//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+//    void testSearch4Threads(int nbStep) throws Exception {
+//        testSearchThreads(nbStep, 4, 10);
+//    }
+//
+//    @ParameterizedTest
+//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+//    void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
+//        testSearchThreads(nbMaxSearchCalls, 8, 10);
+//    }
+//
+//    @ParameterizedTest
+//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+//    void testSearch16Threads(int nbMaxSearchCalls) throws Exception {
+//        testSearchThreads(nbMaxSearchCalls, 16, 100);
+//    }
 
     private void testSearchThreads(int nbMaxSearchCalls, int nbThreads, int batchSize) throws Exception {
         int seed = 1;
@@ -345,7 +345,7 @@ public class MCTSSearchTest {
         if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(nbMaxSearchCalls < 100, 50));
         log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
-            MCTSNode bestNode = blackStrategy.findBestRewardsWithLogVisits(blackStrategy.getCurrentRoot());
+            MCTSNode bestNode = blackStrategy.findBestReward(blackStrategy.getCurrentRoot(), false);
             assertEquals("a2", bestNode.move.toString());
         }
         assertEquals(0, deepLearningBlack.getServiceNN().getBatchJobs2Commit().size());

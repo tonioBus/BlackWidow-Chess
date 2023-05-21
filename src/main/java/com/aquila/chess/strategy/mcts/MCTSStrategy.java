@@ -193,7 +193,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long endTime = System.currentTimeMillis();
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
-        final MCTSNode bestNode = findBestRewardsWithLogVisits(directRoot);
+        final MCTSNode bestNode = findBestReward(directRoot, false);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic.toString());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s BestReward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, bestNode.getCacheValue().value);
@@ -222,11 +222,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return ret;
     }
 
-    public static double expectedReward(final MCTSNode mctsNode) {
+    public static double rewardWithLogVisit(final MCTSNode mctsNode) {
         return mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
     }
 
-    public MCTSNode findBestRewardsWithLogVisits(final MCTSNode opponentNode) {
+    public MCTSNode findBestReward(final MCTSNode opponentNode, boolean withLogVisit) {
         log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
         List<MCTSNode> bestNodes = new ArrayList<>();
@@ -238,7 +238,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 break;
             }
             log.debug("FINDBEST: expectedReward:{} visitsDelta:{} node:{}", mctsNode.getExpectedReward(false), Math.log(1 + Math.sqrt(mctsNode.getVisits())), mctsNode);
-            double rewardsLogVisits = expectedReward(mctsNode);
+            double rewardsLogVisits = withLogVisit ? rewardWithLogVisit(mctsNode) : mctsNode.getExpectedReward(false);
             if (rewardsLogVisits > maxExpectedReward) {
                 maxExpectedReward = rewardsLogVisits;
                 bestNodes.clear();
