@@ -106,7 +106,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame!=null) {
+        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
@@ -195,8 +195,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long speed = (nbNumberSearchCalls * 1000) / length;
         final MCTSNode bestNode = findBestReward(directRoot, false);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic.toString());
-        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s BestReward:{}", this.getAlliance(), nbNumberSearchCalls,
-                length, speed, bestNode.getCacheValue().value);
+        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
+                length, speed, bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.stream().filter(move -> move.equals(bestNode.getMove())).findFirst();
         Move ret;
         if (optionalMove.isEmpty()) {
