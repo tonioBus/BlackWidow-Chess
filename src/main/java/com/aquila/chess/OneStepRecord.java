@@ -17,12 +17,4 @@ public record OneStepRecord(InputsFullNN inputs,
                             Alliance color2play,
                             Map<Integer, Double> policies) implements Serializable {
 
-    private static Map<Integer, Double> convertPoliciesFloat(Map<Integer, Float> policies) {
-        Map<Integer, Double> ret = new HashMap<>();
-        for (int key : policies.keySet()) {
-            ret.put(key, Double.valueOf(policies.get(key)));
-        }
-        return ret;
-    }
-
 }
