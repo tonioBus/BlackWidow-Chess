@@ -29,7 +29,7 @@ public class MainFitNN {
         };
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-        train("train.main", deepLearningWhite);
+        train("train", deepLearningWhite);
 //        waitForKey();
         train("train.1080", deepLearningWhite);
 //        waitForKey();
