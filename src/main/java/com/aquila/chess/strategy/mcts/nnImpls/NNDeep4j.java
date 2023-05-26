@@ -10,10 +10,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
+import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
@@ -35,6 +39,7 @@ public class NNDeep4j implements INN {
     private ComputationGraph network;
 
     public NNDeep4j(final String filename, final boolean loadUpdater) {
+        DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
         Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
         Nd4j.getMemoryManager().togglePeriodicGc(true);
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
@@ -42,11 +47,11 @@ public class NNDeep4j implements INN {
                 // key option enabled
                 .allowMultiGPU(false) //
                 .setFirstMemory(AllocationStatus.DEVICE)
-                .setAllocationModel(Configuration.AllocationModel.DIRECT)
+                .setAllocationModel(Configuration.AllocationModel.CACHE_ALL)
                 .setMaximumDeviceMemoryUsed(0.90) //
                 .setMemoryModel(Configuration.MemoryModel.IMMEDIATE) //
                 // cross-device access is used for faster model averaging over pcie
-                .allowCrossDeviceAccess(true) //
+                .allowCrossDeviceAccess(false) //
                 .setNumberOfGcThreads(4)
                 // .setMaximumBlockSize(-1)
                 .setMaximumGridSize(256)
@@ -67,7 +72,7 @@ public class NNDeep4j implements INN {
         if (network == null) {
             network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
         }
-        // network.setListeners(new PerformanceListener(1));
+        network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
         network.setListeners();
     }
