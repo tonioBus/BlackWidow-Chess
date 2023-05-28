@@ -27,7 +27,7 @@ import java.util.UUID;
 @Slf4j
 public class Utils {
 
-    static private final RandomStream stream = new MRG32k3a();
+    static private final RandomStream stream;
 
     @Deprecated
     public static double getRandom(double min, double max, Random rand) {
@@ -101,6 +101,9 @@ public class Utils {
             }
         }
         if (isDirichlet) {
+            log.warn("before dirichlet: indexes: {} <-> {} : policies>0",
+                    indexes.length,
+                    Arrays.stream(policies).filter(policy -> policy > 0).count());
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
@@ -204,5 +207,20 @@ public class Utils {
         return builder.build().toString();
     }
 
+    static {
+        Random rand = new Random();
+        long seed = System.currentTimeMillis();
+        rand.setSeed(seed);
+        log.info("Dirichlet SEED:{}", seed);
+        long[] seeds = new long[]{
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294944443L),
+                rand.nextLong(4294944443l),
+                rand.nextLong(4294944443l)};
+        MRG32k3a.setPackageSeed(seeds);
+        stream = new MRG32k3a();
+    }
 }
 
