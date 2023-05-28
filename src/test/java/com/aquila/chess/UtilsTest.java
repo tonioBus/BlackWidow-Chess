@@ -1,13 +1,19 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.utils.Coordinate2D;
 import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.mcts.MCTSStrategy;
+import com.aquila.chess.strategy.mcts.utils.Coordinate2D;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.junit.jupiter.api.Test;
+import umontreal.ssj.randvarmulti.DirichletGen;
+import umontreal.ssj.rng.MRG32k3a;
+import umontreal.ssj.rng.RandomStream;
+
+import java.util.Arrays;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -55,6 +61,49 @@ public class UtilsTest {
         coordinate2D = new Coordinate2D(coordinate1D);
         assertEquals(2, coordinate2D.getX());
         assertEquals(6, coordinate2D.getY());
+    }
 
+
+    private StringBuffer calcDirichlet(final RandomStream stream) {
+        double[] policies = new double[5];
+        Arrays.fill(policies, 0.2);
+        double[] alpha = new double[5];
+        Arrays.fill(alpha, 0.3);
+        DirichletGen dirichletGen = new DirichletGen(stream, alpha);
+        double epsilon = 0.25;
+        int index = 0;
+        double[] d = new double[alpha.length];
+        dirichletGen.nextPoint(d);
+        double p;
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < policies.length; i++) {
+            p = policies[i];
+            double newP = (1 - epsilon) * p + epsilon * d[index];
+            policies[i] = (float) newP;
+            index++;
+            sb.append(String.format("[%f]", policies[i]));
+        }
+        return sb;
+    }
+
+    @Test
+    public void testDirichlet() {
+        Random rand = new Random();
+        rand.setSeed(System.currentTimeMillis());
+        long[] seeds = new long[]{
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294967087L),
+                rand.nextLong(4294944443L),
+                rand.nextLong(4294944443l),
+                rand.nextLong(4294944443l)};
+        MRG32k3a.setPackageSeed(seeds);
+        final RandomStream stream = new MRG32k3a();
+        StringBuffer sb = calcDirichlet(stream);
+        log.info("policies1:{}", sb);
+        sb = calcDirichlet(stream);
+        log.info("policies2:{}", sb);
+        sb = calcDirichlet(stream);
+        log.info("policies3:{}", sb);
     }
 }
