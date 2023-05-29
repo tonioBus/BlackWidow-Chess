@@ -118,7 +118,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.root = null;
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
-        // FIXME this.mctsGame.add2Last8Inputs(moveOpponent);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;

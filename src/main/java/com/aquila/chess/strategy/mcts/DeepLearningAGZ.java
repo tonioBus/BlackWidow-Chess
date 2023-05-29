@@ -69,6 +69,7 @@ public class DeepLearningAGZ {
 
     private final boolean train;
 
+    @Getter
     final INN nn;
 
     @Getter
