@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.deeplearning4j.nn.api.NeuralNetwork;
+import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
@@ -53,12 +54,12 @@ public class NNDeep4j implements INN {
                 // cross-device access is used for faster model averaging over pcie
                 .allowCrossDeviceAccess(false) //
                 .setNumberOfGcThreads(4)
-                // .setMaximumBlockSize(-1)
+               // .setMaximumBlockSize(-1)
                 .setMaximumGridSize(256)
-                .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
-                .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
+               // .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
+               // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
-                .setMaximumHostCache(8L * 1024 * 1024 * 1024L)
+                //.setMaximumHostCache(8L * 1024 * 1024 * 1024L)
                 .setNoGcWindowMs(100)
                 .enableDebug(false)
                 .setVerbose(false);
@@ -74,7 +75,8 @@ public class NNDeep4j implements INN {
         }
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
-        network.setListeners();
+        network.getConfiguration().setCacheMode(CacheMode.DEVICE);
+        log.info("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
     }
 
     public void train(boolean train) {
@@ -109,7 +111,6 @@ public class NNDeep4j implements INN {
         final File file = new File(filename);
         if (!file.canRead()) return null;
         final ComputationGraph ret = ComputationGraph.load(file, loadUpdater);
-        log.info("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(ret.getConfiguration(), ToStringStyle.JSON_STYLE));
         return ret;
     }
 
