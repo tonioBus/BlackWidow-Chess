@@ -1,9 +1,6 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.DeepLearningAGZ;
-import com.aquila.chess.strategy.mcts.INN;
-import com.aquila.chess.strategy.mcts.MCTSGame;
-import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
@@ -15,47 +12,77 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
 @Slf4j
 public class MainFitNNSpecificInputs {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
-    public static final String TRAIN_SETTINGS = "train-settings.properties";
     @SuppressWarnings("unused")
     static private final Logger logger = LoggerFactory.getLogger(MainFitNNSpecificInputs.class);
 
-    public static void displayValues(final String banner, final DeepLearningAGZ deepLearning) {
-        log.info("[{}] score:{}", banner, deepLearning.getScore());
-        deepLearning.getNn().outputs();
+    final Board board;
+    final Game game;
+    final Collection<Move> moves;
+    final MCTSGame mctsGame;
+    final INN nnWhite;
+    final DeepLearningAGZ deepLearningWhite;
+    final Map<Integer, Double> policies = new HashMap<>();
+    final Move move;
 
-    }
-
-    public static InputsFullNN createInputs(final Game game, final Collection<Move> moves) {
-        MCTSGame mctsGame = new MCTSGame(game);
-        Optional<Move> move = moves.stream().filter(m -> m.toString().equals("h4")).findFirst();
-        assert (move.isPresent());
-        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move.get(), Alliance.WHITE);
-        return inputs;
-    }
-
-    public static TrainGame createInput() {
-        TrainGame trainGame = new TrainGame();
-        final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        Collection<Move> moves = game.board.getAllLegalMoves();
-        InputsFullNN inputs = createInputs(game, moves);
-        final Map<Integer, Double> policies = new HashMap<>();
+    public MainFitNNSpecificInputs() {
+        board = Board.createStandardBoard();
+        game = Game.builder().board(board).build();
+        mctsGame = new MCTSGame(game);
+        moves = game.board.getAllLegalMoves();
+        nnWhite = new NNDeep4j(NN_REFERENCE, true);
+        UpdateLr updateLr = nbGames -> 1e-4;
+        nnWhite.setUpdateLr(updateLr, 1);
+        deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         final double probability = 1 / moves.size();
         moves.forEach(m -> {
             int index = PolicyUtils.indexFromMove(m);
             policies.put(index, probability);
         });
-        OneStepRecord oneStepRecord = new OneStepRecord(inputs, move.get().toString(), Alliance.WHITE, policies);
+        Optional<Move> optMove = moves.stream().filter(m -> m.toString().equals("h4")).findFirst();
+        assert (optMove.isPresent());
+        move = optMove.get();
+    }
+
+    public void displayValues(final String banner) {
+        log.info("[{}] score:{}", banner, deepLearningWhite.getScore());
+        InputsFullNN inputs = createInputs();
+        double[][][][] nbIn = new double[1][][][];
+        nbIn[0] = inputs.inputs();
+        List<OutputNN> outputs = deepLearningWhite.getNn().outputs(nbIn, 1);
+        OutputNN outputNN = outputs.get(0);
+        log.info("[{}]  value:{}", banner, outputNN.getValue());
+    }
+
+    public InputsFullNN createInputs() {
+        MCTSGame mctsGame = new MCTSGame(game);
+        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, Alliance.WHITE);
+        return inputs;
+    }
+
+    public TrainGame createTrainGame() {
+        TrainGame trainGame = new TrainGame();
+        InputsFullNN inputs = createInputs();
+        OneStepRecord oneStepRecord = new OneStepRecord(inputs, move.toString(), Alliance.WHITE, policies);
         trainGame.add(oneStepRecord);
         trainGame.value = -1.0;
         return trainGame;
+    }
+
+    private void run() throws IOException {
+        TrainGame trainGame = createTrainGame();
+        displayValues("BEFORE");
+        for (int i = 0; i < 40; i++) {
+            deepLearningWhite.train(trainGame);
+        }
+        displayValues("AFTER");
+        // waitForKey();
+        deepLearningWhite.save();
     }
 
     /**
@@ -63,52 +90,14 @@ public class MainFitNNSpecificInputs {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static void main(final String[] args) throws Exception {
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
-        UpdateLr updateLr = nbGames -> {
-            return 1e-4;
-        };
-        nnWhite.setUpdateLr(updateLr, 1);
-
-
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-
-        TrainGame trainGame = createInput();
-        deepLearningWhite.train(trainGame);
-        waitForKey();
-        deepLearningWhite.save();
+        MainFitNNSpecificInputs mainFitNNSpecificInputs = new MainFitNNSpecificInputs();
+        mainFitNNSpecificInputs.run();
     }
 
-    private static void waitForKey() {
+    private void waitForKey() {
         Scanner input = new Scanner(System.in);
-        System.out.print("Press Enter to continue...");
+        log.info("Press Enter to continue...");
         input.nextLine();
-    }
-
-    public static void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
-        Properties appProps = new Properties();
-        appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
-        logger.info("START MainFitNN");
-        int startGame = Integer.valueOf(appProps.getProperty("start.game"));
-        int endGame = Integer.valueOf(appProps.getProperty("end.game"));
-        logger.info("startGame: {}", startGame);
-        logger.info("endGame: {}", endGame);
-        int nbGames = trainGames(subDir, startGame, endGame, deepLearningWhite);
-        logger.info("{} -> Train {} games.", subDir, nbGames - startGame);
-    }
-
-    public static int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite) {
-        logger.info("train games from {} to {}", startGame, endGame);
-        int numGame;
-        for (numGame = startGame; numGame <= endGame; numGame++) {
-            logger.info("load game:{}", numGame);
-            try {
-                TrainGame trainGame = TrainGame.load(subDir, numGame);
-                deepLearningWhite.train(trainGame);
-            } catch (Exception e) {
-                logger.error("Error for the training game: " + numGame, e);
-            }
-        }
-        return numGame;
     }
 
 }
