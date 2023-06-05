@@ -91,7 +91,8 @@ public class Utils {
             }
         }
         if (indexes.length > 0 && sum == 0) {
-            throw new RuntimeException("toDistribution(): sum of policies==0 !!!");
+            log.warn("toDistribution(): sum of policies(nb:{})==0", policies.length);
+            return policies;
         }
         for (int i = 0; i < policies.length; i++) {
             if (sum > 0 && ArrayUtils.contains(indexes, i)) {
