@@ -1,0 +1,22 @@
+31/05/2023
+2023-05-31 01:29:18,137 WARN [main] c.a.c.s.m.MCTSNode [MCTSNode.java:264] [Black] SET AS ROOT:0.0 MCTSNode[-4398449605630377685] -> Move: Starting visit:0 expectedReward:0,000000e+00 parent:false childs:13 state:INTERMEDIATE virtual:0,000000
+2023-05-31 01:29:18,137 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:94] [51] RESET ROOT NORMALIZATION key: -4398449605630377685
+#%144&|2023-05-31 01:29:19,771 WARN [Worker-0] c.a.c.u.Utils [Utils.java:104] before dirichlet: indexes: 13 <-> 13 : policies>0
+2023-05-31 01:29:19,771 WARN [Worker-0] c.a.c.u.Utils [Utils.java:123] dirichlet: indexes: 13 <-> 13 : policies>0
+17##%153&|42##%144&|40##%153&|36##%139&|48##%130&|46##%163&|50##%142&|74##%146&|110##%142&|115##%143&|102##%142&|90##%158&|59##%129&|103##%157&|58##%150&|84##%148&|48##%139&|88##%149&|139##%141&|188##%151&|106##%131&|131##%151&|30##%131&|86##%144&|63##%143&|82##%145&|192##%149&|80##%149&|109##%155&|94##%141&|183##%139&|75##%146&|74##%158&|103##%142&|73##%142&|85##%152&|73##%144&|103##%133&|97##%136&|132##%138&|144##%134&|257#2023-05-31 01:30:33,837 INFO [Worker-0] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:302] [White] LOOSE MOVES:White-Rg1,Black-Qe2,White-Rh1,Black-Rh8,White-f4,Black-Qg4
+2023-05-31 01:30:33,840 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:142] [51] END OF SEARCH DETECTED childs:13
+#%85&|Exception in thread "main" java.util.ConcurrentModificationException
+	at java.base/java.util.LinkedHashMap$LinkedHashIterator.nextNode(LinkedHashMap.java:756)
+	at java.base/java.util.LinkedHashMap$LinkedEntryIterator.next(LinkedHashMap.java:788)
+	at java.base/java.util.LinkedHashMap$LinkedEntryIterator.next(LinkedHashMap.java:786)
+	at com.aquila.chess.strategy.mcts.ServiceNN.optimiseLooseNode(ServiceNN.java:111)
+	at com.aquila.chess.strategy.mcts.ServiceNN.propagateValues(ServiceNN.java:141)
+	at com.aquila.chess.strategy.mcts.ServiceNN.initValueAndPolicies(ServiceNN.java:184)
+	at com.aquila.chess.strategy.mcts.ServiceNN.executeJobs(ServiceNN.java:95)
+	at com.aquila.chess.strategy.mcts.DeepLearningAGZ.flushJob(DeepLearningAGZ.java:247)
+	at com.aquila.chess.strategy.mcts.MCTSSearchMultiThread.search(MCTSSearchMultiThread.java:152)
+	at com.aquila.chess.strategy.mcts.MCTSStrategy.mctsStep(MCTSStrategy.java:191)
+	at com.aquila.chess.strategy.mcts.MCTSStrategy.play(MCTSStrategy.java:121)
+	at com.aquila.chess.Game.play(Game.java:160)
+	at com.aquila.chess.MainTrainingAGZ.main(MainTrainingAGZ.java:90)
+:90)
