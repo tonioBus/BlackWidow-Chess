@@ -28,7 +28,7 @@ public class MainFitNNSpecificInputs {
     final INN nnWhite;
     final DeepLearningAGZ deepLearningWhite;
     final Map<Integer, Double> policies = new HashMap<>();
-    final Move move;
+//    final Move move;
 
     public MainFitNNSpecificInputs() {
         board = Board.createStandardBoard();
@@ -44,42 +44,61 @@ public class MainFitNNSpecificInputs {
             int index = PolicyUtils.indexFromMove(m);
             policies.put(index, probability);
         });
-        Optional<Move> optMove = moves.stream().filter(m -> m.toString().equals("h4")).findFirst();
-        assert (optMove.isPresent());
-        move = optMove.get();
+//        Optional<Move> optMove = moves.stream().filter(m -> m.toString().equals("h4")).findFirst();
+//        assert (optMove.isPresent());
+//        move = optMove.get();
     }
 
     public void displayValues(final String banner) {
         log.info("[{}] score:{}", banner, deepLearningWhite.getScore());
-        InputsFullNN inputs = createInputs();
-        double[][][][] nbIn = new double[1][][][];
-        nbIn[0] = inputs.inputs();
-        List<OutputNN> outputs = deepLearningWhite.getNn().outputs(nbIn, 1);
-        OutputNN outputNN = outputs.get(0);
-        log.info("[{}]  value:{}", banner, outputNN.getValue());
+        final int len = moves.size();
+        double[][][][] nbIn = new double[len][][][];
+        int i = 0;
+        Iterator<Move> iterMove = moves.iterator();
+        for (i = 0; i < len; i++) {
+            Move m = iterMove.next();
+            InputsFullNN inputs = createInputs(m);
+            nbIn[i] = inputs.inputs();
+        }
+        List<OutputNN> outputs = deepLearningWhite.getNn().outputs(nbIn, len);
+        iterMove = moves.iterator();
+        for (i = 0; i < len; i++) {
+            Move m = iterMove.next();
+            log.info("[{}] move:{} value:{}", banner, m, outputs.get(i).getValue());
+        }
     }
 
-    public InputsFullNN createInputs() {
+    public InputsFullNN createInputs(final Move move) {
         MCTSGame mctsGame = new MCTSGame(game);
         InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, Alliance.WHITE);
         return inputs;
     }
 
-    public TrainGame createTrainGame() {
+    public TrainGame createTrainGame(int nbIterations) {
         TrainGame trainGame = new TrainGame();
-        InputsFullNN inputs = createInputs();
-        OneStepRecord oneStepRecord = new OneStepRecord(inputs, move.toString(), Alliance.WHITE, policies);
+        InputsFullNN inputs = createInputs(null);
+        OneStepRecord oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.BLACK, policies);
         trainGame.add(oneStepRecord);
-        trainGame.value = -1.0;
+        oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.WHITE, policies);
+        trainGame.add(oneStepRecord);
+        final int len = moves.size();
+        for (int iteration = 0; iteration < nbIterations; iteration++) {
+            Iterator<Move> iterMove = moves.iterator();
+            for (int i = 0; i < len; i++) {
+                Move m = iterMove.next();
+                inputs = createInputs(m);
+                oneStepRecord = new OneStepRecord(inputs, m.toString(), Alliance.WHITE, policies);
+                trainGame.add(oneStepRecord);
+            }
+        }
+        trainGame.value = 0.0;
         return trainGame;
     }
 
     private void run() throws IOException {
-        TrainGame trainGame = createTrainGame();
+        TrainGame trainGame = createTrainGame(500);
         displayValues("BEFORE");
-        for (int i = 0; i < 40; i++) {
-            deepLearningWhite.train(trainGame);
-        }
+        deepLearningWhite.train(trainGame);
         displayValues("AFTER");
         // waitForKey();
         deepLearningWhite.save();
