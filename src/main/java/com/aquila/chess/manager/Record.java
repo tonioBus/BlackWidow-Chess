@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Record {
 
@@ -114,7 +115,8 @@ public class Record {
             this.percentage = 0;
         this.round = sequence.nbStep;
         this.nnScore = nnScore;
-        this.gameSha1 = Utils.toSha1(game.toPGN());
+        String first6moves = game.getMoves().stream().limit(6).map(Object::toString).collect(Collectors.joining(","));
+        this.gameSha1 = String.format("%s %s", first6moves, Utils.toSha1(game.toPGN()));
         this.png = Base64.getEncoder().encodeToString(game.toPGN().getBytes());
     }
 
