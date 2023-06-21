@@ -114,8 +114,8 @@ class ServiceNN {
                 MCTSNode node = cacheValue.getNode();
                 if (node != null && node.getState() == MCTSNode.State.LOOSE && !node.isLooseOptimise()) {
                     MCTSNode node2optimise = node.getParent();
-                    log.info("OPTIMISE LOOSE NODE:{} move:{} childs:{}", node2optimise.getKey(), node2optimise.getMove(), node2optimise.getNumberAllSubNodes());
-                    log.info("GRAPH BEFORE:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
+                    log.warn("OPTIMISE LOOSE NODE:{} move:{} childs:{}", node2optimise.getKey(), node2optimise.getMove(), node2optimise.getNumberAllSubNodes());
+                    log.warn("GRAPH BEFORE:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
                     node2optimise.allChildNodes().forEach(child -> {
                         double value = child.getValue();
                         int sign = child.getNumberNodesUntil(node2optimise) % 2 == 1 ? -1 : 1;
@@ -129,7 +129,7 @@ class ServiceNN {
                     node2optimise.resetExpectedReward(LOOSE_VALUE);
                     node2optimise.getCacheValue().setPropagated(false);
                     node2optimise.setLooseOptimise(true);
-                    log.info("GRAPH AFTER:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
+                    log.warn("GRAPH AFTER:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
                 }
             }
         }
