@@ -12,7 +12,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.util.*;
 
 import static com.aquila.chess.strategy.mcts.MCTSSearchWalker.LOOSE_VALUE;
-import static com.aquila.chess.strategy.mcts.MCTSSearchWalker.WIN_VALUE;
 
 @Slf4j
 class ServiceNN {
@@ -67,7 +66,9 @@ class ServiceNN {
      */
     public synchronized void removeNodeToPropagate(final MCTSNode node) {
         long key = node.getKey();
-        this.propagationValues.remove(key);
+        synchronized (this.propagationValues) {
+            this.propagationValues.remove(key);
+        }
         this.removeJob(key);
     }
 
@@ -107,30 +108,28 @@ class ServiceNN {
     }
 
     private synchronized void optimiseLooseNode(final Map<Long, CacheValues.CacheValue> propagationValues) {
-        synchronized (propagationValues) {
-            for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
-                CacheValues.CacheValue cacheValue = entry.getValue();
-                if (cacheValue.getNode() == null) continue;
-                MCTSNode node = cacheValue.getNode();
-                if (node != null && node.getState() == MCTSNode.State.LOOSE && !node.isLooseOptimise()) {
-                    MCTSNode node2optimise = node.getParent();
-                    log.warn("OPTIMISE LOOSE NODE:{} move:{} childs:{}", node2optimise.getKey(), node2optimise.getMove(), node2optimise.getNumberAllSubNodes());
-                    log.warn("GRAPH BEFORE:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
-                    node2optimise.allChildNodes().forEach(child -> {
-                        double value = child.getValue();
-                        int sign = child.getNumberNodesUntil(node2optimise) % 2 == 1 ? -1 : 1;
-                        log.info("value:{} sign:{} child:{} ", value, sign, child.getMove());
-                        removeNodeToPropagate(child);
-                        child.resetExpectedReward(sign);
-                        addNodeToPropagate(child.getKey(), child);
-                    });
-                    node2optimise.createLeaf();
-                    node2optimise.setState(MCTSNode.State.LOOSE);
-                    node2optimise.resetExpectedReward(LOOSE_VALUE);
-                    node2optimise.getCacheValue().setPropagated(false);
-                    node2optimise.setLooseOptimise(true);
-                    log.warn("GRAPH AFTER:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
-                }
+        for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
+            CacheValues.CacheValue cacheValue = entry.getValue();
+            if (cacheValue.getNode() == null) continue;
+            MCTSNode node = cacheValue.getNode();
+            if (node != null && node.getState() == MCTSNode.State.LOOSE && !node.isLooseOptimise()) {
+                MCTSNode node2optimise = node.getParent();
+                log.warn("OPTIMISE LOOSE NODE:{} move:{} childs:{}", node2optimise.getKey(), node2optimise.getMove(), node2optimise.getNumberAllSubNodes());
+                log.warn("GRAPH BEFORE:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
+                node2optimise.allChildNodes().forEach(child -> {
+                    double value = child.getValue();
+                    int sign = child.getNumberNodesUntil(node2optimise) % 2 == 1 ? -1 : 1;
+                    log.info("value:{} sign:{} child:{} ", value, sign, child.getMove());
+                    removeNodeToPropagate(child);
+                    child.resetExpectedReward(sign);
+                    addNodeToPropagate(child.getKey(), child);
+                });
+                node2optimise.createLeaf();
+                node2optimise.setState(MCTSNode.State.LOOSE);
+                node2optimise.resetExpectedReward(LOOSE_VALUE);
+                node2optimise.getCacheValue().setPropagated(false);
+                node2optimise.setLooseOptimise(true);
+                log.warn("GRAPH AFTER:\n############################\n{}\n############################", DotGenerator.toString(node2optimise.getRoot(), 5, false));
             }
         }
     }
@@ -138,40 +137,42 @@ class ServiceNN {
     private void propagateValues(boolean submit2NN, int length, boolean optimiseNodes) {
         int nbPropagate = 0;
         List<Long> deleteCaches = new ArrayList<>();
-        if(optimiseNodes) optimiseLooseNode(propagationValues);
-        for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
-            long key = entry.getKey();
-            CacheValues.CacheValue cacheValue = entry.getValue();
-            MCTSNode node = cacheValue.getNode();
-            if (node == null) {
-                log.debug("DELETING1[key:{}]  CACHE FROM PROPAGATE (cacheValue not connected to a Node):{}", key, cacheValue);
-                continue;
-            }
-            node.syncSum();
-            if (!node.isSync()) {
-                log.debug("DELETING2[key:{}] CACHE FROM PROPAGATE (node not synchronised):{}", key, cacheValue);
-                continue;
-            }
-            List<MCTSNode> nodes2propagate = createPropragationList(node.getParent(), key);
-            if (nodes2propagate != null) {
-                deleteCaches.add(key);
-                double value2propagate = node.getValue();
-                if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
-                node.getCacheValue().setPropagated(true);
-                log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getCacheValue().getNbPropagate());
-                for (MCTSNode node2propagate : nodes2propagate) {
-                    value2propagate = -value2propagate;
-                    for (int i = 0; i < node.getCacheValue().getNbPropagate(); i++) {
-                        node2propagate.propagate(value2propagate);
-                    }
-                    nbPropagate += node.getCacheValue().getNbPropagate();
+        synchronized (propagationValues) {
+            if (optimiseNodes) optimiseLooseNode(propagationValues);
+            for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
+                long key = entry.getKey();
+                CacheValues.CacheValue cacheValue = entry.getValue();
+                MCTSNode node = cacheValue.getNode();
+                if (node == null) {
+                    log.debug("DELETING1[key:{}]  CACHE FROM PROPAGATE (cacheValue not connected to a Node):{}", key, cacheValue);
+                    continue;
                 }
-                node.getCacheValue().resetNbPropragate();
+                node.syncSum();
+                if (!node.isSync()) {
+                    log.debug("DELETING2[key:{}] CACHE FROM PROPAGATE (node not synchronised):{}", key, cacheValue);
+                    continue;
+                }
+                List<MCTSNode> nodes2propagate = createPropragationList(node.getParent(), key);
+                if (nodes2propagate != null) {
+                    deleteCaches.add(key);
+                    double value2propagate = node.getValue();
+                    if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
+                    node.getCacheValue().setPropagated(true);
+                    log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getCacheValue().getNbPropagate());
+                    for (MCTSNode node2propagate : nodes2propagate) {
+                        value2propagate = -value2propagate;
+                        for (int i = 0; i < node.getCacheValue().getNbPropagate(); i++) {
+                            node2propagate.propagate(value2propagate);
+                        }
+                        nbPropagate += node.getCacheValue().getNbPropagate();
+                    }
+                    node.getCacheValue().resetNbPropragate();
+                }
             }
-        }
-        if (submit2NN && length > 0) System.out.printf("%d#", nbPropagate);
-        for (long key : deleteCaches) {
-            propagationValues.remove(key);
+            if (submit2NN && length > 0) System.out.printf("%d#", nbPropagate);
+            for (long key : deleteCaches) {
+                propagationValues.remove(key);
+            }
         }
     }
 
@@ -221,21 +222,24 @@ class ServiceNN {
             double value = outputsNN.get(index).getValue();
             double[] policies = outputsNN.get(index).getPolicies();
             CacheValues.CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
-            if (propagationValues.containsKey(key)) {
-                CacheValues.CacheValue oldCacheValue = propagationValues.get(key);
-                if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
-                        oldCacheValue.getType() != CacheValues.CacheValue.CacheValueType.LEAF) {
-                    log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), ToStringBuilder.reflectionToString(oldCacheValue, ToStringStyle.JSON_STYLE));
-                    log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), ToStringBuilder.reflectionToString(cacheValue, ToStringStyle.JSON_STYLE));
-                    throw new Error("OldCacheValue != current cacheValue");
+            synchronized (propagationValues) {
+                if (propagationValues.containsKey(key)) {
+                    CacheValues.CacheValue oldCacheValue = propagationValues.get(key);
+                    if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
+                            oldCacheValue.getType() != CacheValues.CacheValue.CacheValueType.LEAF) {
+                        log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), ToStringBuilder.reflectionToString(oldCacheValue, ToStringStyle.JSON_STYLE));
+                        log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), ToStringBuilder.reflectionToString(cacheValue, ToStringStyle.JSON_STYLE));
+                        throw new Error("OldCacheValue != current cacheValue");
+                    }
+                    if (log.isDebugEnabled())
+                        log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
+                } else {
+                    propagationValues.put(key, cacheValue);
+                    if (log.isDebugEnabled())
+                        log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                 }
-                if (log.isDebugEnabled()) log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
-            } else {
-                propagationValues.put(key, cacheValue);
-                if (log.isDebugEnabled())
-                    log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
+                index++;
             }
-            index++;
         }
         return index;
     }
@@ -248,9 +252,11 @@ class ServiceNN {
     public boolean isOnUpdateList(final MCTSNode nodeP) {
         MCTSNode node = nodeP;
         while (node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
-            CacheValues.CacheValue cacheValue = propagationValues.get(node.getKey());
-            if (cacheValue == null || cacheValue.isInitialised()) return true;
-            node = node.getParent();
+            synchronized (propagationValues) {
+                CacheValues.CacheValue cacheValue = propagationValues.get(node.getKey());
+                if (cacheValue == null || cacheValue.isInitialised()) return true;
+                node = node.getParent();
+            }
         }
         return false;
     }
@@ -273,7 +279,9 @@ class ServiceNN {
                                        final boolean isDirichlet,
                                        final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
-        if (propagationValues.containsKey(key)) return;
+        synchronized (propagationValues) {
+            if (propagationValues.containsKey(key)) return;
+        }
         if (possibleMove != null) {
             Alliance possibleMoveColor = possibleMove.getMovedPiece().getPieceAllegiance();
             if (possibleMoveColor != color2play) {
@@ -293,6 +301,8 @@ class ServiceNN {
 
 
     public String toString() {
-        return String.format("cacheValues.size():%d batchJobs.size:%d", this.propagationValues.size(), this.batchJobs2Commit.size());
+        synchronized (propagationValues) {
+            return String.format("cacheValues.size():%d batchJobs.size:%d", this.propagationValues.size(), this.batchJobs2Commit.size());
+        }
     }
 }
