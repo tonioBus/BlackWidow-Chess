@@ -164,8 +164,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
         double exploration = 0.0;
         MCTSNode child;
 
-        final Alliance colorOpponent = opponentNode.getColorState();
-        // final Alliance color2play = colorOpponent.complementary();
         final Collection<Move> moves = opponentNode.getChildMoves();
         final List<Move> bestMoves = new ArrayList<>();
         int sumVisits = opponentNode.getVisits();

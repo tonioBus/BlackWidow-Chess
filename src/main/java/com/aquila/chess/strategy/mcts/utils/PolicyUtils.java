@@ -51,11 +51,15 @@ public class PolicyUtils {
                 piece);
     }
 
+    public static String moveFromIndex(int index) {
+        return String.format("TODO Move[%d]", index);
+    }
+
     /**
      * @return
      *
      * <pre>
-     * out: 8x8x73: [0..72]  ->     [0..55)(Queen moves: nbStep + orientation) [56..63](Knights moves) [64..72](underpromotion)
+     * out: 8x8x73: [0..72]  ->     [0..55](Queen moves: nbStep + orientation) [56..63](Knights moves) [64..72](underpromotion)
      * Queen moves: [1 .. 7] ->     7 number of steps  [N,NE,E,SE,S,SW,W,NW]: 8 orientation -> 7*8
      * Knight moves: [0..7]  ->     [Up+Up+Left,Up+Up+Right,Right+Right+Up, Right+Right+Down,
      * Down+Down+Right, Down+Down+Left,Left+Left+Down,Left+Left+Up]

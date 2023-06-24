@@ -4,6 +4,7 @@
 package com.aquila.chess.utils;
 
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.pieces.*;
@@ -102,9 +103,6 @@ public class Utils {
             }
         }
         if (isDirichlet) {
-            log.warn("before dirichlet: indexes: {} <-> {} : policies>0",
-                    indexes.length,
-                    Arrays.stream(policies).filter(policy -> policy > 0).count());
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
@@ -121,9 +119,28 @@ public class Utils {
                     index++;
                 }
             }
-            log.warn("dirichlet: indexes: {} <-> {} : policies>0",
-                    indexes.length,
-                    Arrays.stream(policies).filter(policy -> policy > 0).count());
+            if (log.isWarnEnabled()) {
+                double maxPolicy = 0.0;
+                double minPolicy = 1.0;
+                int maxPolicyIndex = -1;
+                int minPolicyIndex = -1;
+                for (int i = 0; i < policies.length; i++) {
+                    if (policies[i] > maxPolicy) {
+                        maxPolicy = policies[i];
+                        maxPolicyIndex = i;
+                    }
+                    if (policies[i] > 0.0 && policies[i] < minPolicy) {
+                        minPolicy = policies[i];
+                        minPolicyIndex = i;
+                    }
+                }
+                log.warn("dirichlet: MAX policy: {} move:{}", maxPolicy, PolicyUtils.moveFromIndex(maxPolicyIndex));
+                log.warn("dirichlet: MIN policy: {} move:{}", minPolicy, PolicyUtils.moveFromIndex(minPolicyIndex));
+                log.warn("dirichlet: indexes: {} <-> {} : policies>0",
+                        indexes.length,
+                        Arrays.stream(policies).filter(policy -> policy > 0).count());
+
+            }
         }
         return policies;
     }
