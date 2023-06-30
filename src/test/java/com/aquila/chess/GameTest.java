@@ -1,15 +1,18 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.MCTSGame;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +33,19 @@ class GameTest {
             log.info("GAME:\n{}", game);
         } finally {
             log.info("END GAME::\n{}", game);
+        }
+    }
+
+    @Test
+    public void testPoliciesUtils() {
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().board(board).build();
+        // game.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 2));
+        List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
+        for (Move move : moves) {
+            int policyIndex = PolicyUtils.indexFromMove(move);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex);
+            log.info("move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
         }
     }
 
@@ -94,4 +110,4 @@ class GameTest {
         gameOriginal.isInitialPosition();
     }
 
- }
+}

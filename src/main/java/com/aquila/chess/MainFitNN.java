@@ -24,9 +24,7 @@ public class MainFitNN {
      */
     public static void main(final String[] args) throws Exception {
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
-        UpdateLr updateLr = nbGames -> {
-            return 1e-4;
-        };
+        UpdateLr updateLr = nbGames -> 0.9e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         train("train", deepLearningWhite);
