@@ -101,7 +101,7 @@ public class DeepLearningAGZ {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
             NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false);
             deepLearningBlack = new DeepLearningAGZ(nnBlack, true);
-            deepLearningBlack.setUpdateLr(updateLr, nbGames);
+            if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
         }
         return deepLearningBlack;
     }

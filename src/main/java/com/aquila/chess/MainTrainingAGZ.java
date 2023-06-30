@@ -20,17 +20,6 @@ public class MainTrainingAGZ {
 
     static public final int NB_THREADS = 1;
 
-    /**
-     * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
-     * and 0.0002 after 100, 300, and 500 thousand steps for chess
-     */
-    public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 5000) return 1e-7;
-        if (nbGames > 3000) return 1e-6;
-        if (nbGames > 1000) return 1e-5;
-        return 1e-4;
-    };
-
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
         if (nbStep <= 30) return 2.5;
@@ -49,10 +38,9 @@ public class MainTrainingAGZ {
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
         DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
-        deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
         DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
-        deepLearningBlack = DeepLearningAGZ.initFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
+        deepLearningBlack = DeepLearningAGZ.initFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
         while (true) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder().board(board).build();
