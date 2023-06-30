@@ -57,7 +57,13 @@ public class PolicyUtils {
         int coordinate = index / 73;
         int x = coordinate / 8;
         int y = index % 8;
-        return String.format("Move-%d-%d-%d[%s]", coordinate, x, y, BoardUtils.INSTANCE.getPositionAtCoordinate(8*x+y));
+        String position;
+        try {
+            position = BoardUtils.INSTANCE.getPositionAtCoordinate(8 * x + y);
+        } catch (Exception e) {
+            position = "???";
+        }
+        return String.format("Move-%d-%d-%d[%s]", coordinate, x, y, position);
     }
 
     /**
