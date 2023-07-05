@@ -186,7 +186,7 @@ class ServiceNN {
             retrieveValuesPoliciesFromNN(length);
             batchJobs2Commit.clear();
         }
-        propagateValues(submit2NN, length, true);
+        propagateValues(submit2NN, length, false);
     }
 
     private List<MCTSNode> createPropragationList(final MCTSNode child, long key) {
