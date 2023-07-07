@@ -188,10 +188,14 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     statistic.nbGoodSelection++;
                     child = opponentNode.findChild(possibleMove);
                     child.createLeaf();
-                    child.setState(MCTSNode.State.LOOSE);
-                    child.resetExpectedReward(LOOSE_VALUE);
+                    if (child.getColorState() == this.colorStrategy) {
+                        child.setState(MCTSNode.State.LOOSE);
+                        child.resetExpectedReward(LOOSE_VALUE);
+                    } else {
+                        child.setState(MCTSNode.State.WIN);
+                        child.resetExpectedReward(WIN_VALUE);
+                    }
                     child.getCacheValue().setPropagated(false);
-                    child.getCacheValue().setAsLeaf();
                     return possibleMove;
                 }
             }
