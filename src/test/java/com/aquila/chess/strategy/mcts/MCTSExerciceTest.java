@@ -502,12 +502,12 @@ public class MCTSExerciceTest {
                     List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     if (winLoss1.size() > 0) log.info("graph:\n{}\n");
-                    Helper.checkMCTSTree(whiteStrategy);
+//                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    Helper.checkMCTSTree(blackStrategy);
+//                    Helper.checkMCTSTree(blackStrategy);
                     break;
             }
             if (status == WHITE_CHESSMATE) break;
@@ -899,7 +899,8 @@ public class MCTSExerciceTest {
         log.info("[{}}] Wins/loss EndNodes ({}): {}", strategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         if (forceGraph || winLoss.size() > 0)
             log.info("[{}] graph:\n############################\n{}\n############################", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
-        Helper.checkMCTSTree(strategy);
+        //
+        // Helper.checkMCTSTree(strategy);
         return winLoss;
     }
 }

@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -184,6 +183,18 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 statistic);
         // Collections.shuffle(moves, rand);
         synchronized (moves) {
+            for (final Move possibleMove : moves) {
+                if (possibleMove.execute().getAllLegalMoves().size() == 0) {
+                    statistic.nbGoodSelection++;
+                    child = opponentNode.findChild(possibleMove);
+                    child.createLeaf();
+                    child.setState(MCTSNode.State.LOOSE);
+                    child.resetExpectedReward(LOOSE_VALUE);
+                    child.getCacheValue().setPropagated(false);
+                    child.getCacheValue().setAsLeaf();
+                    return possibleMove;
+                }
+            }
             for (final Move possibleMove : moves) {
                 int visits = 0;
                 child = opponentNode.findChild(possibleMove);
