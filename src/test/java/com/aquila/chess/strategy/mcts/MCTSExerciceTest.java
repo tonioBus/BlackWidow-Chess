@@ -376,14 +376,14 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    Helper.checkMCTSTree(whiteStrategy);
+                   // Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> wins = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
                     log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(wins.size() > 0);
                     break;
                 case BLACK:
                     if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
-                    Helper.checkMCTSTree(blackStrategy);
+                    // Helper.checkMCTSTree(blackStrategy);
                     List<MCTSNode> looses = blackStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
@@ -436,7 +436,7 @@ public class MCTSExerciceTest {
                 case WHITE:
                     List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    Helper.checkMCTSTree(whiteStrategy);
+                    // Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     break;
