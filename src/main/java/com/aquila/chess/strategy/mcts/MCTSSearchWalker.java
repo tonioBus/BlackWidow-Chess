@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.AllArgsConstructor;
@@ -185,6 +186,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
        // synchronized (moves) {
             for (final Move possibleMove : moves) {
                 if (possibleMove.getBoard().getAllLegalMoves().isEmpty()) {
+                    log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
                     statistic.nbGoodSelection++;
                     child = opponentNode.findChild(possibleMove);
                     if (child.getColorState() == this.colorStrategy) {
