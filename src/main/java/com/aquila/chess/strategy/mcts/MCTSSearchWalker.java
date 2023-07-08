@@ -182,9 +182,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 isRootNode & withDirichlet,
                 statistic);
         // Collections.shuffle(moves, rand);
-        synchronized (moves) {
+       // synchronized (moves) {
             for (final Move possibleMove : moves) {
-                if (possibleMove.execute().getAllLegalMoves().size() == 0) {
+                if (possibleMove.getBoard().getAllLegalMoves().isEmpty()) {
                     statistic.nbGoodSelection++;
                     child = opponentNode.findChild(possibleMove);
                     if (child.getColorState() == this.colorStrategy) {
@@ -234,7 +234,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     bestMoves.add(possibleMove);
                 }
             }
-        }
+        // }
         int nbBestMoves = bestMoves.size();
         Move bestMove = null;
         if (nbBestMoves == 1) {

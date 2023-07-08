@@ -57,7 +57,7 @@ public class MCTSSearchTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+              //  .withNbThread(1)
                 .withNbSearchCalls(1);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
@@ -87,7 +87,7 @@ public class MCTSSearchTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+               // .withNbThread(1)
                 .withNbSearchCalls(500);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed);
         game.setup(whiteStrategy, blackStrategy);
@@ -135,7 +135,7 @@ public class MCTSSearchTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+               // .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
@@ -182,7 +182,7 @@ public class MCTSSearchTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(4)
+              //  .withNbThread(4)
 //                .withNbSearchCalls(50);
                 .withNbSearchCalls(800);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
@@ -226,7 +226,7 @@ public class MCTSSearchTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+            //    .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
