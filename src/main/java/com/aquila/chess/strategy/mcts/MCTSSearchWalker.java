@@ -196,8 +196,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     } else {
                         opponentNode.createLeaf();
                         opponentNode.getCacheValue().setPropagated(false);
-                        opponentNode.setState(MCTSNode.State.LOOSE);
-                        opponentNode.resetExpectedReward(LOOSE_VALUE);
+                        opponentNode.setState(MCTSNode.State.WIN);
+                        opponentNode.resetExpectedReward(WIN_VALUE);
                         return null;
                     }
                 }

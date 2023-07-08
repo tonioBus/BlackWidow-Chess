@@ -179,7 +179,7 @@ public class MCTSGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        add2Last8Inputs(move);
+        add2Last8InputsAndPlay(move);
         return this.status = calculateStatus(board);
     }
 
@@ -187,7 +187,7 @@ public class MCTSGame {
      * Add to lastInputs fhe given move
      * @param move
      */
-    public void add2Last8Inputs(final Move move) {
+    public void add2Last8InputsAndPlay(final Move move) {
         if (move == null) return;
         this.moves.add(move);
         InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), move);
