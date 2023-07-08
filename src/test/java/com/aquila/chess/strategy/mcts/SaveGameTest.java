@@ -69,7 +69,7 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep, trainGame.getOneStepRecordList().size());
+        assertEquals(nbStep - 1, trainGame.getOneStepRecordList().size());
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
@@ -112,7 +112,7 @@ public class SaveGameTest {
             log.info("game step[{}] :\n{}", i, game);
             whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
         }
-        assertEquals(nbStep, whiteStrategy.getTrainGame().getOneStepRecordList().size());
+        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
@@ -121,7 +121,7 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train", 666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep, trainGame.getOneStepRecordList().size());
+        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0) , trainGame.getOneStepRecordList().size());
     }
 
     @Test

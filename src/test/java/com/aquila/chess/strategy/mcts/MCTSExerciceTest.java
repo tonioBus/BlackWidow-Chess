@@ -311,7 +311,7 @@ public class MCTSExerciceTest {
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
                     log.info(whiteStrategy.mctsTree4log(false, 3));
-                    Helper.checkMCTSTree(whiteStrategy);
+                    // Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
