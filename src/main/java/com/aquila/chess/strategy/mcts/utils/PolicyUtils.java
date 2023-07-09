@@ -34,7 +34,6 @@ public class PolicyUtils {
     /**
      * return policy index from a move
      *
-     * @param board the board concerning by the move (used to retrieve the Piece)
      * @param start the start in algrebic notation
      * @param end   the end in algebric notation
      * @return the index of the given move
