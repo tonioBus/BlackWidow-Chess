@@ -132,7 +132,7 @@ public class MCTSNode implements Serializable {
      * @param key
      * @param cacheValue
      */
-    private MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValues.CacheValue cacheValue) {
+    public MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValues.CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
