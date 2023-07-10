@@ -3,9 +3,9 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
+import com.chess.engine.classic.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
@@ -109,6 +110,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 //                opponentNode.incVisits();
 //                return returnEndOfSimulatedGame(opponentNode, depth, color2play, opponentNode.getMove(), opponentNode.getStatus(color2play)); //.negate();
             }
+            prepareChilds(opponentNode, depth);
             selectedMove = selection(opponentNode, isRootNode, depth);
             if (selectedMove == null) return null;
             selectedNode = opponentNode.findChild(selectedMove);
@@ -121,7 +123,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     log.debug("EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
-                    selectedNode = MCTSNode.createNode(opponentNode, selectedMove, mctsGame.getBoard(), key, cacheValue);
+                    selectedNode = MCTSNode.createNode(selectedMove, mctsGame.getBoard(), key, cacheValue);
                     opponentNode.addChild(selectedNode);
                     assert (selectedNode != opponentNode);
                 } catch (Exception e) {
@@ -156,6 +158,42 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return null;
     }
 
+    private void prepareChilds(final MCTSNode opponentNode, int depth) {
+        final Collection<Move> moves = opponentNode.getChildMoves();
+        synchronized (moves) {
+            moves.parallelStream().forEach(possibleMove -> {
+                final Player childPlayer = possibleMove.execute().currentPlayer();
+                Collection<Move> allLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
+                // log.info("legalMoves[{}]:{}", possibleMove, allLegalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                if (allLegalMoves.isEmpty()) {
+                    log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
+                    statistic.nbGoodSelection++;
+                    MCTSNode child = opponentNode.findChild(possibleMove);
+                    if (child == null) {
+                        String label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
+                        long key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
+                        CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+                        child = MCTSNode.createNode(possibleMove, null, key, cacheValue);
+                        synchronized (opponentNode.getChildNodes()) {
+                            opponentNode.addChild(child);
+                        }
+                    }
+                    if (child.getColorState() == this.colorStrategy && child.getState()!= MCTSNode.State.LOOSE) {
+                        child.createLeaf();
+                        child.getCacheValue().setPropagated(false);
+                        child.setState(MCTSNode.State.LOOSE);
+                        child.resetExpectedReward(LOOSE_VALUE);
+                    } else {
+//                        opponentNode.createLeaf();
+//                        opponentNode.getCacheValue().setPropagated(false);
+//                        opponentNode.setState(MCTSNode.State.WIN);
+//                        opponentNode.resetExpectedReward(WIN_VALUE);
+                    }
+                }
+            });
+        }
+    }
+
     protected Move selection(final MCTSNode opponentNode, final boolean isRootNode, int depth) {
         double maxUcb = Double.NEGATIVE_INFINITY;
         double ucb;
@@ -182,28 +220,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 moves,
                 isRootNode & withDirichlet,
                 statistic);
-        // Collections.shuffle(moves, rand);
-       // synchronized (moves) {
-            for (final Move possibleMove : moves) {
-                if (possibleMove.getBoard().getAllLegalMoves().isEmpty()) {
-                    log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
-                    statistic.nbGoodSelection++;
-                    child = opponentNode.findChild(possibleMove);
-                    if (child.getColorState() == this.colorStrategy) {
-                        child.createLeaf();
-                        child.getCacheValue().setPropagated(false);
-                        child.setState(MCTSNode.State.LOOSE);
-                        child.resetExpectedReward(LOOSE_VALUE);
-                        return possibleMove;
-                    } else {
-                        opponentNode.createLeaf();
-                        opponentNode.getCacheValue().setPropagated(false);
-                        opponentNode.setState(MCTSNode.State.WIN);
-                        opponentNode.resetExpectedReward(WIN_VALUE);
-                        return null;
-                    }
-                }
-            }
+        synchronized (moves) {
             for (final Move possibleMove : moves) {
                 int visits = 0;
                 child = opponentNode.findChild(possibleMove);
@@ -236,7 +253,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     bestMoves.add(possibleMove);
                 }
             }
-        // }
+        }
         int nbBestMoves = bestMoves.size();
         Move bestMove = null;
         if (nbBestMoves == 1) {

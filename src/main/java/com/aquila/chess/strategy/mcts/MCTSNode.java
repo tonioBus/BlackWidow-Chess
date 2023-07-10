@@ -161,7 +161,6 @@ public class MCTSNode implements Serializable {
     /**
      * Create a node. This method is not responsible to attach this node to his parent
      *
-     * @param parent     the parent node, use for some checking
      * @param move       the move this node represent
      * @param rootBoard  the board
      * @param dirichlet
@@ -169,7 +168,7 @@ public class MCTSNode implements Serializable {
      * @param cacheValue
      * @return
      */
-    public static MCTSNode createNode(final MCTSNode parent, final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
+    public static MCTSNode createNode(final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
 //            final MCTSNode ret = cacheValue.getNode();
 //            if (ret != null) {
@@ -430,14 +429,6 @@ public class MCTSNode implements Serializable {
     public void addChild(final MCTSNode childNode) {
         assert (childNode.move != null);
         assert (childNode != this);
-//        if (childNode.getParent() != this) {
-//            MCTSNode rootNode = getFirstRoot(childNode);
-//            log.warn("root: {}", DotGenerator.toString(rootNode, 20, true));
-//            log.warn("this.parent: {}", DotGenerator.toString(this.getParent(), 20, true));
-//            String msg = String.format("NODE-PARENT:%s <>\nCURRENT-PARENT: %s", childNode.getParent(), this);
-//            log.error(msg);
-//            throw new RuntimeException(msg);
-//        }
         final MCTSNode oldChild = this.childNodes.put(childNode.move, childNode);
         if (oldChild != null) {
             log.error("Add a child to a node with already this child set:{}", this);
