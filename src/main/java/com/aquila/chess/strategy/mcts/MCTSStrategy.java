@@ -159,7 +159,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             MCTSNode childNode = this.directRoot.findChild(opponentMove);
             if (childNode == null) {
                 long key = deepLearning.addState(mctsGame, "ROOT", opponentMove, statistic);
-                this.directRoot = MCTSNode.createNode(directRoot, opponentMove, mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
+                this.directRoot = MCTSNode.createNode(opponentMove, mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
             } else {
                 directRoot = childNode;
                 directRoot.setAsRoot();
@@ -209,7 +209,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             Collections.shuffle(currentMoves, rand);
             ret = currentMoves.get(0);
             long key = deepLearning.addState(mctsGame, "ALARM:" + directRoot.getMove().toString(), ret, statistic);
-            MCTSNode childNode = MCTSNode.createNode(directRoot, ret, this.mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
+            MCTSNode childNode = MCTSNode.createNode(ret, this.mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
             directRoot.addChild(childNode);
             log.warn("[{}] choosing randomly: {}", this.getAlliance(), ret);
             log.warn(
