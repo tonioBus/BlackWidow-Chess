@@ -192,6 +192,7 @@ public class MCTSGame {
         this.moves.add(move);
         InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), move);
         this.last8Inputs.add(new Last8Inputs(inputs, move));
+        // board = move.getBoard();
         board = move.execute();
     }
 

@@ -101,14 +101,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
         long key = 0;
         synchronized (opponentNode) {
             log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
-            if (opponentNode.getState() != MCTSNode.State.INTERMEDIATE && opponentNode.getState() != MCTSNode.State.ROOT) {
-                // end of game
-//                log.error("END OF GAME: {}", opponentNode);
-//                return null;
-//                opponentNode.decVirtualLoss();
-//                opponentNode.incVisits();
-//                return returnEndOfSimulatedGame(opponentNode, depth, color2play, opponentNode.getMove(), opponentNode.getStatus(color2play)); //.negate();
-            }
             prepareChilds(opponentNode, depth);
             selectedMove = selection(opponentNode, isRootNode, depth);
             if (selectedMove == null) return null;
@@ -157,7 +149,17 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return null;
     }
 
+    class StopException extends RuntimeException {
+        @Getter
+        private final MCTSNode opponentNode;
+
+        public StopException(MCTSNode opponentNode) {
+            this.opponentNode = opponentNode;
+        }
+    }
+
     private void prepareChilds(final MCTSNode opponentNode, int depth) {
+        if (opponentNode.getChildNodes().size() == 0) return;
         final Collection<Move> moves = opponentNode.getChildMoves();
         synchronized (moves) {
             try {
@@ -166,36 +168,37 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     final List<Move> allLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
                     // log.info("legalMoves[{}]:{}", possibleMove, allLegalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                     if (allLegalMoves.isEmpty()) {
-                        log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
                         statistic.nbGoodSelection++;
-                        MCTSNode child = opponentNode.findChild(possibleMove);
-                        if (child == null) {
-                            String label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-                            final long key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
-                            final CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-                            child = new MCTSNode(possibleMove, allLegalMoves, key, cacheValue);
-                            synchronized (opponentNode.getChildNodes()) {
-                                opponentNode.addChild(child);
+                        if (opponentNode.getColorState() != this.colorStrategy) {
+                            MCTSNode child = opponentNode.findChild(possibleMove);
+                            if (child == null) {
+                                String label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
+                                final long key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
+                                final CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+                                child = new MCTSNode(possibleMove, allLegalMoves, key, cacheValue);
+                                synchronized (opponentNode.getChildNodes()) {
+                                    opponentNode.addChild(child);
+                                }
                             }
-                        }
-                        if (child.getColorState() == this.colorStrategy && child.getState() != MCTSNode.State.LOOSE) {
-                            child.createLeaf();
-                            child.getCacheValue().setPropagated(false);
-                            child.setState(MCTSNode.State.LOOSE);
-                            child.resetExpectedReward(LOOSE_VALUE);
-                        } else {
-                            opponentNode.createLeaf();
-                            opponentNode.getCacheValue().setPropagated(false);
-                            opponentNode.setState(MCTSNode.State.WIN);
-                            opponentNode.resetExpectedReward(WIN_VALUE);
-                            throw new RuntimeException("STOP");
+                            log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
+                            if(child.getChildNodes().size()>0) {
+                                child.createLeaf();
+                                child.getCacheValue().setPropagated(false);
+                                child.setState(MCTSNode.State.LOOSE);
+                                child.resetExpectedReward(LOOSE_VALUE);
+                            }
+//                        } else {
+//                            log.warn("DETECT WIN MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
+//                            opponentNode.createLeaf();
+//                            opponentNode.getCacheValue().setPropagated(false);
+//                            opponentNode.setState(MCTSNode.State.WIN);
+//                            opponentNode.resetExpectedReward(WIN_VALUE);
+//                            throw new StopException(opponentNode);
                         }
                     }
                 });
-            } catch (RuntimeException e) {
-                log.error("Exception: {}", e.getMessage());
-                if ("java.lang.RuntimeException: STOP".equals(e.getMessage())) return;
-                else throw e;
+            } catch (StopException e) {
+                log.info("Exception: node:{}", e.getOpponentNode());
             }
         }
     }
@@ -240,8 +243,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         log.debug("GET CACHE VALUE[key:{}] possibleMove:{} CACHEVALUE:{}", key, possibleMove, cacheValue);
                     exploitation = cacheValue.getValue();
                 } else {
-                    exploitation = child.getExpectedReward(true);
-                    visits = child.getVisits();
+                exploitation = child.getExpectedReward(true);
+                visits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 if (sumVisits > 0) {
