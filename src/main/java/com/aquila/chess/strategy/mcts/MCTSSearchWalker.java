@@ -172,28 +172,32 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         if (opponentNode.getColorState() != this.colorStrategy) {
                             MCTSNode child = opponentNode.findChild(possibleMove);
                             if (child == null) {
-                                String label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-                                final long key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
-                                final CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-                                child = new MCTSNode(possibleMove, allLegalMoves, key, cacheValue);
+                                String label = String.format("OPTIMIZE [S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
+//                                final long key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
+                                final CacheValues.CacheValue cacheValue = CacheValues.createDummy(label);
+                                child = new MCTSNode(possibleMove, allLegalMoves, -1, cacheValue);
                                 synchronized (opponentNode.getChildNodes()) {
                                     opponentNode.addChild(child);
                                 }
                             }
-                            log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
-                            if(child.getChildNodes().size()>0) {
+                            if(child.getState()!= MCTSNode.State.WIN) {
+                                log.warn("OPTIMISATION[{}] -> DETECT WIN MOVE: {} last:{}", this.colorStrategy, child.getMovesFromRootAsString(), possibleMove);
                                 child.createLeaf();
                                 child.getCacheValue().setPropagated(false);
-                                child.setState(MCTSNode.State.LOOSE);
-                                child.resetExpectedReward(LOOSE_VALUE);
+                                child.setState(MCTSNode.State.WIN);
+                                child.resetExpectedReward(WIN_VALUE);
+                                this.deepLearning.getServiceNN().addNodeToPropagate(child.getKey(), child);
                             }
-//                        } else {
-//                            log.warn("DETECT WIN MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
-//                            opponentNode.createLeaf();
-//                            opponentNode.getCacheValue().setPropagated(false);
-//                            opponentNode.setState(MCTSNode.State.WIN);
-//                            opponentNode.resetExpectedReward(WIN_VALUE);
-//                            throw new StopException(opponentNode);
+                        } else {
+                            if(opponentNode.getState()!= MCTSNode.State.LOOSE) {
+                                log.warn("OPTIMISATION[{}] -> DETECT LOOSE MOVE: {} last:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
+                                opponentNode.createLeaf();
+                                opponentNode.getCacheValue().setPropagated(false);
+                                opponentNode.setState(MCTSNode.State.LOOSE);
+                                opponentNode.resetExpectedReward(LOOSE_VALUE);
+                                this.deepLearning.getServiceNN().addNodeToPropagate(opponentNode.getKey(), opponentNode);
+                            }
+                            throw new StopException(opponentNode);
                         }
                     }
                 });
@@ -304,11 +308,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(MCTSNode.State.WIN);
                         node.resetExpectedReward(WIN_VALUE);
                         node.getCacheValue().setPropagated(false);
+                        log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, WIN_VALUE);
                 } else {
 //                    if (node.getParent().getState() != MCTSNode.State.ROOT) {
@@ -339,11 +343,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(MCTSNode.State.LOOSE);
                         node.resetExpectedReward(LOOSE_VALUE);
                         node.getCacheValue().setPropagated(false);
+                        log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
                     this.deepLearning.addTerminalNodeToPropagate(key, node);
                     node.incNbReturn();
-                    log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
                     return new SearchResult(node, LOOSE_VALUE);
                 }
             case PAT:

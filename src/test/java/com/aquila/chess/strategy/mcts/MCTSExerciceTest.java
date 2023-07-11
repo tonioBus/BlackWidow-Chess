@@ -126,9 +126,10 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {10, 100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
-    void testEndWithBlackPromotion() throws Exception {
+    void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
         final Game game = Game.builder().board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "G1-h1;H1-G1;G1-H1;H1-G1;G1-H1");
@@ -140,17 +141,16 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5F, index1, index2);
+        int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2");
+        int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1");
+        nnBlack.addIndexOffset(0.9F, index1, index2);
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            Helper.checkMCTSTree(blackStrategy);
             if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
                 return;
@@ -159,6 +159,7 @@ public class MCTSExerciceTest {
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
                 if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(true, 50));
             }
+            Helper.checkMCTSTree(blackStrategy);
         }
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have got a black chessmate");
@@ -376,7 +377,7 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                   // Helper.checkMCTSTree(whiteStrategy);
+                    // Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> wins = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
                     log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(wins.size() > 0);
