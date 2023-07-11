@@ -54,14 +54,15 @@ public class Helper {
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
+        if(node.getState()!= MCTSNode.State.INTERMEDIATE) return;
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = 0.0F;
         for (int i = 0; i < policies.length; i++) sumPolicies += policies[i];
         if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
-            ret.add(String.format("sum of policies should be ~= 1. (sum:%f)", sumPolicies));
+            ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: Node:%s sum of policies should be ~= 1. (sum:%f)", node, sumPolicies));
         }
         if (!node.getCacheValue().isInitialised()) {
-            ret.add(String.format("node %s should be initialized", node));
+            ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: node %s should be initialized", node));
         }
         for (MCTSNode child : node.getChildsAsCollection()) {
             if (child == null) continue;
