@@ -181,11 +181,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
                                 }
                             }
                             log.warn("DETECT LOOSE MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
-                            if(child.getChildNodes().size()>0) {
-                                child.createLeaf();
-                                child.getCacheValue().setPropagated(false);
-                                child.setState(MCTSNode.State.LOOSE);
-                                child.resetExpectedReward(LOOSE_VALUE);
+                            synchronized (child) {
+                                if (child.getChildNodes().size() > 0) {
+                                    child.createLeaf();
+                                    child.getCacheValue().setPropagated(false);
+                                    child.setState(MCTSNode.State.LOOSE);
+                                    child.resetExpectedReward(LOOSE_VALUE);
+                                }
                             }
 //                        } else {
 //                            log.warn("DETECT WIN MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
@@ -243,8 +245,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         log.debug("GET CACHE VALUE[key:{}] possibleMove:{} CACHEVALUE:{}", key, possibleMove, cacheValue);
                     exploitation = cacheValue.getValue();
                 } else {
-                exploitation = child.getExpectedReward(true);
-                visits = child.getVisits();
+                    exploitation = child.getExpectedReward(true);
+                    visits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 if (sumVisits > 0) {

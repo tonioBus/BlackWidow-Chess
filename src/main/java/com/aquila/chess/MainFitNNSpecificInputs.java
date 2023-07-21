@@ -1,16 +1,15 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.*;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,7 +18,6 @@ import java.util.*;
 public class MainFitNNSpecificInputs {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
     @SuppressWarnings("unused")
-    static private final Logger logger = LoggerFactory.getLogger(MainFitNNSpecificInputs.class);
 
     final Board board;
     final Game game;
@@ -28,25 +26,24 @@ public class MainFitNNSpecificInputs {
     final INN nnWhite;
     final DeepLearningAGZ deepLearningWhite;
     final Map<Integer, Double> policies = new HashMap<>();
+
+    InputsManager inputsManager = new Lc0InputsManagerImpl();
 //    final Move move;
 
     public MainFitNNSpecificInputs() {
         board = Board.createStandardBoard();
-        game = Game.builder().board(board).build();
+        game = Game.builder().board(board).inputsManager(inputsManager).build();
         mctsGame = new MCTSGame(game);
         moves = game.board.getAllLegalMoves();
         nnWhite = new NNDeep4j(NN_REFERENCE, true);
         UpdateLr updateLr = nbGames -> 1e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-        final double probability = 1 / moves.size();
+        final double probability = 1.0 / moves.size();
         moves.forEach(m -> {
             int index = PolicyUtils.indexFromMove(m);
             policies.put(index, probability);
         });
-//        Optional<Move> optMove = moves.stream().filter(m -> m.toString().equals("h4")).findFirst();
-//        assert (optMove.isPresent());
-//        move = optMove.get();
     }
 
     public void displayValues(final String banner) {
@@ -57,7 +54,7 @@ public class MainFitNNSpecificInputs {
         Iterator<Move> iterMove = moves.iterator();
         for (i = 0; i < len; i++) {
             Move m = iterMove.next();
-            InputsFullNN inputs = createInputs(m);
+            Lc0InputsFullNN inputs = createInputs(m);
             nbIn[i] = inputs.inputs();
         }
         List<OutputNN> outputs = deepLearningWhite.getNn().outputs(nbIn, len);
@@ -68,15 +65,13 @@ public class MainFitNNSpecificInputs {
         }
     }
 
-    public InputsFullNN createInputs(final Move move) {
-        MCTSGame mctsGame = new MCTSGame(game);
-        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, Alliance.WHITE);
-        return inputs;
+    public Lc0InputsFullNN createInputs(final Move move) {
+        return inputsManager.createInputs(board, move, Alliance.WHITE);
     }
 
     public TrainGame createTrainGame(int nbIterations) {
         TrainGame trainGame = new TrainGame();
-        InputsFullNN inputs = createInputs(null);
+        Lc0InputsFullNN inputs = createInputs(null);
         OneStepRecord oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.BLACK, policies);
         trainGame.add(oneStepRecord);
         oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.WHITE, policies);

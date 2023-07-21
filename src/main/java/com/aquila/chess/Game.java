@@ -1,6 +1,8 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.Strategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class Game {
+
+    @Getter
+    private InputsManager inputsManager;
 
     @Getter
     protected int nbMoveNoAttackAndNoPawn = 0;
@@ -43,17 +48,18 @@ public class Game {
     protected Move moveOpponent = null;
 
     @Builder
-    public Game(Board board, Strategy strategyWhite, Strategy strategyBlack) {
+    public Game(InputsManager inputsManager, Board board, Strategy strategyWhite, Strategy strategyBlack) {
+        if (inputsManager == null) {
+            this.inputsManager = new Lc0InputsManagerImpl();
+        } else {
+            this.inputsManager = inputsManager;
+        }
         this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
         Move.InitMove initMove = new Move.InitMove(board);
         this.getMoves().add(initMove);
     }
-
-//    public Game() {
-//        this.getMoves().add(Move.MOVE_DUMMY);
-//    }
 
     public Alliance getColor2play() {
         return this.board.currentPlayer().getAlliance();

@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class MCTSSearchTest {
 
-    NNTest nnTest;
+    Lc0NNTest lc0NnTest;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 2.5;
@@ -39,7 +39,7 @@ public class MCTSSearchTest {
 
     @BeforeEach
     public void init() {
-        nnTest = new NNTest();
+        lc0NnTest = new Lc0NNTest();
         MCTSNode.resetBuildOrder();
     }
 
@@ -49,7 +49,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, batchSize);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, batchSize);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -79,7 +79,7 @@ public class MCTSSearchTest {
         int seed = 10;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, 50);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, 50);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -280,7 +280,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnTest, false, batchSize);
+        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, batchSize);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -323,7 +323,7 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createBoard("kh1", "pa3,kg3", Alliance.BLACK);
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnTest, false, batchSize);
+        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(lc0NnTest, false, batchSize);
         final RandomStrategy whiteStrategy = new RandomStrategy(Alliance.WHITE, seed + 1000);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -338,7 +338,7 @@ public class MCTSSearchTest {
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnTest.addIndexOffset(0.5, index1, index2);
+        lc0NnTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getCurrentRoot());
         log.warn("visits:{}", blackStrategy.getCurrentRoot().getVisits());

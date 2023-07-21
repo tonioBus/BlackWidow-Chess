@@ -12,12 +12,12 @@ public record InputsOneNN(double[][][] inputs) {
 
     @Override
     public String toString() {
-        return Utils.displayBoard(inputs, 0);
+        return Lc0Utils.displayBoard(inputs, 0);
     }
 
     public boolean equals(InputsOneNN inputsOneNN) {
         if (inputsOneNN == null) return false;
-        return Utils.displayBoard(inputs(), 0)
-                .equals(Utils.displayBoard(inputsOneNN.inputs(), 0));
+        return Lc0Utils.displayBoard(inputs(), 0)
+                .equals(Lc0Utils.displayBoard(inputsOneNN.inputs(), 0));
     }
 }

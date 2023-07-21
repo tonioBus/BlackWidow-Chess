@@ -4,7 +4,7 @@ import com.aquila.chess.Game;
 import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -338,7 +338,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
-        InputsFullNN inputs = InputsNNFactory.createInput(mctsGame, move, alliance);
+        Lc0InputsFullNN inputs = mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,

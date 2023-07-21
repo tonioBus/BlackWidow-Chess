@@ -1,11 +1,15 @@
 package com.aquila.chess.strategy.mcts.inputs.lc0;
 
+import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
@@ -15,10 +19,27 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Deprecated
-public class InputsNNFactory {
+public class Lc0InputsManagerImpl implements InputsManager {
 
-    static final int SIZE_POSITION = 13;
+    final int SIZE_POSITION = 13;
+
+    // 5: Pawn:0, Bishop:1, Knight:2, Rook:3, Queen:4, King:5
+    //
+    // for 0..7
+    //   [0-5] pieces for White
+    //   [6-11] pieces for Black
+    //   12: 1 or more repetition ??
+    // end for
+    // 104: white can castle queenside
+    // 105: white can castle kingside
+    // 106: black can castle queenside
+    // 107: black can castle kingside
+    // 108: 0 -> white turn  1 -> white turn
+    // 109: repetitions whitout capture and pawn moves (50 moves rules)
+    // 110: 0
+    // 111: 1 -> edges detection
+    public static final int FEATURES_PLANES = 112;
+
     public static final int PLANE_COLOR = 108;
 
     public static final int PAWN_INDEX = 0;
@@ -28,6 +49,9 @@ public class InputsNNFactory {
     public static final int QUEEN_INDEX = 4;
     public static final int KING_INDEX = 5;
 
+    @Getter
+    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
+
     /**
      *
      * @param board
@@ -36,14 +60,63 @@ public class InputsNNFactory {
      * @param color2play
      * @return
      */
-    @Deprecated
-    public static Lc0InputsFullNN createInput(final Board board,
-                                              final Lc0InputsManagerImpl lc0InputsManager,
+    @Override
+    public Lc0InputsFullNN createInputs(final Board board,
                                               final Move move,
                                               final Alliance color2play) {
         final var inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        InputsNNFactory.createInputs(inputs, board, lc0InputsManager, move, color2play);
+        this.createInputs(inputs, board, move, color2play);
         return new Lc0InputsFullNN(inputs);
+    }
+
+    @Override
+    public void startMCTSStep(Game game) {
+        if (log.isDebugEnabled()) {
+            Move move = game.getLastMove();
+            if (move.getMovedPiece() == null)
+                log.info("INIT POSITION");
+            else
+                log.info("[{}:{}] initLastInputs", move.getMovedPiece().getPieceAllegiance(), move);
+        }
+        int nbMoves = game.getMoves().size();
+        if (nbMoves == 0 && this.last8Inputs.size() == 0) {
+            final InputsOneNN inputs = this.createInputsForOnePosition(game.getLastBoard(), null);
+            log.debug("push inputs init");
+            this.add(null, inputs);
+        } else {
+            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+            this.last8Inputs.clear();
+            game.getMoves().stream().skip(skipMoves).forEach(move -> {
+                final InputsOneNN inputs = move.hashCode() == -1 ?
+                        this.createInputsForOnePosition(game.getLastBoard(), null) :
+                        this.createInputsForOnePosition(move.getBoard(), move);
+                log.debug("push input after init move:{}:\n{}", move, inputs);
+                this.add(move, inputs);
+            });
+        }
+    }
+
+    @Override
+    public InputsManager clone() {
+        Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
+        lc0InputsManagerImpl.last8Inputs.addAll(this.getLast8Inputs());
+        return lc0InputsManagerImpl;
+    }
+
+    @Override
+    public long hashCode(final Board board, final Move move, final Alliance color2play) {
+        String hashCodeString = getHashCodeString(board, color2play, move);
+        long ret = hash(hashCodeString);
+        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
+        if (log.isDebugEnabled())
+            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
+        return ret;
+    }
+
+    @Override
+    public void processPlay(final Board board, final Move move) {
+        InputsOneNN inputs = this.createInputsForOnePosition(board, move);
+        this.last8Inputs.add(new Last8Inputs(inputs, move));
     }
 
     /**
@@ -109,19 +182,17 @@ public class InputsNNFactory {
      * @param board
      * @param color2play
      */
-    @Deprecated
-    private static void createInputs(final double[][][] inputs,
+    private void createInputs(final double[][][] inputs,
                                      final Board board,
-                                     final Lc0InputsManagerImpl lc0InputsManager,
                                      final Move move,
                                      final Alliance color2play) {
         int destinationOffset = 0;
         CircularFifoQueue<Last8Inputs> tmp = new CircularFifoQueue<>(8);
-        tmp.addAll(lc0InputsManager.getLast8Inputs());
+        tmp.addAll(this.getLast8Inputs());
         if (move != null) {
-            int size = lc0InputsManager.getLast8Inputs().size();
-            Move lastMove = lc0InputsManager.getLast8Inputs().get(size - 1).move();
-            String moves = lc0InputsManager.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            int size = this.getLast8Inputs().size();
+            Move lastMove = this.getLast8Inputs().get(size - 1).move();
+            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             boolean addInputs = true;
             if (lastMove != null) {
                 // log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
@@ -131,7 +202,7 @@ public class InputsNNFactory {
                 }
             }
             if (addInputs) {
-                InputsOneNN lastInput1 = InputsNNFactory.createInputsForOnePosition(board, move);
+                InputsOneNN lastInput1 = this.createInputsForOnePosition(board, move);
                 // log.info("++ SIZE:{} MOVES:{} createInouts(offset:{} move:{} color:{}):\n{}", tmp.size(), moves, destinationOffset, move, move.getMovedPiece().getPieceAllegiance(), lastInput1);
                 tmp.add(new Last8Inputs(lastInput1, move));
             }
@@ -140,8 +211,8 @@ public class InputsNNFactory {
             Piece piece = lastInput.move().getMovedPiece();
             String color = piece == null ? "null" : piece.getPieceAllegiance().toString();
             // log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
-            System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
-            destinationOffset += SIZE_POSITION;
+            System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
+            destinationOffset += INN.SIZE_POSITION;
         }
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
@@ -164,8 +235,8 @@ public class InputsNNFactory {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
-    public static InputsOneNN createInputsForOnePosition(Board board, final Move move) {
-        final var nbIn = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+    public InputsOneNN createInputsForOnePosition(Board board, final Move move) {
+        final var nbIn = new double[SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
         }
@@ -206,21 +277,71 @@ public class InputsNNFactory {
      * </pre>
      * @formatter:on
      */
-    private static int getPlanesIndex(Piece piece) {
+    private int getPlanesIndex(Piece piece) {
         int index = piece.getPieceAllegiance().isWhite() ? 0 : 6;
-        if (piece.getPieceType() == Piece.PieceType.PAWN) return index + INN.PAWN_INDEX;
-        if (piece.getPieceType() == Piece.PieceType.BISHOP) return index + INN.BISHOP_INDEX;
-        if (piece.getPieceType() == Piece.PieceType.KNIGHT) return index + INN.KNIGHT_INDEX;
-        if (piece.getPieceType() == Piece.PieceType.ROOK) return index + INN.ROOK_INDEX;
-        if (piece.getPieceType() == Piece.PieceType.QUEEN) return index + INN.QUEEN_INDEX;
-        if (piece.getPieceType() == Piece.PieceType.KING) return index + INN.KING_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.PAWN) return index + PAWN_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.BISHOP) return index + BISHOP_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.KNIGHT) return index + KNIGHT_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.ROOK) return index + ROOK_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.QUEEN) return index + QUEEN_INDEX;
+        if (piece.getPieceType() == Piece.PieceType.KING) return index + KING_INDEX;
         return -100; // sure this will failed at least
     }
 
-    private static void fill(double[][] planes, double value) {
+    private void fill(double[][] planes, double value) {
         if (value == 0.0) return;
         for (int i = 0; i < 8; i++) {
             Arrays.fill(planes[i], value);
         }
     }
+
+    public String getHashCodeString(Board board, final Alliance color2play, final Move move) {
+        StringBuilder sb = new StringBuilder();
+        List<Move> moves8inputs = this.last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
+        if (move != null) {
+            try {
+                board = move.execute();
+                moves8inputs.add(move);
+            } catch (Exception e) {
+                log.error("[{}] move:{}", move.getMovedPiece().getPieceAllegiance(), move);
+                log.error("\n{}\n{}\n",
+                        "##########################################",
+                        board.toString()
+                );
+                throw e;
+            }
+        }
+        sb.append(board.toString());
+        sb.append("\nM:");
+        sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
+        sb.append("\nC:");
+        sb.append(color2play);
+        return sb.toString();
+    }
+
+    private void add(final Move move, final InputsOneNN inputsOneNN) {
+        int size = this.getLast8Inputs().size();
+        if (size > 1 && move != null) {
+            Last8Inputs lastInput = this.getLast8Inputs().get(size - 1);
+            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            if (lastInput != null) {
+                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance()) &&
+                        lastInput.move().toString().equals(move.toString())) {
+                    log.error("Move:{} already inserted as last position, moves:{}", move, moves);
+                    throw new RuntimeException("Move already inserted as last position");
+                }
+            }
+        }
+        this.last8Inputs.add(new Last8Inputs(inputsOneNN, move));
+    }
+
+    private long hash(String str) {
+        long hash = 5381;
+        byte[] data = str.getBytes();
+        for (byte b : data) {
+            hash = ((hash << 5) + hash) + b;
+        }
+        return hash;
+    }
+
 }

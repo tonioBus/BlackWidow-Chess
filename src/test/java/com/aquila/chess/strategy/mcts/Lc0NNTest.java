@@ -1,16 +1,16 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 
 import java.io.IOException;
 import java.util.*;
 
-public class NNTest implements INN {
+public class Lc0NNTest implements INN {
 
     double step = 0.000001;
-    private double value = 0.1F;
+    private double value = 0.1;
 
     private final Map<Integer, Double> offsets = new HashMap<>();
 
@@ -31,7 +31,7 @@ public class NNTest implements INN {
 
     @Override
     public double getScore() {
-        return 0;
+        return 0.0;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class NNTest implements INN {
 
     @Override
     public double getLR() {
-        return 0;
+        return 0.0;
     }
 
     @Override
@@ -75,11 +75,11 @@ public class NNTest implements INN {
         for (int i = 0; i < len; i++) {
             this.value += step;
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
-            Arrays.fill(policies, 0.2F);
+            Arrays.fill(policies, 0.2);
             for (Map.Entry<Integer, Double> entry : this.offsets.entrySet()) {
                 policies[entry.getKey()] += entry.getValue();
             }
-            ret.add(new OutputNN(nbIn[i][InputsNNFactory.PLANE_COLOR][0][0] == 1.0F ? value + 0.2F : value, policies));
+            ret.add(new OutputNN(nbIn[i][Lc0InputsManagerImpl.PLANE_COLOR][0][0] == 1.0 ? value + 0.2 : value, policies));
         }
         return ret;
     }

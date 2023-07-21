@@ -1,9 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsOneNN;
-import com.aquila.chess.utils.Utils;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -11,21 +9,15 @@ import com.chess.engine.classic.pieces.Piece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class MCTSGame {
 
-    public static record Last8Inputs(InputsOneNN inputs, Move move) {
-
-    }
-
     @Getter
-    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
+    private final InputsManager inputsManager;
 
     @Getter
     protected final List<Move> moves = new ArrayList<>(127);
@@ -43,91 +35,27 @@ public class MCTSGame {
         this.board = game.getBoard();
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
         this.status = game.calculateStatus();
-        initLastInputs(game);
+        this.inputsManager = game.getInputsManager();
+        this.inputsManager.startMCTSStep(game);
     }
 
-    public MCTSGame(final MCTSGame game) {
-        this.board = game.getBoard();
-        this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
-        this.status = game.calculateStatus(this.board);
-        this.last8Inputs.addAll(game.getLast8Inputs());
-    }
-
-    private void initLastInputs(final Game game) {
-        if (log.isDebugEnabled()) {
-            Move move = game.getLastMove();
-            if (move.getMovedPiece() == null)
-                log.info("INIT POSITION");
-            else
-                log.info("[{}:{}] initLastInputs", move.getMovedPiece().getPieceAllegiance(), move);
-        }
-        int nbMoves = game.getMoves().size();
-        if (nbMoves == 0 && this.last8Inputs.size() == 0) {
-            final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
-            log.debug("push inputs init");
-            this.add(null, inputs);
-        } else {
-            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-            this.last8Inputs.clear();
-            game.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final InputsOneNN inputs = move.hashCode() == -1 ?
-                        InputsNNFactory.createInputsForOnePosition(board, null) :
-                        InputsNNFactory.createInputsForOnePosition(move.getBoard(), move);
-                log.debug("push input after init move:{}:\n{}", move, inputs);
-                this.add(move, inputs);
-            });
-        }
-    }
-
-    private void add(final Move move, final InputsOneNN inputsOneNN) {
-        int size = this.getLast8Inputs().size();
-        if (size > 1 && move != null) {
-            Last8Inputs lastInput = this.getLast8Inputs().get(size - 1);
-            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
-            if (lastInput != null) {
-                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance()) &&
-                        lastInput.move().toString().equals(move.toString())) {
-                    log.error("Move:{} already inserted as last position, moves:{}", move, moves);
-                    throw new RuntimeException("Move already inserted as last position");
-                }
-            }
-        }
-        this.last8Inputs.add(new Last8Inputs(inputsOneNN, move));
-//        if (this.getLast8Inputs().size() > 1) {
-//            size = this.getLast8Inputs().size();
-//            for (int i = 0; i < size - 1; i++) {
-//                Move move1 = this.getLast8Inputs().get(i).move();
-//                Move move2 = this.getLast8Inputs().get(i + 1).move();
-//                if (move1.toString().equals(move2.toString())) {
-//                    log.error("Move already inserted as last position, moves:{}", moves);
-//                    throw new RuntimeException("Move already inserted as last position");
-//                }
-//            }
-//        }
+    public MCTSGame(final MCTSGame mctsGame) {
+        this.board = mctsGame.getBoard();
+        this.nbMoveNoAttackAndNoPawn = mctsGame.getNbMoveNoAttackAndNoPawn();
+        this.status = mctsGame.calculateStatus(this.board);
+        this.inputsManager = mctsGame.inputsManager.clone();
     }
 
     /**
      * @return the game hashcode
      */
     public long hashCode(final Alliance alliance) {
-        return hashCode(alliance, null);
+        return inputsManager.hashCode(getLastBoard(), null, alliance);
     }
 
     public synchronized long hashCode(@NonNull final Move move) {
         final Alliance color2play = move.getMovedPiece().getPieceAllegiance();
-        return this.hashCode(color2play, move);
-    }
-
-    /**
-     * @return the game hashcode
-     */
-    public synchronized long hashCode(final Alliance color2play, final Move move) {
-        String hashCodeString = getHashCodeString(color2play, move);
-        long ret = hash(hashCodeString);
-        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
-        if (log.isDebugEnabled())
-            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
-        return ret;
+        return inputsManager.hashCode(getLastBoard(), move, color2play);
     }
 
     public Move getLastMove() {
@@ -137,40 +65,6 @@ public class MCTSGame {
     public Board getLastBoard() {
         int size = moves.size();
         return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
-    }
-
-    public String getHashCodeString(final Alliance color2play, final Move move) {
-        StringBuilder sb = new StringBuilder();
-        Board board = getLastBoard();
-        List<Move> moves8inputs = this.last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
-        if (move != null) {
-            try {
-                board = move.execute();
-                moves8inputs.add(move);
-            } catch (Exception e) {
-                log.error("[{}] move:{}", move.getMovedPiece().getPieceAllegiance(), move);
-                log.error("\n{}\n{}\n",
-                        "##########################################",
-                        board.toString()
-                );
-                throw e;
-            }
-        }
-        sb.append(board.toString());
-        sb.append("\nM:");
-        sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
-        sb.append("\nC:");
-        sb.append(color2play);
-        return sb.toString();
-    }
-
-    public long hash(String str) {
-        long hash = 5381;
-        byte[] data = str.getBytes();
-        for (byte b : data) {
-            hash = ((hash << 5) + hash) + b;
-        }
-        return hash;
     }
 
     public Game.GameStatus play(final MCTSNode opponentNode, final Move move) {
@@ -184,15 +78,14 @@ public class MCTSGame {
     }
 
     /**
-     * Add to lastInputs fhe given move
+     * Add to the lastInputs the given move
+     *
      * @param move
      */
     public void add2Last8InputsAndPlay(final Move move) {
         if (move == null) return;
         this.moves.add(move);
-        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(this.getLastBoard(), move);
-        this.last8Inputs.add(new Last8Inputs(inputs, move));
-        // board = move.getBoard();
+        this.inputsManager.processPlay(getLastBoard(), move);
         board = move.execute();
     }
 
@@ -236,5 +129,9 @@ public class MCTSGame {
 
     public int getNbStep() {
         return moves.size();
+    }
+
+    public long hashCode(final Alliance pieceAllegiance, final Move selectedMove) {
+        return this.inputsManager.hashCode(this.getLastBoard(), selectedMove, pieceAllegiance);
     }
 }

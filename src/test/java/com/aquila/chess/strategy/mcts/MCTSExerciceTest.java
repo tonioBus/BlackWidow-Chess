@@ -856,9 +856,9 @@ public class MCTSExerciceTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5, 6})
     public void testAvoidChessIn1(int nbThreads) {
-//        INN nnWhite = new NNTest();
+//        INN nnWhite = new Lc0NNTest();
 //        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true, 20);
-//        INN nnBlack = new NNTest();
+//        INN nnBlack = new Lc0NNTest();
 //        DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, true, 20);
 //
 //        final Board board = new Board();

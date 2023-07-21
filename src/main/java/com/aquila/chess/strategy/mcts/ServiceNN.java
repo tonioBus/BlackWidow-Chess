@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.strategy.mcts.inputs.lc0.InputForBatchJobs;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;

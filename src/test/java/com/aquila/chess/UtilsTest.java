@@ -1,7 +1,8 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.mcts.MCTSStrategy;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Last8Inputs;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.Coordinate2D;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -20,15 +21,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 public class UtilsTest {
 
-    public static boolean verify8inputs(final MCTSStrategy strategy) {
-        if (strategy.getMctsGame() == null) return true;
-        CircularFifoQueue<MCTSGame.Last8Inputs> last8Inputs = strategy.getMctsGame().getLast8Inputs();
+    public static boolean verify8inputs(final Lc0InputsManagerImpl inputsManager) {
+        if (inputsManager == null) return true;
+        CircularFifoQueue<Last8Inputs> last8Inputs = inputsManager.getLast8Inputs();
         Move lastMove = null;
-        for (MCTSGame.Last8Inputs last8Input : last8Inputs) {
+        for (Last8Inputs last8Input : last8Inputs) {
             Move move = last8Input.move();
             if (lastMove != null) {
                 if (move.equals(lastMove)) {
-                    log.error("[{}] currentMove:{} lastMove:{}", strategy.getAlliance(), move, lastMove);
+                    log.error("currentMove:{} lastMove:{}", move, lastMove);
                     return false;
                 }
             }

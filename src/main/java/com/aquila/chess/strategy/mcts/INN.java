@@ -5,6 +5,7 @@ import org.deeplearning4j.nn.api.NeuralNetwork;
 import java.io.IOException;
 import java.util.List;
 
+@Deprecated
 public interface INN {
 
     final int SIZE_POSITION = 13;

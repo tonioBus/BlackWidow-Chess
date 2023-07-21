@@ -5,6 +5,7 @@ import com.aquila.chess.TrainGame;
 import com.aquila.chess.UtilsTest;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -55,8 +56,7 @@ public class SaveGameTest {
         for (int i = 0; i < nbStep; i++) {
             gameStatus = game.play();
             sequence.play();
-            assertTrue(UtilsTest.verify8inputs(whiteStrategy));
-            assertTrue(UtilsTest.verify8inputs(blackStrategy));
+            assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
             whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
@@ -102,8 +102,7 @@ public class SaveGameTest {
             log.info("PLAYER:{}", game.getColor2play());
             log.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
             gameStatus = game.play();
-            assertTrue(UtilsTest.verify8inputs(whiteStrategy));
-            assertTrue(UtilsTest.verify8inputs(blackStrategy));
+            assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             Move move = game.getLastMove();
             log.info("####################################################");
             log.info("[{}]: move:{}", move.getMovedPiece().getPieceAllegiance(), move);
@@ -117,8 +116,8 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch(resultGame, 666);
-        TrainGame trainGame = TrainGame.load("train", 666);
+        whiteStrategy.saveBatch(resultGame, -666);
+        TrainGame trainGame = TrainGame.load("train", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0) , trainGame.getOneStepRecordList().size());
@@ -127,7 +126,7 @@ public class SaveGameTest {
     @Test
     @Order(1)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load("train", 666);
+        TrainGame trainGame = TrainGame.load("train", -666);
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
     }
 

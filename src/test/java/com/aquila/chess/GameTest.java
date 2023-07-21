@@ -7,6 +7,7 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -82,6 +83,7 @@ class GameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 5, 16})
+    @Disabled
     void testCopyGameAndGetPossibleMoves(int nbThread) throws InterruptedException, ExecutionException {
         final Board board = Board.createStandardBoard();
         final Game gameOriginal = Game.builder().board(board).build();

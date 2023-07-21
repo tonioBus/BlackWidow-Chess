@@ -2,8 +2,10 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsOneNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -20,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Slf4j
 class DeepLearningAGZTest {
 
-    final INN nn = new NNTest();
+    final INN nn = new Lc0NNTest();
 
     final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nn, true);
 
@@ -48,7 +50,8 @@ class DeepLearningAGZTest {
     @Test
     void testDeepLearningAGZ() throws Exception {
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         game.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 1000));
 
         final int LOOP_SIZE = 50;
@@ -59,7 +62,7 @@ class DeepLearningAGZTest {
             if (status != Game.GameStatus.IN_PROGRESS) break;
             Move move = game.getMoves().get(0);
             MCTSGame mctsGame = new MCTSGame(game);
-            InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move);
             assertNotNull(inputs);
         }
         long end = System.currentTimeMillis();
@@ -71,7 +74,8 @@ class DeepLearningAGZTest {
     public void testCreateInputs() {
         final int seed = 1;
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whitePlayer = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -83,7 +87,7 @@ class DeepLearningAGZTest {
         final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves(Move.MoveStatus.DONE);
         MCTSGame mctsGame = new MCTSGame(game);
         for (final Move move : moves) {
-            final InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            final InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move);
             log.info("{}\n{}", move == null ? "Na" : move, inputs);
         }
     }

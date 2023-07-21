@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.inputs.lc0.InputsOneNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -12,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-class InputsNNFactoryTest {
+class Lc0InputsManagerImplTest {
 
     static public final int NB_STEP = 50;
 
@@ -41,7 +42,8 @@ class InputsNNFactoryTest {
         DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         long seed = 314;
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -65,7 +67,7 @@ class InputsNNFactoryTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        InputsOneNN inputs = InputsNNFactory.createInputsForOnePosition(board, null);
+        InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null);
         String boartdSz = inputs.toString();
         log.info("board.string:\n{}", board.toString());
         assertEquals(board.toString(), boartdSz);

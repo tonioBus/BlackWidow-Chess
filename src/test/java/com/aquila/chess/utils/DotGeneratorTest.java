@@ -25,7 +25,7 @@ class DotGeneratorTest {
 
     @BeforeEach
     public void initMockDeepLearning() {
-        NNTest nn = new NNTest();
+        Lc0NNTest nn = new Lc0NNTest();
         deepLearningWhite = new DeepLearningAGZ(nn);
         deepLearningBlack = new DeepLearningAGZ(nn);
     }
