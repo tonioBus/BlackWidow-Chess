@@ -6,8 +6,8 @@ import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 public record Lc0InputsFullNN(double[][][] inputs) implements InputsFullNN {
 
     public Lc0InputsFullNN {
-        if (inputs.length != INN.FEATURES_PLANES)
-            throw new RuntimeException(String.format("Length error. Argument:%d expected:%d", inputs.length, INN.FEATURES_PLANES));
+        if (inputs.length != Lc0InputsManagerImpl.FEATURES_PLANES)
+            throw new RuntimeException(String.format("Length error. Argument:%d expected:%d", inputs.length, Lc0InputsManagerImpl.FEATURES_PLANES));
     }
 
     public String toString() {

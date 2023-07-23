@@ -1,16 +1,19 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
-import com.aquila.chess.strategy.mcts.inputs.lc0.BatchInputsNN;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0BatchInputsNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0OneStepRecord;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,7 +70,14 @@ public class DeepLearningAGZ {
 
     static final int CACHE_VALUES_SIZE = 80000;
 
-    private final boolean train;
+    @Getter
+    private final int batchSize;
+
+    @Getter
+    private final int nbFeaturesPlanes;
+
+    @Getter
+    private boolean train = false;
 
     @Getter
     final INN nn;
@@ -79,31 +89,49 @@ public class DeepLearningAGZ {
     @Getter
     private FixMCTSTreeStrategy fixMCTSTreeStrategy;
 
-    public DeepLearningAGZ(final INN nn) {
-        this(nn, false, BATCH_SIZE);
+//    public DeepLearningAGZ(final INN nn) {
+//        this(nn, false, BATCH_SIZE);
+//    }
+//
+//    public DeepLearningAGZ(final INN nn, boolean train) {
+//        this(nn, train, BATCH_SIZE);
+//    }
+
+    @Builder
+    public DeepLearningAGZ(@NonNull final INN nn, boolean train, int batchSize, @NonNull final InputsManager inputsManager) {
+        this(nn, train, batchSize, inputsManager.getNbFeaturesPlanes());
     }
 
-    public DeepLearningAGZ(final INN nn, boolean train) {
-        this(nn, train, BATCH_SIZE);
+    public DeepLearningAGZ(@NonNull final INN nn, DeepLearningAGZ deepLearningAGZ) {
+        this(nn, deepLearningAGZ.isTrain(), deepLearningAGZ.getBatchSize(), deepLearningAGZ.getNbFeaturesPlanes());
     }
 
-    public DeepLearningAGZ(final INN nn, boolean train, int batchSize) {
+    private DeepLearningAGZ(final INN nn, boolean train, int batchSize, int nbFeaturesPlanes) {
         this.nn = nn;
         this.train = train;
-        this.serviceNN = new ServiceNN(this, batchSize);
+        this.batchSize = batchSize;
+        this.nbFeaturesPlanes = nbFeaturesPlanes;
+        this.serviceNN = ServiceNN.builder()
+                .deepLearningAGZ(this)
+                .nbFeaturesPlanes(nbFeaturesPlanes)
+                .batchSize(batchSize)
+                .build();
     }
 
-    public static DeepLearningAGZ initFile(DeepLearningAGZ deepLearningWhite, DeepLearningAGZ deepLearningBlack, int nbGames, UpdateLr updateLr) throws IOException {
+    public static DeepLearningAGZ initNNFile(final DeepLearningAGZ deepLearningWhite, final DeepLearningAGZ deepLearningBlack, int nbGames, UpdateLr updateLr) throws IOException {
         File nnWhiteFile = new File(deepLearningWhite.getFilename());
         File nnBlackFile = new File(deepLearningBlack.getFilename());
         if (!nnWhiteFile.isFile()) deepLearningWhite.nn.save();
+        final DeepLearningAGZ retDeepLearningBlack;
         if (!nnBlackFile.isFile()) {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
             NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false);
-            deepLearningBlack = new DeepLearningAGZ(nnBlack, true);
+            retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
             if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
+        } else {
+            retDeepLearningBlack = deepLearningBlack;
         }
-        return deepLearningBlack;
+        return retDeepLearningBlack;
     }
 
     public void clearAllCaches() {
@@ -270,7 +298,7 @@ public class DeepLearningAGZ {
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         this.nn.train(true);
-        final int nbStep = trainGame.getOneStepRecordList().size();
+        final int nbStep = trainGame.getLc0OneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
         int nbChunk = nbStep / FIT_CHUNK;
         int restChunk = nbStep % FIT_CHUNK;
@@ -286,26 +314,26 @@ public class DeepLearningAGZ {
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
-        final BatchInputsNN inputsForNN = new BatchInputsNN(chunkSize);
+        final Lc0BatchInputsNN inputsForNN = new Lc0BatchInputsNN(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
         final double value = trainGame.getValue();
-        List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
+        List<Lc0OneStepRecord> inputsList = trainGame.getLc0OneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
-            OneStepRecord oneStepRecord = inputsList.get(gameRound);
-            inputsForNN.add(oneStepRecord);
-            Map<Integer, Double> policies = oneStepRecord.policies();
+            Lc0OneStepRecord lc0OneStepRecord = inputsList.get(gameRound);
+            inputsForNN.add(lc0OneStepRecord);
+            Map<Integer, Double> policies = lc0OneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
-            Alliance playedColor = oneStepRecord.color2play();
+            Alliance playedColor = lc0OneStepRecord.color2play();
             double actualRewards = getActualRewards(value, playedColor);
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
-            // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
+            // valuesForNN[chunkNumber][0] = lc0OneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
                 policies.forEach((indexFromMove, previousPolicies) -> {
                     policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;

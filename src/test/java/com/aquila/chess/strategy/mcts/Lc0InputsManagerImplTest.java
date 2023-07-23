@@ -1,8 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsOneNN;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsOneNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
@@ -39,10 +38,18 @@ class Lc0InputsManagerImplTest {
     void createInputsForOnePosition() {
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
-        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
-        DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
+        final Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnWhite)
+                .inputsManager(inputsManager)
+                .train(true)
+                .build();
+        final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnBlack)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
         final Board board = Board.createStandardBoard();
-        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         long seed = 314;
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -67,7 +74,7 @@ class Lc0InputsManagerImplTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null);
+        Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null);
         String boartdSz = inputs.toString();
         log.info("board.string:\n{}", board.toString());
         assertEquals(board.toString(), boartdSz);

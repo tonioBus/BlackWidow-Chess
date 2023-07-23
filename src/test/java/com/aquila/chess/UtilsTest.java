@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.MCTSStrategy;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Last8Inputs;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0Last8Inputs;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.Coordinate2D;
 import com.chess.engine.classic.board.BoardUtils;
@@ -23,9 +22,9 @@ public class UtilsTest {
 
     public static boolean verify8inputs(final Lc0InputsManagerImpl inputsManager) {
         if (inputsManager == null) return true;
-        CircularFifoQueue<Last8Inputs> last8Inputs = inputsManager.getLast8Inputs();
+        CircularFifoQueue<Lc0Last8Inputs> lc0Last8Inputs = inputsManager.getLc0Last8Inputs();
         Move lastMove = null;
-        for (Last8Inputs last8Input : last8Inputs) {
+        for (Lc0Last8Inputs last8Input : lc0Last8Inputs) {
             Move move = last8Input.move();
             if (lastMove != null) {
                 if (move.equals(lastMove)) {

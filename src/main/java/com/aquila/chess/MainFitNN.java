@@ -3,7 +3,10 @@ package com.aquila.chess;
 import com.aquila.chess.strategy.mcts.DeepLearningAGZ;
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +29,13 @@ public class MainFitNN {
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
         UpdateLr updateLr = nbGames -> 0.9e-4;
         nnWhite.setUpdateLr(updateLr, 1);
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
+        @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
+                .builder()
+                .nn(nnWhite)
+                .train(true)
+                .inputsManager(inputsManager)
+                .build();
         train("train", deepLearningWhite);
 //        waitForKey();
         train("train.1080", deepLearningWhite);

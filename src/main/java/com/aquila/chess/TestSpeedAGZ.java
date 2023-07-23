@@ -3,7 +3,6 @@ package com.aquila.chess;
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
@@ -21,8 +20,8 @@ public class TestSpeedAGZ {
 
     public void run() {
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
         final Lc0InputsManagerImpl inputManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputManager).board(board).build();
         MCTSGame mctsGame = new MCTSGame(game);
 
         INN nnWhite = new NNDeep4j(NN_TEST, false);
@@ -31,10 +30,10 @@ public class TestSpeedAGZ {
 
         start = System.currentTimeMillis();
         int length = 150;
-        final var nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbIn = new double[length][inputManager.getNbFeaturesPlanes()][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         Lc0InputsFullNN inputsFullNN =inputManager.createInputs(board, null, Alliance.WHITE);
         for (int i=0; i<length; i++) {
-            System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, Lc0InputsManagerImpl.FEATURES_PLANES);
+            System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
         }
         INDArray inputsArray = Nd4j.create(nbIn);
         end = System.currentTimeMillis();

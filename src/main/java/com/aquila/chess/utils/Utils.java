@@ -3,11 +3,7 @@
  */
 package com.aquila.chess.utils;
 
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.pieces.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
@@ -16,9 +12,11 @@ import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
 import java.io.File;
+import java.lang.management.RuntimeMXBean;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -145,6 +143,25 @@ public class Utils {
         return policies;
     }
 
+    /**
+     * <h3>Code from StackOverflow: Can a Java application detect that a debugger is attached?</h3>
+     * @see <a href="https://stackoverflow.com/questions/5393403/can-a-java-application-detect-that-a-debugger-is-attached">stackoverflow.com</a>
+     * @return true if a debugger is attached to the current JVM
+     */
+    public static boolean isDebuggerPresent() {
+        // Get ahold of the Java Runtime Environment (JRE) management interface
+        RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
+
+        // Get the command line arguments that we were originally passed in
+        List<String> args = runtime.getInputArguments();
+
+        // Check if the Java Debug Wire Protocol (JDWP) agent is used.
+        // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
+        // We're looking for the string "jdwp".
+        boolean jdwpPresent = args.toString().contains("jdwp");
+
+        return jdwpPresent;
+    }
     public static int nbMaxBits(long number) {
         return (int) (Math.log(Long.highestOneBit(number)) / Math.log(2.0));
     }

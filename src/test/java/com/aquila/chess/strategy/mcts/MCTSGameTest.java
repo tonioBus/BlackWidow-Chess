@@ -3,7 +3,6 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.HungryStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
-import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -34,10 +33,10 @@ public class MCTSGameTest {
         while (game.play() == Game.GameStatus.IN_PROGRESS && game.getNbStep() < nbStep) ;
         MCTSGame mctsGame = new MCTSGame(game);
         assertEquals(nbStep, game.getMoves().size());
-        assertEquals(Integer.min(nbStep, 8), inputsManager.getLast8Inputs().size());
+        assertEquals(Integer.min(nbStep, 8), inputsManager.getLc0Last8Inputs().size());
         int len = nbStep < 8 ? 0 : nbStep - 8;
         String gameMoves = game.getMoves().stream().skip(len).map(move -> move.toString()).collect(Collectors.joining(","));
-        String mctsGameMoves = inputsManager.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+        String mctsGameMoves = inputsManager.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
         log.info("game {} <-> {} mctsGame", gameMoves, mctsGameMoves);
         assertEquals(gameMoves, mctsGameMoves);
     }
@@ -54,9 +53,6 @@ public class MCTSGameTest {
         while (game.play() == Game.GameStatus.IN_PROGRESS && game.getNbStep() < nbStep) ;
         log.info("board:\n{}\n", game.toPGN());
         MCTSGame mctsGame = new MCTSGame(game);
-        // mctsGame.nextMoves("c1-f4", "g8-f6");
-        // mctsGame.play();
-        // mctsGame.play();
 
         game.play();
         game.play();
@@ -86,16 +82,16 @@ public class MCTSGameTest {
         do {
             status = game.play();
             final MCTSGame mctsGame = new MCTSGame(game);
-            assertEquals(Math.min(8, game.getNbStep()), inputsManager.getLast8Inputs().size());
+            assertEquals(Math.min(8, game.getNbStep()), inputsManager.getLc0Last8Inputs().size());
             long hashcode = mctsGame.hashCode(game.getColor2play(), null);
             // next test to be sure that hashcode is stateless
             assertEquals(hashcode, mctsGame.hashCode(game.getColor2play(), null));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
-                String currentLastMoves = inputsManager.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+                String currentLastMoves = inputsManager.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
                 MCTSGame oldMctsGame = hashcodes.get(hashcode);
                 Lc0InputsManagerImpl oldInputsManager = (Lc0InputsManagerImpl) oldMctsGame.getInputsManager();
-                String oldLastMoves = oldInputsManager.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+                String oldLastMoves = oldInputsManager.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
                 if (!currentLastMoves.equals(oldLastMoves)) {
                     StringBuffer sb = new StringBuffer();
                     sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));

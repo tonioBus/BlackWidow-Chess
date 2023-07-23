@@ -3,6 +3,8 @@ package com.aquila.chess.utils;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +28,17 @@ class DotGeneratorTest {
     @BeforeEach
     public void initMockDeepLearning() {
         Lc0NNTest nn = new Lc0NNTest();
-        deepLearningWhite = new DeepLearningAGZ(nn);
-        deepLearningBlack = new DeepLearningAGZ(nn);
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
+        deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nn)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
+        deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nn)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
     }
 
     @RepeatedTest(1)

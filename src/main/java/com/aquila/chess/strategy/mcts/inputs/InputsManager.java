@@ -8,6 +8,8 @@ import com.chess.engine.classic.board.Move;
 
 public interface InputsManager {
 
+    int getNbFeaturesPlanes();
+
     Lc0InputsFullNN createInputs(Board board,
                                  Move move,
                                  Alliance color2play);

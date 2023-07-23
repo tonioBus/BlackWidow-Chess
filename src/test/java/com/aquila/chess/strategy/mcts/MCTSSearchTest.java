@@ -5,6 +5,8 @@ import com.aquila.chess.Helper;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNConstants;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
@@ -49,7 +51,13 @@ public class MCTSSearchTest {
         int seed = 1;
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, batchSize);
+        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(lc0NnTest)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(batchSize)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -78,8 +86,14 @@ public class MCTSSearchTest {
     void testInitSearch() {
         int seed = 10;
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, 50);
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(lc0NnTest)
+                .inputsManager(inputsManager)
+                .batchSize(50)
+                .train(false)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -125,9 +139,15 @@ public class MCTSSearchTest {
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
-        final Game game = Game.builder().board(board).build();
         final NNConstants nnConstant = new NNConstants(1);
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 1);
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnConstant)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(1)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -172,9 +192,15 @@ public class MCTSSearchTest {
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMateWith2Rooks(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg8,rh2", WHITE);
-        final Game game = Game.builder().board(board).build();
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final NNConstants nnConstant = new NNConstants(1);
-        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 10);
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnConstant)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(10)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -182,18 +208,16 @@ public class MCTSSearchTest {
                 1,
                 updateCpuct,
                 -1)
-              //  .withNbThread(4)
-//                .withNbSearchCalls(50);
                 .withNbSearchCalls(800);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus status = game.play();
         assertEquals(IN_PROGRESS, status);
-        List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
-        log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        List<MCTSNode> lossNodes = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+        log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), lossNodes.size(), lossNodes.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 5));
         Helper.checkMCTSTree(whiteStrategy);
-        assertTrue(winLoss.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
+        assertTrue(lossNodes.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
         log.warn("game:{}", game.toPGN());
     }
 
@@ -216,9 +240,15 @@ public class MCTSSearchTest {
     void testAvoidWhiteChessMate1MoveWithPromotion(int nbSearchCalls) throws Exception {
         int seed = (int) System.currentTimeMillis();
         final Board board = Board.createBoard("kg1", "pa2,kg3", Alliance.WHITE);
-        final Game game = Game.builder().board(board).build();
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final NNConstants nnConstant = new NNConstants(1);
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnConstant, false, 1);
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnConstant)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(1)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -251,36 +281,42 @@ public class MCTSSearchTest {
         testSearchThreads(nbMaxSearchCalls, 1, 10);
     }
 
-//    @ParameterizedTest
-//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-//    void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
-//        testSearchThreads(nbMaxSearchCalls, 2, 50);
-//    }
-//
-//
-//    @ParameterizedTest
-//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-//    void testSearch4Threads(int nbStep) throws Exception {
-//        testSearchThreads(nbStep, 4, 10);
-//    }
-//
-//    @ParameterizedTest
-//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-//    void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
-//        testSearchThreads(nbMaxSearchCalls, 8, 10);
-//    }
-//
-//    @ParameterizedTest
-//    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
-//    void testSearch16Threads(int nbMaxSearchCalls) throws Exception {
-//        testSearchThreads(nbMaxSearchCalls, 16, 100);
-//    }
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 2, 50);
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    void testSearch4Threads(int nbStep) throws Exception {
+        testSearchThreads(nbStep, 4, 10);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 8, 10);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    void testSearch16Threads(int nbMaxSearchCalls) throws Exception {
+        testSearchThreads(nbMaxSearchCalls, 16, 100);
+    }
 
     private void testSearchThreads(int nbMaxSearchCalls, int nbThreads, int batchSize) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(lc0NnTest, false, batchSize);
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(lc0NnTest)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(batchSize)
+                .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -322,9 +358,15 @@ public class MCTSSearchTest {
         int nbThreads = Integer.parseInt(nbThreadsSz);
         int seed = 1;
         final Board board = Board.createBoard("kh1", "pa3,kg3", Alliance.BLACK);
-        final Game game = Game.builder().board(board).build();
-        final DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(lc0NnTest, false, batchSize);
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final RandomStrategy whiteStrategy = new RandomStrategy(Alliance.WHITE, seed + 1000);
+        final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(lc0NnTest)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(batchSize)
+                .build();
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 Alliance.BLACK,

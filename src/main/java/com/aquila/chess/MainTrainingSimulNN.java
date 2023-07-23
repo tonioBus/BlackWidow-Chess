@@ -4,6 +4,8 @@ import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.utils.Utils;
@@ -48,14 +50,22 @@ public class MainTrainingSimulNN {
         log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
-        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, true);
         // deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNSimul(2);
-        DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
-        // deepLearningBlack = DeepLearningAGZ.initFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
+        DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnWhite)
+                .inputsManager(inputsManager)
+                .train(true)
+                .build();
+        DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnBlack)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
         while (true) {
             final Board board = Board.createStandardBoard();
-            final Game game = Game.builder().board(board).build();
+            final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
             Sequence sequence = gameManager.createSequence();
             long seed = System.nanoTime();
             final MCTSStrategy whiteStrategy = new MCTSStrategy(

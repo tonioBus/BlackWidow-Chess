@@ -6,6 +6,7 @@ import com.aquila.chess.MCTSStrategyConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
@@ -44,12 +45,24 @@ public class MCTSExerciceTest {
     NNSimul nnBlack;
     NNSimul nnWhite;
 
+    Lc0InputsManagerImpl inputsManager;
+
     @BeforeEach
     public void initMockDeepLearning() {
         nnWhite = new NNSimul(2);
-        deepLearningWhite = new DeepLearningAGZ(nnWhite, false, 10);
         nnBlack = new NNSimul(1);
-        deepLearningBlack = new DeepLearningAGZ(nnBlack, false, 10);
+        inputsManager = new Lc0InputsManagerImpl();
+        deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnWhite)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
+        deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnBlack)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
+
         nnBlack.clearIndexOffset();
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(false);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(false);
@@ -74,7 +87,7 @@ public class MCTSExerciceTest {
     @DisplayName("detect black promotion")
     void testSimulationDetectPossibleBlackPromotion() throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -131,7 +144,7 @@ public class MCTSExerciceTest {
     @DisplayName("white chessmate with black promotion")
     void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "G1-h1;H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -183,7 +196,7 @@ public class MCTSExerciceTest {
     @Test
     void testOneShotBlackChessMate() throws Exception {
         final Board board = Board.createBoard("kh1", "pa2,kg3", BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -233,7 +246,7 @@ public class MCTSExerciceTest {
     @Test
     void testEndWithWhitePromotion() throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final Strategy blackStrategy = new RandomStrategy(BLACK, 1);
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -284,7 +297,7 @@ public class MCTSExerciceTest {
     @ValueSource(ints = {400, 800})
     void testAvoidEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kf1", "pa2,rd3,kf3", WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -312,7 +325,7 @@ public class MCTSExerciceTest {
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
                     log.info(whiteStrategy.mctsTree4log(false, 3));
-                    // Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
@@ -350,7 +363,7 @@ public class MCTSExerciceTest {
     @Test
     void testAvoidEndWithWhitePromotion() throws Exception {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8", BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -377,14 +390,14 @@ public class MCTSExerciceTest {
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getMovedPiece().getPieceAllegiance()) {
                 case WHITE:
-                    // Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> wins = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
                     log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(wins.size() > 0);
                     break;
                 case BLACK:
                     if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
-                    // Helper.checkMCTSTree(blackStrategy);
+                    Helper.checkMCTSTree(blackStrategy);
                     List<MCTSNode> looses = blackStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
@@ -415,7 +428,7 @@ public class MCTSExerciceTest {
     @Test
     void testAvoidWhiteChessMate() throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -437,7 +450,7 @@ public class MCTSExerciceTest {
                 case WHITE:
                     List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    // Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     break;
@@ -468,7 +481,7 @@ public class MCTSExerciceTest {
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2() throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -503,12 +516,12 @@ public class MCTSExerciceTest {
                     List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     if (winLoss1.size() > 0) log.info("graph:\n{}\n");
-//                    Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-//                    Helper.checkMCTSTree(blackStrategy);
+                    Helper.checkMCTSTree(blackStrategy);
                     break;
             }
             if (status == WHITE_CHESSMATE) break;
@@ -539,7 +552,7 @@ public class MCTSExerciceTest {
     @Test
     void testMakeBlackChessMate() throws Exception {
         final Board board = Board.createBoard("ra8,kg2,rh2", "ke1", WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -604,13 +617,13 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {1600})
+    @ValueSource(ints = {800})
     void testBlackChessMate2Move(int nbStep) throws Exception {
         final Board board = Board.createBoard(
                 "PA2,PB2,PD4,QE7,PF2,KG2,PG3,NG5",
                 "PA5,PB6,PE4,PE6,PG6,QH5,KH6",
                 WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -665,7 +678,7 @@ public class MCTSExerciceTest {
                 "kg1",
                 "re8,kg3",
                 BLACK);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -716,7 +729,7 @@ public class MCTSExerciceTest {
                 "kg1",
                 "re8,kg3",
                 WHITE);
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -900,8 +913,7 @@ public class MCTSExerciceTest {
         log.info("[{}}] Wins/loss EndNodes ({}): {}", strategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         if (forceGraph || winLoss.size() > 0)
             log.info("[{}] graph:\n############################\n{}\n############################", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
-        //
-        // Helper.checkMCTSTree(strategy);
+        Helper.checkMCTSTree(strategy);
         return winLoss;
     }
 }

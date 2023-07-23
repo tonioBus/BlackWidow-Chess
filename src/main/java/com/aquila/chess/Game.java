@@ -104,7 +104,6 @@ public class Game {
                 break;
         }
         sb.append(String.format("[Result \"%s\"]\n", result)); // [Result "0-1"], [Result "1-0"], [Result "1/2-1/2"],
-        // [Result "*"]
         movesToPGN(sb);
         return sb.toString();
     }

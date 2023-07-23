@@ -130,10 +130,10 @@ public class DotGenerator {
                 if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                     int hashCode = generate(g, child, depth + 1, depthMax);
                     double exploitation = child.getExpectedReward(false);
-                    double reward = MCTSStrategy.rewardWithLogVisit(child);
+                    // double reward = MCTSStrategy.rewardWithLogVisit(child);
                     // double exploration = MCTSSearchWalker.exploration(node, 0.5, node. )
                     g.addEdges(new Edge().addNode("" + node.hashCode(), "").addNode("" + hashCode, "")
-                            .setLabel(String.format("Exp.R:%f V:%d P:%f", reward, visits, policy)));
+                            .setLabel(String.format("Exploi:%f V:%d P:%f", exploitation, visits, policy)));
                 }
             }
         });

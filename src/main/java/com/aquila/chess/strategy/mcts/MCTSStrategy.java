@@ -1,11 +1,10 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.OneStepRecord;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputsNNFactory;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private final Game originalGame;
-    private boolean firstStep = true;
+
     @Getter
     private MCTSGame mctsGame;
     private int nbStep = 0;
@@ -107,13 +106,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
         if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame != null) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
+            Lc0OneStepRecord lastLc0OneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
                     this.alliance.complementary(),
                     this.partnerStrategy.getCurrentRoot()
             );
-            trainGame.add(lastOneStepRecord);
+            trainGame.add(lastLc0OneStepRecord);
         }
         this.root = null;
         this.directRoot = null;
@@ -123,13 +122,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.nbStep++;
 
         if (isTraining()) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
+            Lc0OneStepRecord lastLc0OneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,
                     this.alliance,
                     this.getCurrentRoot()
             );
-            trainGame.add(lastOneStepRecord);
+            trainGame.add(lastLc0OneStepRecord);
         }
         this.mctsGame.play(this.directRoot, move);
         return move;
@@ -337,22 +336,22 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
+    private static Lc0OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
         Lc0InputsFullNN inputs = mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
-        OneStepRecord lastOneStepRecord = new OneStepRecord(
+        Lc0OneStepRecord lastLc0OneStepRecord = new Lc0OneStepRecord(
                 inputs,
                 move.toString(),
                 alliance,
                 policies);
         log.debug("CREATE STEP TRAINING -> Save inputs:{}", policies.size());
         log.debug("CREATE STEP TRAINING ->[{}] INPUTS:\n{}", alliance, inputs);
-        return lastOneStepRecord;
+        return lastLc0OneStepRecord;
     }
 
     public void saveBatch(ResultGame resultGame, int numGames) throws IOException {
         log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
-        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
+        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getLc0OneStepRecordList().size());
         trainGame.save(numGames, resultGame);
         log.info("SAVE DONE");
         clearTrainGame();

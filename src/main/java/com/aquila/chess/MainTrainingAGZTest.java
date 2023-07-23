@@ -4,6 +4,8 @@ import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
@@ -57,14 +59,23 @@ public class MainTrainingAGZTest {
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
-        DeepLearningAGZ deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
-        deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
-        DeepLearningAGZ deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
-        deepLearningBlack = DeepLearningAGZ.initFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
+        DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnWhite)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
+        DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnBlack)
+                .inputsManager(inputsManager)
+                .train(false)
+                .build();
+        deepLearningBlack = DeepLearningAGZ.initNNFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
+        deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         while (true) {
             final Board board = Board.createBoard("kh1,pg6", "pa4,kg3", Alliance.BLACK);
-            final Game game = Game.builder().board(board).build();
+            final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
             log.info("SEED WHITE:{}", seed1);
@@ -131,7 +142,11 @@ public class MainTrainingAGZTest {
                 log.info("Switching DP {} <-> {}", reference, opponent);
                 nnBlack.close();
                 nnBlack = new NNDeep4j(NN_OPPONENT, false);
-                deepLearningBlack = new DeepLearningAGZ(nnBlack, false);
+                deepLearningBlack = DeepLearningAGZ.builder()
+                        .nn(nnBlack)
+                        .inputsManager(inputsManager)
+                        .train(false)
+                        .build();
                 deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
             }
         }

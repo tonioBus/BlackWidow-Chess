@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Lc0InputsManagerImpl implements InputsManager {
 
-    final int SIZE_POSITION = 13;
+    static final int SIZE_POSITION = 13;
 
     // 5: Pawn:0, Bishop:1, Knight:2, Rook:3, Queen:4, King:5
     //
@@ -50,7 +50,12 @@ public class Lc0InputsManagerImpl implements InputsManager {
     public static final int KING_INDEX = 5;
 
     @Getter
-    protected final CircularFifoQueue<Last8Inputs> last8Inputs = new CircularFifoQueue<>(8);
+    protected final CircularFifoQueue<Lc0Last8Inputs> lc0Last8Inputs = new CircularFifoQueue<>(8);
+
+    @Override
+    public int getNbFeaturesPlanes() {
+        return FEATURES_PLANES;
+    }
 
     /**
      *
@@ -64,7 +69,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
     public Lc0InputsFullNN createInputs(final Board board,
                                               final Move move,
                                               final Alliance color2play) {
-        final var inputs = new double[INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         this.createInputs(inputs, board, move, color2play);
         return new Lc0InputsFullNN(inputs);
     }
@@ -79,15 +84,15 @@ public class Lc0InputsManagerImpl implements InputsManager {
                 log.info("[{}:{}] initLastInputs", move.getMovedPiece().getPieceAllegiance(), move);
         }
         int nbMoves = game.getMoves().size();
-        if (nbMoves == 0 && this.last8Inputs.size() == 0) {
-            final InputsOneNN inputs = this.createInputsForOnePosition(game.getLastBoard(), null);
+        if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
+            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(game.getLastBoard(), null);
             log.debug("push inputs init");
             this.add(null, inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-            this.last8Inputs.clear();
+            this.lc0Last8Inputs.clear();
             game.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final InputsOneNN inputs = move.hashCode() == -1 ?
+                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
                         this.createInputsForOnePosition(game.getLastBoard(), null) :
                         this.createInputsForOnePosition(move.getBoard(), move);
                 log.debug("push input after init move:{}:\n{}", move, inputs);
@@ -99,7 +104,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
     @Override
     public InputsManager clone() {
         Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
-        lc0InputsManagerImpl.last8Inputs.addAll(this.getLast8Inputs());
+        lc0InputsManagerImpl.lc0Last8Inputs.addAll(this.getLc0Last8Inputs());
         return lc0InputsManagerImpl;
     }
 
@@ -115,8 +120,8 @@ public class Lc0InputsManagerImpl implements InputsManager {
 
     @Override
     public void processPlay(final Board board, final Move move) {
-        InputsOneNN inputs = this.createInputsForOnePosition(board, move);
-        this.last8Inputs.add(new Last8Inputs(inputs, move));
+        Lc0InputsOneNN inputs = this.createInputsForOnePosition(board, move);
+        this.lc0Last8Inputs.add(new Lc0Last8Inputs(inputs, move));
     }
 
     /**
@@ -187,12 +192,12 @@ public class Lc0InputsManagerImpl implements InputsManager {
                                      final Move move,
                                      final Alliance color2play) {
         int destinationOffset = 0;
-        CircularFifoQueue<Last8Inputs> tmp = new CircularFifoQueue<>(8);
-        tmp.addAll(this.getLast8Inputs());
+        CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
+        tmp.addAll(this.getLc0Last8Inputs());
         if (move != null) {
-            int size = this.getLast8Inputs().size();
-            Move lastMove = this.getLast8Inputs().get(size - 1).move();
-            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            int size = this.getLc0Last8Inputs().size();
+            Move lastMove = this.getLc0Last8Inputs().get(size - 1).move();
+            String moves = this.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             boolean addInputs = true;
             if (lastMove != null) {
                 // log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
@@ -202,17 +207,17 @@ public class Lc0InputsManagerImpl implements InputsManager {
                 }
             }
             if (addInputs) {
-                InputsOneNN lastInput1 = this.createInputsForOnePosition(board, move);
+                Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, move);
                 // log.info("++ SIZE:{} MOVES:{} createInouts(offset:{} move:{} color:{}):\n{}", tmp.size(), moves, destinationOffset, move, move.getMovedPiece().getPieceAllegiance(), lastInput1);
-                tmp.add(new Last8Inputs(lastInput1, move));
+                tmp.add(new Lc0Last8Inputs(lastInput1, move));
             }
         }
-        for (Last8Inputs lastInput : tmp) {
+        for (Lc0Last8Inputs lastInput : tmp) {
             Piece piece = lastInput.move().getMovedPiece();
             String color = piece == null ? "null" : piece.getPieceAllegiance().toString();
             // log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
-            System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, INN.SIZE_POSITION);
-            destinationOffset += INN.SIZE_POSITION;
+            System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
+            destinationOffset += SIZE_POSITION;
         }
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
@@ -235,7 +240,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
-    public InputsOneNN createInputsForOnePosition(Board board, final Move move) {
+    public Lc0InputsOneNN createInputsForOnePosition(Board board, final Move move) {
         final var nbIn = new double[SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
@@ -250,7 +255,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
             }
         }
         // FIXME: optimize the copy
-        final var nbInNew = new double[INN.SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbInNew = new double[SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         // copy WHITE pieces without modification (player view)
         for (int planes = 0; planes < 6; planes++) {
             for (int y = 0; y < BoardUtils.NUM_TILES_PER_ROW; y++) {
@@ -266,7 +271,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
             }
         }
         //FIXME fill(nbInNew[INN.SIZE_POSITION - 1], game.nbMovesWithRepetition() > 0 ? 1.0 : 0.0);
-        return new InputsOneNN(nbInNew);
+        return new Lc0InputsOneNN(nbInNew);
     }
 
     /**
@@ -297,7 +302,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
 
     public String getHashCodeString(Board board, final Alliance color2play, final Move move) {
         StringBuilder sb = new StringBuilder();
-        List<Move> moves8inputs = this.last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
+        List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null) {
             try {
                 board = move.execute();
@@ -319,11 +324,11 @@ public class Lc0InputsManagerImpl implements InputsManager {
         return sb.toString();
     }
 
-    private void add(final Move move, final InputsOneNN inputsOneNN) {
-        int size = this.getLast8Inputs().size();
+    private void add(final Move move, final Lc0InputsOneNN lc0InputsOneNN) {
+        int size = this.getLc0Last8Inputs().size();
         if (size > 1 && move != null) {
-            Last8Inputs lastInput = this.getLast8Inputs().get(size - 1);
-            String moves = this.getLast8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
+            Lc0Last8Inputs lastInput = this.getLc0Last8Inputs().get(size - 1);
+            String moves = this.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             if (lastInput != null) {
                 if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance()) &&
                         lastInput.move().toString().equals(move.toString())) {
@@ -332,7 +337,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
                 }
             }
         }
-        this.last8Inputs.add(new Last8Inputs(inputsOneNN, move));
+        this.lc0Last8Inputs.add(new Lc0Last8Inputs(lc0InputsOneNN, move));
     }
 
     private long hash(String str) {

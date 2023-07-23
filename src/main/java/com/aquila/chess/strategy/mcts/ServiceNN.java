@@ -1,10 +1,11 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.strategy.mcts.inputs.lc0.InputForBatchJobs;
-import com.aquila.chess.utils.DotGenerator;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputForBatchJobs;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -12,13 +13,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.*;
 
-import static com.aquila.chess.strategy.mcts.MCTSSearchWalker.LOOSE_VALUE;
-
 @Slf4j
 class ServiceNN {
 
     @Getter
-    private final Map<Long, InputForBatchJobs> batchJobs2Commit = new HashMap<>();
+    private final Map<Long, Lc0InputForBatchJobs> batchJobs2Commit = new HashMap<>();
 
     @Getter
     private final Map<Long, CacheValues.CacheValue> propagationValues = new LinkedHashMap<>();
@@ -27,8 +26,12 @@ class ServiceNN {
 
     private int batchSize;
 
-    public ServiceNN(final DeepLearningAGZ deepLearningAGZ, int batchSize) {
+    private final int nbFeaturesPlanes;
+
+    @Builder
+    public ServiceNN(final DeepLearningAGZ deepLearningAGZ, int nbFeaturesPlanes, int batchSize) {
         this.deepLearningAGZ = deepLearningAGZ;
+        this.nbFeaturesPlanes = nbFeaturesPlanes;
         this.batchSize = batchSize;
     }
 
@@ -100,7 +103,7 @@ class ServiceNN {
 
     private void retrieveValuesPoliciesFromNN(int length) {
         log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
-        final var nbIn = new double[length][INN.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
+        final var nbIn = new double[length][nbFeaturesPlanes][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
@@ -180,15 +183,15 @@ class ServiceNN {
 
     private void createInputs(double[][][][] nbIn) {
         int indexNbIn = 0;
-        for (Map.Entry<Long, InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
-            System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, INN.FEATURES_PLANES);
+        for (Map.Entry<Long, Lc0InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
+            System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, nbFeaturesPlanes);
             indexNbIn++;
         }
     }
 
     private int updateCacheValuesAndPolicies(final List<OutputNN> outputsNN) {
         int index = 0;
-        for (Map.Entry<Long, InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
+        for (Map.Entry<Long, Lc0InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
             Move move = entry.getValue().move();
             Alliance color2play = entry.getValue().color2play();
             long key = entry.getKey();
@@ -263,8 +266,8 @@ class ServiceNN {
                         possibleMove, color2play.toString()));
             }
         }
-        // log.info("InputForBatchJobs(move:{}) key:{}", possibleMove, key);
-        batchJobs2Commit.put(key, new InputForBatchJobs(
+        // log.info("Lc0InputForBatchJobs(move:{}) key:{}", possibleMove, key);
+        batchJobs2Commit.put(key, new Lc0InputForBatchJobs(
                 possibleMove,
                 color2play,
                 gameCopy,
