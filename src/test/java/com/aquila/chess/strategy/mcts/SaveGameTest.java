@@ -59,7 +59,6 @@ public class SaveGameTest {
         Sequence sequence = gameManager.createSequence();
         long seed = 314;
         final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
-        // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);

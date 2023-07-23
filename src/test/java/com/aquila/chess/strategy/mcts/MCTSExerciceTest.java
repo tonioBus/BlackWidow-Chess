@@ -454,7 +454,7 @@ public class MCTSExerciceTest {
                     }
                     List<MCTSNode> lossNodes = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] loss EndNodes: {}", lossNodes.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    // assertTrue(lossNodes.size() > 0, "WHITE should have detect a loss nodes to avoid them");
+                    if (i == 0) assertTrue(lossNodes.size() > 0, "WHITE should have detect a loss nodes to avoid them");
                     // Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
