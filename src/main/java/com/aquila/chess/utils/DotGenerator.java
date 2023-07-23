@@ -73,7 +73,10 @@ public class DotGenerator {
     private int generate(final Graph g, final MCTSNode node, final int depth, final int depthMax) {
         if (depth >= depthMax)
             return 0;
-        String szMove = node.getMove() == null ? "ROOT" : String.valueOf(node.getMove());
+        String szMove = node.getMove() == null ?
+                "ROOT" :
+                node.getMovesFromRootAsString();
+                // String.valueOf(node.getMove());
         Alliance color = node.getColorState();
         String core = String.format("Parent:%s | key:%s | Init:%b | Propa:%b | moves:%d | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
                 node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
