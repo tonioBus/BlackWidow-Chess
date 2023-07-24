@@ -65,11 +65,12 @@ public class SaveGameTest {
         Game.GameStatus gameStatus = null;
         for (int i = 0; i < nbStep; i++) {
             gameStatus = game.play();
+            if(gameStatus != Game.GameStatus.IN_PROGRESS) break;
             sequence.play();
             assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getLc0OneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
         }
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
@@ -79,8 +80,8 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep - 1, trainGame.getLc0OneStepRecordList().size());
-        trainGame.getLc0OneStepRecordList().forEach(oneStepRecord -> {
+        assertEquals(nbStep - 1, trainGame.getOneStepRecordList().size());
+        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
@@ -128,9 +129,9 @@ public class SaveGameTest {
             sequence.play();
             log.info("----------------------------------------------------");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getLc0OneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
         }
-        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getLc0OneStepRecordList().size());
+        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
@@ -139,14 +140,14 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0) , trainGame.getLc0OneStepRecordList().size());
+        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0) , trainGame.getOneStepRecordList().size());
     }
 
     @Test
     @Order(1)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load("train", -666);
-        trainGame.getLc0OneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
+        trainGame.getOneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
     }
 
 }

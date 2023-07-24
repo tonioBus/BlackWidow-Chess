@@ -1,10 +1,10 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0OneStepRecord;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
@@ -59,7 +59,7 @@ public class MainFitNNSpecificInputs {
         Iterator<Move> iterMove = moves.iterator();
         for (i = 0; i < len; i++) {
             Move m = iterMove.next();
-            Lc0InputsFullNN inputs = createInputs(m);
+            InputsFullNN inputs = createInputs(m);
             nbIn[i] = inputs.inputs();
         }
         List<OutputNN> outputs = deepLearningWhite.getNn().outputs(nbIn, len);
@@ -70,25 +70,25 @@ public class MainFitNNSpecificInputs {
         }
     }
 
-    public Lc0InputsFullNN createInputs(final Move move) {
+    public InputsFullNN createInputs(final Move move) {
         return inputsManager.createInputs(board, move, Alliance.WHITE);
     }
 
     public TrainGame createTrainGame(int nbIterations) {
         TrainGame trainGame = new TrainGame();
-        Lc0InputsFullNN inputs = createInputs(null);
-        Lc0OneStepRecord lc0OneStepRecord = new Lc0OneStepRecord(inputs, "INIT", Alliance.BLACK, policies);
-        trainGame.add(lc0OneStepRecord);
-        lc0OneStepRecord = new Lc0OneStepRecord(inputs, "INIT", Alliance.WHITE, policies);
-        trainGame.add(lc0OneStepRecord);
+        InputsFullNN inputs = createInputs(null);
+        OneStepRecord oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.BLACK, policies);
+        trainGame.add(oneStepRecord);
+        oneStepRecord = new OneStepRecord(inputs, "INIT", Alliance.WHITE, policies);
+        trainGame.add(oneStepRecord);
         final int len = moves.size();
         for (int iteration = 0; iteration < nbIterations; iteration++) {
             Iterator<Move> iterMove = moves.iterator();
             for (int i = 0; i < len; i++) {
                 Move m = iterMove.next();
                 inputs = createInputs(m);
-                lc0OneStepRecord = new Lc0OneStepRecord(inputs, m.toString(), Alliance.WHITE, policies);
-                trainGame.add(lc0OneStepRecord);
+                oneStepRecord = new OneStepRecord(inputs, m.toString(), Alliance.WHITE, policies);
+                trainGame.add(oneStepRecord);
             }
         }
         trainGame.value = 0.0;

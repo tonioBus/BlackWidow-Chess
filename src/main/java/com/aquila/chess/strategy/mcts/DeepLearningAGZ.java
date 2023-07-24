@@ -3,8 +3,8 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0BatchInputsNN;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0OneStepRecord;
+import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
+import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -298,7 +298,7 @@ public class DeepLearningAGZ {
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         this.nn.train(true);
-        final int nbStep = trainGame.getLc0OneStepRecordList().size();
+        final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
         int nbChunk = nbStep / FIT_CHUNK;
         int restChunk = nbStep % FIT_CHUNK;
@@ -314,26 +314,26 @@ public class DeepLearningAGZ {
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
-        final Lc0BatchInputsNN inputsForNN = new Lc0BatchInputsNN(chunkSize);
+        final TrainInputs inputsForNN = new TrainInputs(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
         final AtomicInteger atomicInteger = new AtomicInteger();
         final double value = trainGame.getValue();
-        List<Lc0OneStepRecord> inputsList = trainGame.getLc0OneStepRecordList();
+        List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
         for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
             atomicInteger.set(chunkNumber);
             int gameRound = indexChunk * chunkSize + chunkNumber;
-            Lc0OneStepRecord lc0OneStepRecord = inputsList.get(gameRound);
-            inputsForNN.add(lc0OneStepRecord);
-            Map<Integer, Double> policies = lc0OneStepRecord.policies();
+            OneStepRecord oneStepRecord = inputsList.get(gameRound);
+            inputsForNN.add(oneStepRecord);
+            Map<Integer, Double> policies = oneStepRecord.policies();
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
-            Alliance playedColor = lc0OneStepRecord.color2play();
+            Alliance playedColor = oneStepRecord.color2play();
             double actualRewards = getActualRewards(value, playedColor);
             // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
             double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
-            // valuesForNN[chunkNumber][0] = lc0OneStepRecord.getExpectedReward(); // CHOICES
+            // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
                 policies.forEach((indexFromMove, previousPolicies) -> {
                     policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;

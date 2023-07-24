@@ -1,7 +1,7 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.ResultGame;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0OneStepRecord;
+import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import lombok.Getter;
 
 import java.io.*;
@@ -26,7 +26,7 @@ public class TrainGame implements Serializable {
     @Getter
     Double value = null;
     @Getter
-    final LinkedList<Lc0OneStepRecord> lc0OneStepRecordList = new LinkedList<>();
+    final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
     public TrainGame() {
     }
@@ -52,12 +52,12 @@ public class TrainGame implements Serializable {
         objectOutputStream.close();
     }
 
-    public void add(final Lc0OneStepRecord lc0OneStepRecord) {
-        this.lc0OneStepRecordList.add(lc0OneStepRecord);
+    public void add(final OneStepRecord oneStepRecord) {
+        this.oneStepRecordList.add(oneStepRecord);
     }
 
     public void clear() {
-        this.lc0OneStepRecordList.clear();
+        this.oneStepRecordList.clear();
         value = null;
     }
 

@@ -10,7 +10,7 @@ public interface InputsManager {
 
     int getNbFeaturesPlanes();
 
-    Lc0InputsFullNN createInputs(Board board,
+    InputsFullNN createInputs(Board board,
                                  Move move,
                                  Alliance color2play);
 

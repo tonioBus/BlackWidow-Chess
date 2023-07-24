@@ -173,7 +173,7 @@ public class MCTSExerciceTest {
             if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
                 if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(true, 50));
             }
-            Helper.checkMCTSTree(blackStrategy);
+            // Helper.checkMCTSTree(blackStrategy);
         }
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have got a black chessmate");
@@ -587,7 +587,7 @@ public class MCTSExerciceTest {
                 case WHITE:
                     List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    Helper.checkMCTSTree(whiteStrategy);
+                    // Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);

@@ -100,7 +100,7 @@ class MCTSInputsTest {
 //        log.warn("############################################################");
 //        dumpInput(game, 0);
 //        dumpInput(game, 1);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getLc0OneStepRecordList().get(0).getInputs(), 1);
+//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 1);
 //
 //        game.play();
 //        InputsNNFactory.createInputs(inputs, blackPlayer, Color.BLACK);
@@ -109,7 +109,7 @@ class MCTSInputsTest {
 //        dumpInput(game, 0);
 //        dumpInput(game, 1);
 //        dumpInput(game, 2);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getLc0OneStepRecordList().get(0).getInputs(), 2);
+//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 2);
 //
 //        InputsNNFactory.createInputs(inputs, whitePlayer, Color.WHITE);
 //        game.play();
@@ -119,7 +119,7 @@ class MCTSInputsTest {
 //        dumpInput(game, 1);
 //        dumpInput(game, 2);
 //        dumpInput(game, 3);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getLc0OneStepRecordList().get(0).getInputs(), 3);
+//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 3);
 //
 //        game.play();
 //        game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
@@ -130,7 +130,7 @@ class MCTSInputsTest {
     }
 
     private void dumpInput(final Game game, int nbInput) {
-//        int lastIndex = game.getTrainGame().getLc0OneStepRecordList().size() - 1;
-//        log.warn("\nINPUT({}):\n{}", nbInput, Utils.displayBoard(game.getTrainGame().getLc0OneStepRecordList().get(lastIndex).getInputs(), nbInput));
+//        int lastIndex = game.getTrainGame().getOneStepRecordList().size() - 1;
+//        log.warn("\nINPUT({}):\n{}", nbInput, Utils.displayBoard(game.getTrainGame().getOneStepRecordList().get(lastIndex).getInputs(), nbInput));
     }
 }

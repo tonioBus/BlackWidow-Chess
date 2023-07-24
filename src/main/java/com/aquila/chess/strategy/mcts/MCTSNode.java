@@ -23,6 +23,10 @@ public class MCTSNode implements Serializable {
     static private int nbBuild = 0;
 
     @Getter
+    @Setter
+    private boolean isPrepared = false;
+
+    @Getter
     public int nbReturn;
 
     @Getter
@@ -89,11 +93,11 @@ public class MCTSNode implements Serializable {
         nbBuild = 0;
     }
 
-    public synchronized void incVirtualLoss() {
+    public void incVirtualLoss() {
         this.virtualLoss++;
     }
 
-    public synchronized void decVirtualLoss() {
+    public void decVirtualLoss() {
         this.virtualLoss--;
     }
 

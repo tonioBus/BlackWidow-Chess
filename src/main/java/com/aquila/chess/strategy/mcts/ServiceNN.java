@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputForBatchJobs;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
+import com.aquila.chess.strategy.mcts.inputs.ServiceNNInputsJobs;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -17,7 +16,7 @@ import java.util.*;
 class ServiceNN {
 
     @Getter
-    private final Map<Long, Lc0InputForBatchJobs> batchJobs2Commit = new HashMap<>();
+    private final Map<Long, ServiceNNInputsJobs> batchJobs2Commit = new HashMap<>();
 
     @Getter
     private final Map<Long, CacheValues.CacheValue> propagationValues = new LinkedHashMap<>();
@@ -183,7 +182,7 @@ class ServiceNN {
 
     private void createInputs(double[][][][] nbIn) {
         int indexNbIn = 0;
-        for (Map.Entry<Long, Lc0InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
+        for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
             System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, nbFeaturesPlanes);
             indexNbIn++;
         }
@@ -191,7 +190,7 @@ class ServiceNN {
 
     private int updateCacheValuesAndPolicies(final List<OutputNN> outputsNN) {
         int index = 0;
-        for (Map.Entry<Long, Lc0InputForBatchJobs> entry : this.batchJobs2Commit.entrySet()) {
+        for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
             Move move = entry.getValue().move();
             Alliance color2play = entry.getValue().color2play();
             long key = entry.getKey();
@@ -266,8 +265,8 @@ class ServiceNN {
                         possibleMove, color2play.toString()));
             }
         }
-        // log.info("Lc0InputForBatchJobs(move:{}) key:{}", possibleMove, key);
-        batchJobs2Commit.put(key, new Lc0InputForBatchJobs(
+        // log.info("ServiceNNInputsJobs(move:{}) key:{}", possibleMove, key);
+        batchJobs2Commit.put(key, new ServiceNNInputsJobs(
                 possibleMove,
                 color2play,
                 gameCopy,

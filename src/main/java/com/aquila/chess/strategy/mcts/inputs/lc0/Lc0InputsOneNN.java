@@ -1,7 +1,5 @@
 package com.aquila.chess.strategy.mcts.inputs.lc0;
 
-import com.aquila.chess.strategy.mcts.INN;
-
 public record Lc0InputsOneNN(double[][][] inputs) {
 
     public Lc0InputsOneNN {
