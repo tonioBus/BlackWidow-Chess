@@ -38,9 +38,9 @@ public class MainTrainingAGZ {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
         final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes());
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -51,7 +51,7 @@ public class MainTrainingAGZ {
                 .inputsManager(inputsManager)
                 .train(false)
                 .build();
-        deepLearningBlack = DeepLearningAGZ.initNNFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
+        deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
         while (true) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()

@@ -36,9 +36,9 @@ public class MainTrainingAquila {
         GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes());
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -49,7 +49,7 @@ public class MainTrainingAquila {
                 .inputsManager(inputsManager)
                 .train(false)
                 .build();
-        deepLearningBlack = DeepLearningAGZ.initNNFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
+        deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
         while (true) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()

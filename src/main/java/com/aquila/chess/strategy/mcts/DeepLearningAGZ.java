@@ -5,6 +5,7 @@ import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -118,14 +119,14 @@ public class DeepLearningAGZ {
                 .build();
     }
 
-    public static DeepLearningAGZ initNNFile(final DeepLearningAGZ deepLearningWhite, final DeepLearningAGZ deepLearningBlack, int nbGames, UpdateLr updateLr) throws IOException {
+    public static DeepLearningAGZ initNNFile(InputsManager inputsManager, final DeepLearningAGZ deepLearningWhite, final DeepLearningAGZ deepLearningBlack, int nbGames, UpdateLr updateLr) throws IOException {
         File nnWhiteFile = new File(deepLearningWhite.getFilename());
         File nnBlackFile = new File(deepLearningBlack.getFilename());
         if (!nnWhiteFile.isFile()) deepLearningWhite.nn.save();
         final DeepLearningAGZ retDeepLearningBlack;
         if (!nnBlackFile.isFile()) {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
-            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false);
+            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes());
             retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
             if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
         } else {

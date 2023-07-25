@@ -26,10 +26,10 @@ public class MainFitNN {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static void main(final String[] args) throws Exception {
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true);
+        @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes());
         UpdateLr updateLr = nbGames -> 0.9e-4;
         nnWhite.setUpdateLr(updateLr, 1);
-        @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
                 .nn(nnWhite)

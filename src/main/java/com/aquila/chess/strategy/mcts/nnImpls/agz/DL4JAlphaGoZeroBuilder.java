@@ -87,17 +87,16 @@ public class DL4JAlphaGoZeroBuilder {
     // 109: repetitions whitout capture and pawn moves (50 moves rules)
     // 110: 0
     // 111: 1 -> edges detection
-    public static final int FEATURES_PLANES = 112;
+    // public static final int FEATURES_PLANES = 112;
 
     public static final int RESIDUAL_FILTERS = 256; // 256
-    public static final int SIZE_POSITION = 13;
 
     private final ComputationGraphConfiguration.GraphBuilder conf;
     private final int[] strides;
     private final int[] kernelSize;
     private final ConvolutionMode convolutionMode;
 
-    public DL4JAlphaGoZeroBuilder(final int[] kernel, final int[] strides, final ConvolutionMode mode) {
+    public DL4JAlphaGoZeroBuilder(final int[] kernel, final int[] strides, final ConvolutionMode mode, int nbFeaturesPLanes) {
 
         this.kernelSize = kernel;
         this.strides = strides;
@@ -107,12 +106,12 @@ public class DL4JAlphaGoZeroBuilder {
                 .cudnnAlgoMode(ConvolutionLayer.AlgoMode.PREFER_FASTEST)
                 .updater(new Sgd())
                 .weightInit(WeightInit.LECUN_NORMAL)
-                .graphBuilder().setInputTypes(InputType.convolutional(8, 8, FEATURES_PLANES));
+                .graphBuilder().setInputTypes(InputType.convolutional(8, 8, nbFeaturesPLanes));
     }
 
-    public DL4JAlphaGoZeroBuilder() {
-        this(new int[]{3, 3}, new int[]{1, 1}, ConvolutionMode.Same);
-    }
+    // public DL4JAlphaGoZeroBuilder() {
+    //    this(new int[]{3, 3}, new int[]{1, 1}, ConvolutionMode.Same);
+    //}
 
     public void addInputs(final String name) {
         conf.addInputs(name);

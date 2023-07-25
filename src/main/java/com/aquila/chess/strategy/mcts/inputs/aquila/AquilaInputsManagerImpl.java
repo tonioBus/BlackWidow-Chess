@@ -59,7 +59,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
 
     @Override
     public int getNbFeaturesPlanes() {
-        return 0;
+        return FEATURES_PLANES;
     }
 
     @Override
@@ -79,6 +79,16 @@ public class AquilaInputsManagerImpl implements InputsManager {
      * [12][NB_COL][NB_COL]
      */
     private void createInputs(double[][][] inputs, Board board, Alliance color2play) {
+        board.setCheckBoard(false);
+        board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
+            Coordinate movesCoordinate = new Coordinate(move);
+            inputs[12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+        });
+        board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
+            Coordinate movesCoordinate = new Coordinate(move);
+            inputs[6+12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+        });
+        board.setCheckBoard(true);
         board.getAllPieces().parallelStream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
@@ -90,13 +100,13 @@ public class AquilaInputsManagerImpl implements InputsManager {
             inputs[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
             // Moves 12 (6+6 planes)
             Collection<Move> moves = currentPiece.calculateLegalMoves(board);
-            moves.stream().forEach(move -> {
-                Move.MoveStatus status = player.makeMove(move).getMoveStatus();
-                if (status == Move.MoveStatus.DONE) {
-                    Coordinate movesCoordinate = new Coordinate(move);
-                    inputs[12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-                }
-            });
+//            moves.stream().forEach(move -> {
+//                Move.MoveStatus status = player.makeMove(move).getMoveStatus();
+//                if (status == Move.MoveStatus.DONE) {
+//                    Coordinate movesCoordinate = new Coordinate(move);
+//                    inputs[12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+//                }
+//            });
             // Attacks 24 (6+6 planes)
             moves.stream().filter(move -> move.isAttack()).forEach(move -> {
                 Piece attackingPiece = move.getAttackedPiece();
@@ -175,12 +185,36 @@ public class AquilaInputsManagerImpl implements InputsManager {
 
     @Override
     public InputsManager clone() {
-        return null;
+        // no state on this inputManager, so no creation needed
+        return this;
     }
 
     @Override
     public long hashCode(Board board, Move move, Alliance color2play) {
-        return 0;
+        StringBuffer sb = new StringBuffer();
+        if (move != null) {
+            board = move.execute();
+            sb.append(board.currentPlayer().getAlliance().toString());
+        } else {
+            sb.append(color2play.toString());
+        }
+        sb.append("\n");
+        board.getAllPieces().forEach(piece -> {
+            sb.append(BoardUtils.INSTANCE.getPositionAtCoordinate(piece.getPiecePosition()));
+            sb.append("=");
+            sb.append(piece.getPieceType());
+            sb.append(",");
+        });
+        return hash(sb.toString());
+    }
+
+    private long hash(String str) {
+        long hash = 5381;
+        byte[] data = str.getBytes();
+        for (byte b : data) {
+            hash = ((hash << 5) + hash) + b;
+        }
+        return hash;
     }
 
     @Override

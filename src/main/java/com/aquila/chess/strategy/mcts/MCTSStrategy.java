@@ -303,7 +303,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 directRoot != null ? directRoot.getNumberAllSubNodes() : 0);
     }
 
-    String mctsTree4log(boolean displayLastChilds, int maxDepth) {
+    public String mctsTree4log(boolean displayLastChilds, int maxDepth) {
         return String.format("[%s] graph:\n############################\n%s\n############################", this.getAlliance(), DotGenerator.toString(this.getCurrentRoot(), maxDepth, displayLastChilds));
     }
 

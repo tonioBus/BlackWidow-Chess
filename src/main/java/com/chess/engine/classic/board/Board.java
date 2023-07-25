@@ -28,6 +28,7 @@ public final class Board {
     private final Move transitionMove;
 
     @Getter
+    @Setter
     private boolean checkBoard = true;
 
     private static final Board STANDARD_BOARD = createStandardBoardImpl();

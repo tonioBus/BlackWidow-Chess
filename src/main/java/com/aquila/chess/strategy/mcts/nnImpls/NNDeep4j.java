@@ -32,14 +32,14 @@ import java.util.List;
 @Slf4j
 public class NNDeep4j implements INN {
     private final String filename;
-    // public final int NUM_RESIDUAL_BLOCKS = 20;
-    public final int NUM_RESIDUAL_BLOCKS = 15;
-    public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
+    public final int NUM_RESIDUAL_BLOCKS = 20;
+    // public final int NUM_RESIDUAL_BLOCKS = 15;
+    // public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
     private UpdateLr updateLr;
 
     private ComputationGraph network;
 
-    public NNDeep4j(final String filename, final boolean loadUpdater) {
+    public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes) {
         DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
         Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
         Nd4j.getMemoryManager().togglePeriodicGc(true);
@@ -71,7 +71,7 @@ public class NNDeep4j implements INN {
             log.error(String.format("Exception when trying to load [%s], creating a default", filename), e);
         }
         if (network == null) {
-            network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, NUM_FEATURE_PLANES);
+            network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, nbFeaturePlanes);
         }
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);

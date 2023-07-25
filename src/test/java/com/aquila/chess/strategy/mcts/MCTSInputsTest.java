@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
@@ -68,8 +69,9 @@ class MCTSInputsTest {
 
     @Test
     void testSavedInputs() {
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 WHITE,
@@ -91,7 +93,7 @@ class MCTSInputsTest {
         game.setup(whiteStrategy, blackStrategy);
 
 
-        double[][][] inputs = new double[DL4JAlphaGoZeroBuilder.FEATURES_PLANES][Board.NB_COL][Board.NB_COL];
+        double[][][] inputs = new double[inputsManager.getNbFeaturesPlanes()][Board.NB_COL][Board.NB_COL];
 
 //        log.warn("############################################################");
 //        game.play();

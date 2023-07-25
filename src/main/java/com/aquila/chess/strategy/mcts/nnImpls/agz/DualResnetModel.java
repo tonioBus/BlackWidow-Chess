@@ -17,6 +17,7 @@
 
 package com.aquila.chess.strategy.mcts.nnImpls.agz;
 
+import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 
 /**
@@ -37,7 +38,7 @@ public class DualResnetModel {
 
     public static ComputationGraph getModel(final int blocks, final int numPlanes) {
 
-        final DL4JAlphaGoZeroBuilder builder = new DL4JAlphaGoZeroBuilder();
+        final DL4JAlphaGoZeroBuilder builder = new DL4JAlphaGoZeroBuilder(new int[]{3, 3}, new int[]{1, 1}, ConvolutionMode.Same, numPlanes);
         final String input = "in";
 
         builder.addInputs(input);

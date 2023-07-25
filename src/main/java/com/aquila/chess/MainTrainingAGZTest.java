@@ -58,9 +58,9 @@ public class MainTrainingAGZTest {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes());
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -71,7 +71,7 @@ public class MainTrainingAGZTest {
                 .inputsManager(inputsManager)
                 .train(false)
                 .build();
-        deepLearningBlack = DeepLearningAGZ.initNNFile(deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
+        deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
         deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         while (true) {
             final Board board = Board.createBoard("kh1,pg6", "pa4,kg3", Alliance.BLACK);
@@ -141,7 +141,7 @@ public class MainTrainingAGZTest {
                 Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
                 log.info("Switching DP {} <-> {}", reference, opponent);
                 nnBlack.close();
-                nnBlack = new NNDeep4j(NN_OPPONENT, false);
+                nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
                 deepLearningBlack = DeepLearningAGZ.builder()
                         .nn(nnBlack)
                         .inputsManager(inputsManager)
