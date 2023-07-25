@@ -5,7 +5,6 @@ import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -72,7 +71,7 @@ public class DeepLearningAGZ {
     static final int CACHE_VALUES_SIZE = 80000;
 
     @Getter
-    private final int batchSize;
+    private int batchSize = BATCH_SIZE;
 
     @Getter
     private final int nbFeaturesPlanes;
@@ -99,7 +98,7 @@ public class DeepLearningAGZ {
 //    }
 
     @Builder
-    public DeepLearningAGZ(@NonNull final INN nn, boolean train, int batchSize, @NonNull final InputsManager inputsManager) {
+    public DeepLearningAGZ(@NonNull final INN nn, boolean train, @NonNull int batchSize, @NonNull final InputsManager inputsManager) {
         this(nn, train, batchSize, inputsManager.getNbFeaturesPlanes());
     }
 
@@ -108,6 +107,7 @@ public class DeepLearningAGZ {
     }
 
     private DeepLearningAGZ(final INN nn, boolean train, int batchSize, int nbFeaturesPlanes) {
+        if (batchSize <= 0) throw new RuntimeException("BatchSize should be > 0");
         this.nn = nn;
         this.train = train;
         this.batchSize = batchSize;

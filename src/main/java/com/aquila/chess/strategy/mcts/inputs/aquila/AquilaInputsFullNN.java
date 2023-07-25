@@ -1,15 +1,8 @@
 package com.aquila.chess.strategy.mcts.inputs.aquila;
 
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0Utils;
-import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.pieces.*;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Arrays;
 
 import static com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl.FEATURES_PLANES;
 import static com.aquila.chess.strategy.mcts.inputs.aquila.AquilaUtils.displayBoard;

@@ -44,11 +44,13 @@ public class MainTrainingAGZ {
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(NB_STEP)
                 .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(NB_STEP)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);

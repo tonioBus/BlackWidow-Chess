@@ -34,7 +34,7 @@ public final class Board {
     private static final Board STANDARD_BOARD = createStandardBoardImpl();
 
     private Board(final Builder builder) {
-        this(builder, true);
+        this(builder, builder.checkBoard);
     }
 
     private Board(final Builder builder, boolean checkBoard) {

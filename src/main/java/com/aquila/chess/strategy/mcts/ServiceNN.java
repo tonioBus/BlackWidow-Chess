@@ -25,10 +25,12 @@ class ServiceNN {
 
     private int batchSize;
 
-    private final int nbFeaturesPlanes;
+    private int nbFeaturesPlanes;
 
     @Builder
     public ServiceNN(final DeepLearningAGZ deepLearningAGZ, int nbFeaturesPlanes, int batchSize) {
+        assert (nbFeaturesPlanes > 1);
+        assert (batchSize > 1);
         this.deepLearningAGZ = deepLearningAGZ;
         this.nbFeaturesPlanes = nbFeaturesPlanes;
         this.batchSize = batchSize;
