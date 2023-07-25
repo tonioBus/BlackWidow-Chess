@@ -6,6 +6,8 @@ import com.chess.engine.classic.pieces.*;
 import com.chess.engine.classic.player.BlackPlayer;
 import com.chess.engine.classic.player.Player;
 import com.chess.engine.classic.player.WhitePlayer;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -25,9 +27,17 @@ public final class Board {
     private final Pawn enPassantPawn;
     private final Move transitionMove;
 
+    @Getter
+    private boolean checkBoard = true;
+
     private static final Board STANDARD_BOARD = createStandardBoardImpl();
 
     private Board(final Builder builder) {
+        this(builder, true);
+    }
+
+    private Board(final Builder builder, boolean checkBoard) {
+        this.checkBoard = checkBoard;
         this.boardConfig = Collections.unmodifiableMap(builder.boardConfig);
         this.whitePieces = calculateActivePieces(builder, Alliance.WHITE);
         this.blackPieces = calculateActivePieces(builder, Alliance.BLACK);
@@ -248,6 +258,9 @@ public final class Board {
         Pawn enPassantPawn;
         Move transitionMove;
 
+        @Setter
+        private boolean checkBoard = true;
+
         public Builder() {
             this.boardConfig = new HashMap<>(32, 1.0f);
         }
@@ -273,7 +286,8 @@ public final class Board {
         }
 
         public Board build() {
-            return new Board(this);
+            Board ret =  new Board(this, checkBoard);
+            return ret;
         }
 
     }

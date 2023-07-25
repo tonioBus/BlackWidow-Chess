@@ -26,10 +26,16 @@ public abstract class Player {
            final List<Move> playerLegals,
            final List<Move> opponentLegals) {
         this.board = board;
-        this.playerKing = establishKing();
-        this.isInCheck = !calculateAttacksOnTile(this.playerKing.getPiecePosition(), opponentLegals).isEmpty();
-        playerLegals.addAll(calculateKingCastles(playerLegals, opponentLegals));
-        this.legalMoves = playerLegals;
+        if(board.isCheckBoard()) {
+            this.playerKing = establishKing();
+            this.isInCheck = !calculateAttacksOnTile(this.playerKing.getPiecePosition(), opponentLegals).isEmpty();
+            playerLegals.addAll(calculateKingCastles(playerLegals, opponentLegals));
+            this.legalMoves = playerLegals;
+        } else {
+            playerKing = null;
+            isInCheck = false;
+            legalMoves = List.of();
+        }
     }
 
     public boolean isInCheck() {

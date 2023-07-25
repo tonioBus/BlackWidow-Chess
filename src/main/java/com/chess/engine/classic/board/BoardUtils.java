@@ -1,13 +1,16 @@
 package com.chess.engine.classic.board;
 
+import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.pieces.King;
 import com.chess.engine.classic.pieces.Piece;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.*;
 
 import static com.chess.engine.classic.board.Move.MoveFactory;
 
-public enum  BoardUtils {
+public enum BoardUtils {
 
     INSTANCE;
 
@@ -27,37 +30,37 @@ public enum  BoardUtils {
     public final List<Boolean> SIXTH_ROW = initRow(40);
     public final List<Boolean> SEVENTH_ROW = initRow(48);
     public final List<Boolean> EIGHTH_ROW = initRow(56);
-    public final List<String> ALGEBRAIC_NOTATION = initializeAlgebraicNotation();
-    public final Map<String, Integer> POSITION_TO_COORDINATE = initializePositionToCoordinateMap();
+    public static final List<String> ALGEBRAIC_NOTATION = initializeAlgebraicNotation();
+    public static final Map<String, Integer> POSITION_TO_COORDINATE = initializePositionToCoordinateMap();
     public static final int START_TILE_INDEX = 0;
     public static final int NUM_TILES_PER_ROW = 8;
     public static final int NUM_TILES = 64;
 
     private static List<Boolean> initColumn(int columnNumber) {
         final Boolean[] column = new Boolean[NUM_TILES];
-        for(int i = 0; i < column.length; i++) {
+        for (int i = 0; i < column.length; i++) {
             column[i] = false;
         }
         do {
             column[columnNumber] = true;
             columnNumber += NUM_TILES_PER_ROW;
-        } while(columnNumber < NUM_TILES);
+        } while (columnNumber < NUM_TILES);
         return Collections.unmodifiableList(Arrays.asList((column)));
     }
 
     private static List<Boolean> initRow(int rowNumber) {
         final Boolean[] row = new Boolean[NUM_TILES];
-        for(int i = 0; i < row.length; i++) {
+        for (int i = 0; i < row.length; i++) {
             row[i] = false;
         }
         do {
             row[rowNumber] = true;
             rowNumber++;
-        } while(rowNumber % NUM_TILES_PER_ROW != 0);
+        } while (rowNumber % NUM_TILES_PER_ROW != 0);
         return Collections.unmodifiableList(Arrays.asList(row));
     }
 
-    private Map<String, Integer> initializePositionToCoordinateMap() {
+    private static Map<String, Integer> initializePositionToCoordinateMap() {
         final Map<String, Integer> positionToCoordinate = new HashMap<>();
         for (int i = START_TILE_INDEX; i < NUM_TILES; i++) {
             positionToCoordinate.put(ALGEBRAIC_NOTATION.get(i), i);
@@ -85,10 +88,6 @@ public enum  BoardUtils {
         return POSITION_TO_COORDINATE.get(position);
     }
 
-    class Coordinate{
-        int x;
-        int y;
-    }
     public String getPositionAtCoordinate(final int coordinate) {
         return ALGEBRAIC_NOTATION.get(coordinate);
     }
@@ -108,15 +107,15 @@ public enum  BoardUtils {
                                          final int frontTile) {
         final Piece piece = board.getPiece(frontTile);
         return piece != null &&
-               piece.getPieceType() == Piece.PieceType.PAWN &&
-               piece.getPieceAllegiance() != king.getPieceAllegiance();
+                piece.getPieceType() == Piece.PieceType.PAWN &&
+                piece.getPieceAllegiance() != king.getPieceAllegiance();
     }
 
     public static int mvvlva(final Move move) {
         final Piece movingPiece = move.getMovedPiece();
-        if(move.isAttack()) {
+        if (move.isAttack()) {
             final Piece attackedPiece = move.getAttackedPiece();
-            return (attackedPiece.getPieceValue() - movingPiece.getPieceValue() +  Piece.PieceType.KING.getPieceValue()) * 100;
+            return (attackedPiece.getPieceValue() - movingPiece.getPieceValue() + Piece.PieceType.KING.getPieceValue()) * 100;
         }
         return Piece.PieceType.KING.getPieceValue() - movingPiece.getPieceValue();
     }
@@ -125,7 +124,7 @@ public enum  BoardUtils {
         final List<Move> moveHistory = new ArrayList<>();
         Move currentMove = board.getTransitionMove();
         int i = 0;
-        while(currentMove != MoveFactory.getNullMove() && i < N) {
+        while (currentMove != MoveFactory.getNullMove() && i < N) {
             moveHistory.add(currentMove);
             currentMove = currentMove.getBoard().getTransitionMove();
             i++;
@@ -146,6 +145,6 @@ public enum  BoardUtils {
 
     public static boolean isEndGame(final Board board) {
         return board.currentPlayer().isInCheckMate() ||
-               board.currentPlayer().isInStaleMate();
+                board.currentPlayer().isInStaleMate();
     }
 }

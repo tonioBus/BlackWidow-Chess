@@ -75,7 +75,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
     }
 
     @Override
-    public void startMCTSStep(Game game) {
+    public void startMCTSStep(final Game game) {
         if (log.isDebugEnabled()) {
             Move move = game.getLastMove();
             if (move.getMovedPiece() == null)

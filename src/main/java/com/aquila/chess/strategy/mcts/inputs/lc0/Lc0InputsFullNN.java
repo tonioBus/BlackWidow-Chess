@@ -10,6 +10,7 @@ public record Lc0InputsFullNN(double[][][] inputs) implements InputsFullNN {
             throw new RuntimeException(String.format("Length error. Argument:%d expected:%d", inputs.length, Lc0InputsManagerImpl.FEATURES_PLANES));
     }
 
+    @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < 8; i++) {

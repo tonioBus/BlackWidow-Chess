@@ -59,13 +59,6 @@ public abstract class Move {
         this.isFirstMove = false;
     }
 
-    private Move() {
-        this.board = null;
-        this.destinationCoordinate = -1;
-        this.movedPiece = null;
-        this.isFirstMove = false;
-    }
-
     @Override
     public int hashCode() {
         int result = 1;

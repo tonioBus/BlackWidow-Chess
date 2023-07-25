@@ -10,6 +10,13 @@ public interface InputsManager {
 
     int getNbFeaturesPlanes();
 
+    /**
+     *
+     * @param board - the board on which we apply the move
+     * @param move  - the move to apply or null if nothing should be applied
+     * @param color2play the color that will play
+     * @return
+     */
     InputsFullNN createInputs(Board board,
                                  Move move,
                                  Alliance color2play);
