@@ -110,7 +110,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
 
     @Override
     public long hashCode(final Board board, final Move move, final Alliance color2play) {
-        String hashCodeString = getHashCodeString(board, color2play, move);
+        String hashCodeString = getHashCodeString(board, move, color2play);
         long ret = hash(hashCodeString);
         log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
         if (log.isDebugEnabled())
@@ -300,7 +300,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
         }
     }
 
-    public String getHashCodeString(Board board, final Alliance color2play, final Move move) {
+    public String getHashCodeString(Board board, final Move move, final Alliance color2play) {
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null) {

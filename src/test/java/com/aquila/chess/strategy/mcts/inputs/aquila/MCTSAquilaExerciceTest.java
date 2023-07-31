@@ -7,7 +7,6 @@ import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.*;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
@@ -34,7 +33,7 @@ import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-public class MCTSExerciceTest {
+public class MCTSAquilaExerciceTest {
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 2.5; // Math.exp(-0.04 * nbStep) / 2;
@@ -57,11 +56,13 @@ public class MCTSExerciceTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
 

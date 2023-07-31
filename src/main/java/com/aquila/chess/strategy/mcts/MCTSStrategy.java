@@ -1,10 +1,10 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
@@ -192,10 +192,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
         final MCTSNode bestNode = findBestReward(directRoot, false);
-        log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic.toString());
+        log.warn("bestNode: {}", bestNode);
+        log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
-        final Optional<Move> optionalMove = currentMoves.stream().filter(move -> move.equals(bestNode.getMove())).findFirst();
+        final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
         Move ret;
         if (optionalMove.isEmpty()) {
             log.warn(
@@ -203,7 +204,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
             log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
-            log.warn(DotGenerator.toString(directRoot, 10));
+            // log.warn(DotGenerator.toString(directRoot, 10));
             // log.warn("[{}] Game:\n{}", this.getAlliance(), mctsGame.toPGN());
             Collections.shuffle(currentMoves, rand);
             ret = currentMoves.get(0);

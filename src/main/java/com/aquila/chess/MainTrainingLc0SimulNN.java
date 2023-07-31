@@ -1,12 +1,10 @@
 package com.aquila.chess;
 
 import com.aquila.chess.manager.GameManager;
-import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
-import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
@@ -14,15 +12,8 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 @Slf4j
-public class MainTrainingSimulNN {
+public class MainTrainingLc0SimulNN {
 
     static public final int NB_STEP = 800;
 
@@ -56,11 +47,13 @@ public class MainTrainingSimulNN {
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(512)
                 .train(true)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(512)
                 .train(false)
                 .build();
         while (true) {

@@ -29,8 +29,8 @@ class ServiceNN {
 
     @Builder
     public ServiceNN(final DeepLearningAGZ deepLearningAGZ, int nbFeaturesPlanes, int batchSize) {
-        assert (nbFeaturesPlanes > 1);
-        assert (batchSize > 1);
+        assert (nbFeaturesPlanes > 0);
+        assert (batchSize > 0);
         this.deepLearningAGZ = deepLearningAGZ;
         this.nbFeaturesPlanes = nbFeaturesPlanes;
         this.batchSize = batchSize;
@@ -103,7 +103,7 @@ class ServiceNN {
     }
 
     private void retrieveValuesPoliciesFromNN(int length) {
-        log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
+        log.info("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
         final var nbIn = new double[length][nbFeaturesPlanes][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");

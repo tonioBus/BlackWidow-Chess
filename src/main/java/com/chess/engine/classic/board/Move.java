@@ -8,6 +8,12 @@ import lombok.Getter;
 
 public abstract class Move {
 
+    @Getter
+    protected final Board board;
+    protected final int destinationCoordinate;
+    protected final Piece movedPiece;
+    protected final boolean isFirstMove;
+
     public static class InitMove extends Move {
 
         public InitMove(final Board board) {
@@ -33,14 +39,6 @@ public abstract class Move {
         }
 
     }
-
-    ;
-
-    @Getter
-    protected final Board board;
-    protected final int destinationCoordinate;
-    protected final Piece movedPiece;
-    protected final boolean isFirstMove;
 
     private Move(final Board board,
                  final Piece pieceMoved,
@@ -120,6 +118,7 @@ public abstract class Move {
         builder.setMoveTransition(this);
         builder.setCheckBoard(board.isCheckBoard());
         return builder.build();
+
     }
 
     public Board undo() {

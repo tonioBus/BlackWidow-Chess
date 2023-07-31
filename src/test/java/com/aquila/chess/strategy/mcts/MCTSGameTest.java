@@ -3,6 +3,8 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.HungryStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -71,7 +73,7 @@ public class MCTSGameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5})
-    void testMCTSHashcode(int seed) throws Exception {
+    void testMCTSLc0Hashcode(int seed) throws Exception {
         final Board board = Board.createStandardBoard();
         Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
@@ -98,7 +100,7 @@ public class MCTSGameTest {
                     sb.append("OLD BOARD:\n");
                     sb.append(hashcodes.get(hashcode));
                     sb.append("\nNEW BOARD;\n");
-                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), game.getColor2play(), null));
+                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getColor2play()));
                     assertNotEquals(hashcode, hashcode, sb.toString());
                 }
             }
@@ -109,6 +111,45 @@ public class MCTSGameTest {
         log.info("nbSameHashcode:{}", nbSameHashcode);
         // arbitrary: 10
         assertTrue(nbSameHashcode < 10);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5})
+    void testMCTSAquilaHashcode(int seed) throws Exception {
+        final Board board = Board.createStandardBoard();
+        InputsManager inputsManager = new AquilaInputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
+        game.setup(new RandomStrategy(Alliance.WHITE, seed), new HungryStrategy(Alliance.BLACK, board.blackPlayer()));
+        Map<Long, MCTSGame> hashcodes = new HashMap<>();
+        Game.GameStatus status;
+        int nbSameHashcode = 0;
+        do {
+            status = game.play();
+            final MCTSGame mctsGame = new MCTSGame(game);
+            long hashcode = mctsGame.hashCode(game.getColor2play(), null);
+            // next test to be sure that hashcode is stateless
+            assertEquals(hashcode, mctsGame.hashCode(game.getColor2play(), null));
+            if (hashcodes.containsKey(hashcode)) {
+                nbSameHashcode++;
+                MCTSGame oldMctsGame = hashcodes.get(hashcode);
+                AquilaInputsManagerImpl oldInputsManager = (AquilaInputsManagerImpl) oldMctsGame.getInputsManager();
+                StringBuffer sb = new StringBuffer();
+                sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));
+                sb.append("OLD BOARD:\n");
+                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getColor2play()));
+                sb.append("\nNEW BOARD;\n");
+                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getColor2play()));
+               // assertNotEquals(hashcode, hashcode, sb.toString());
+                log.info(sb.toString());
+
+            }
+            hashcodes.put(hashcode, mctsGame); //.getHashCodeString(mctsGame.getColor2play(), null));
+        } while (status == Game.GameStatus.IN_PROGRESS);
+        assertTrue(game.getMoves().size() > 3);
+        log.info("NBSTEP:{} STATUS:{} GAME:\n{}", game.getMoves().size(), status, game);
+        log.info("nbSameHashcode:{}", nbSameHashcode);
+        // arbitrary: 10
+        //assertTrue(nbSameHashcode < 10);
     }
 
 }

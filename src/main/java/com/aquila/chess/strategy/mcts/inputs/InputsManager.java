@@ -27,5 +27,8 @@ public interface InputsManager {
 
     long hashCode(Board board, Move move, Alliance color2play);
 
+    String getHashCodeString(Board board, Move move, Alliance color2play);
+
     void processPlay(final Board board, final Move move);
+
 }

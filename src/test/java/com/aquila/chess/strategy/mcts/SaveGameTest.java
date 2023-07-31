@@ -46,11 +46,13 @@ public class SaveGameTest {
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(true)
                 .build();
         final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
 
@@ -101,11 +103,13 @@ public class SaveGameTest {
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(true)
                 .build();
         final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
         final Board board = Board.createBoard("kg1", "pe3,kg3", WHITE);

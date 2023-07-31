@@ -37,11 +37,13 @@ class MCTSInputsTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(true)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(true)
                 .build();
 

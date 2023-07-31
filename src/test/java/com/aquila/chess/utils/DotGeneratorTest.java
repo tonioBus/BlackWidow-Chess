@@ -32,11 +32,13 @@ class DotGeneratorTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nn)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nn)
                 .inputsManager(inputsManager)
+                .batchSize(128)
                 .train(false)
                 .build();
     }

@@ -27,6 +27,7 @@ class DeepLearningAGZTest {
     final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
             .nn(nn)
             .inputsManager(inputsManager)
+            .batchSize(128)
             .train(true)
             .build();
 

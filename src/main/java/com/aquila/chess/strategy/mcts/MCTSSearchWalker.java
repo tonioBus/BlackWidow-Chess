@@ -161,7 +161,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     }
 
     private void prepareChilds(final MCTSNode opponentNode, int depth) {
-        if(opponentNode.isPrepared()) return;
+        if (opponentNode.isPrepared()) return;
         opponentNode.setPrepared(true);
         if (opponentNode.getChildNodes().size() == 0) return;
         final Collection<Move> moves = opponentNode.getChildMoves();
@@ -176,7 +176,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                             log.info("prepareChilds:\n{}", DotGenerator.toString(opponentNode.getRoot(), 5, true));
                         }
                         statistic.nbGoodSelection++;
-                        if( !childPlayer.isInCheck()) {
+                        if (!childPlayer.isInCheck()) {
                             // PAT
                             createDrawnNode(opponentNode, possibleMove, childPlayer);
                         } else if (opponentNode.getColorState() != this.colorStrategy) {
@@ -204,7 +204,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             synchronized (opponentNode.getChildNodes()) {
                 opponentNode.addChild(child);
             }
-            log.warn("CREATE NEW NODE path:{} :{}",child.getMovesFromRootAsString(), label);
+            log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), label);
         }
         return child;
     }
@@ -421,7 +421,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             log.warn("removePropagation({}) ", node);
             MCTSNode parent = node.getParent();
             double value = -node.getCacheValue().getValue();
-            while (parent.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
+            while (parent != null && parent.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
                 synchronized (parent) {
                     parent.incVirtualLoss();
                     parent.unPropagate(value, MCTSNode.PropragateSrc.UN_PROPAGATE, node.getBuildOrder());

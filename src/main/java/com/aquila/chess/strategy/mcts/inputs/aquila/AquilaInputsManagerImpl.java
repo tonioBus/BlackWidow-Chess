@@ -27,7 +27,7 @@ import java.util.Optional;
  *         </ul>
  *     </li>
  *     <li>
- *         Attacks
+ *         Moves
  *         <ul>
  *              <li>[0-5] pieces for White</li>
  *              <li>[6-11] pieces for Black</li>
@@ -79,16 +79,16 @@ public class AquilaInputsManagerImpl implements InputsManager {
      * [12][NB_COL][NB_COL]
      */
     private void createInputs(double[][][] inputs, Board board, Alliance color2play) {
-        board.setCheckBoard(false);
-        board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
-            Coordinate movesCoordinate = new Coordinate(move);
-            inputs[12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-        });
-        board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
-            Coordinate movesCoordinate = new Coordinate(move);
-            inputs[6+12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-        });
-        board.setCheckBoard(true);
+//        board.setCheckBoard(false);
+//        board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
+//            Coordinate movesCoordinate = new Coordinate(move);
+//            inputs[12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+//        });
+//        board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
+//            Coordinate movesCoordinate = new Coordinate(move);
+//            inputs[6 + 12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+//        });
+//        board.setCheckBoard(true);
         board.getAllPieces().parallelStream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
@@ -100,13 +100,10 @@ public class AquilaInputsManagerImpl implements InputsManager {
             inputs[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
             // Moves 12 (6+6 planes)
             Collection<Move> moves = currentPiece.calculateLegalMoves(board);
-//            moves.stream().forEach(move -> {
-//                Move.MoveStatus status = player.makeMove(move).getMoveStatus();
-//                if (status == Move.MoveStatus.DONE) {
-//                    Coordinate movesCoordinate = new Coordinate(move);
-//                    inputs[12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-//                }
-//            });
+            moves.stream().forEach(move -> {
+                Coordinate movesCoordinate = new Coordinate(move);
+                inputs[12+currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+            });
             // Attacks 24 (6+6 planes)
             moves.stream().filter(move -> move.isAttack()).forEach(move -> {
                 Piece attackingPiece = move.getAttackedPiece();
@@ -148,7 +145,6 @@ public class AquilaInputsManagerImpl implements InputsManager {
         fill(inputs[currentIndex + 2], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 4], color2play.isBlack() ? 1.0 : 0.0);
-        // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
     }
 
@@ -186,26 +182,33 @@ public class AquilaInputsManagerImpl implements InputsManager {
     @Override
     public InputsManager clone() {
         // no state on this inputManager, so no creation needed
-        return this;
+        return new AquilaInputsManagerImpl();
+        // return this;
     }
 
     @Override
     public long hashCode(Board board, Move move, Alliance color2play) {
+        return hash(getHashCodeString(board, move, color2play));
+    }
+
+    @Override
+    public String getHashCodeString(Board board, Move move, Alliance color2play) {
         StringBuffer sb = new StringBuffer();
         if (move != null) {
             board = move.execute();
-            sb.append(board.currentPlayer().getAlliance().toString());
+            sb.append(color2play);
+            // sb.append(board.currentPlayer().getAlliance().toString());
         } else {
             sb.append(color2play.toString());
         }
         sb.append("\n");
-        board.getAllPieces().forEach(piece -> {
-            sb.append(BoardUtils.INSTANCE.getPositionAtCoordinate(piece.getPiecePosition()));
-            sb.append("=");
-            sb.append(piece.getPieceType());
-            sb.append(",");
-        });
-        return hash(sb.toString());
+        for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
+            Piece piece = board.getPiece(position);
+            if (piece != null) {
+                sb.append(String.format("%s=%d,", piece.getPieceType(), position));
+            }
+        }
+        return sb.toString();
     }
 
     private long hash(String str) {
