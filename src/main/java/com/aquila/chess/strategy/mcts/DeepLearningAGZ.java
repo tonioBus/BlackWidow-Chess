@@ -126,7 +126,7 @@ public class DeepLearningAGZ {
         final DeepLearningAGZ retDeepLearningBlack;
         if (!nnBlackFile.isFile()) {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
-            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes());
+            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes(), 20);
             retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
             if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
         } else {

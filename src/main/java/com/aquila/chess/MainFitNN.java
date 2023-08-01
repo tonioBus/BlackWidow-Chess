@@ -27,7 +27,7 @@ public class MainFitNN {
      */
     public static void main(final String[] args) throws Exception {
         @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes());
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         UpdateLr updateLr = nbGames -> 0.9e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ

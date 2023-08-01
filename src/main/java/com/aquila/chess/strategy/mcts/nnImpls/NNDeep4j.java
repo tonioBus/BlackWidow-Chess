@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.*;
-import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import lombok.extern.slf4j.Slf4j;
@@ -15,14 +14,10 @@ import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
-import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
-import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,14 +27,14 @@ import java.util.List;
 @Slf4j
 public class NNDeep4j implements INN {
     private final String filename;
-    public final int NUM_RESIDUAL_BLOCKS = 20;
+    public final int numberResidualBlocks;
     // public final int NUM_RESIDUAL_BLOCKS = 15;
     // public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
     private UpdateLr updateLr;
 
     private ComputationGraph network;
 
-    public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes) {
+    public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes, final int numberResidualBlocks) {
         DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
         Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
         Nd4j.getMemoryManager().togglePeriodicGc(true);
@@ -63,6 +58,7 @@ public class NNDeep4j implements INN {
                 .setNoGcWindowMs(100)
                 .enableDebug(false)
                 .setVerbose(false);
+        this.numberResidualBlocks = numberResidualBlocks;
         log.info("getMaximumDeviceCache: {}", CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
         this.filename = filename;
         try {
@@ -71,7 +67,7 @@ public class NNDeep4j implements INN {
             log.error(String.format("Exception when trying to load [%s], creating a default", filename), e);
         }
         if (network == null) {
-            network = DualResnetModel.getModel(NUM_RESIDUAL_BLOCKS, nbFeaturePlanes);
+            network = DualResnetModel.getModel(numberResidualBlocks, nbFeaturePlanes);
         }
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);

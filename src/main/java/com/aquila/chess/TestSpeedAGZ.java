@@ -24,7 +24,7 @@ public class TestSpeedAGZ {
         final Game game = Game.builder().inputsManager(inputManager).board(board).build();
         MCTSGame mctsGame = new MCTSGame(game);
 
-        INN nnWhite = new NNDeep4j(NN_TEST, false, inputManager.getNbFeaturesPlanes());
+        INN nnWhite = new NNDeep4j(NN_TEST, false, inputManager.getNbFeaturesPlanes(), 20);
         ComputationGraph computationGraph = (ComputationGraph) nnWhite.getNetwork();
         long start, end, delay;
 

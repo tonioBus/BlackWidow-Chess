@@ -59,8 +59,8 @@ public class MainTrainingAGZTest {
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes());
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -141,7 +141,7 @@ public class MainTrainingAGZTest {
                 Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
                 log.info("Switching DP {} <-> {}", reference, opponent);
                 nnBlack.close();
-                nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes());
+                nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
                 deepLearningBlack = DeepLearningAGZ.builder()
                         .nn(nnBlack)
                         .inputsManager(inputsManager)

@@ -36,7 +36,7 @@ public class MainFitNNSpecificInputs {
         game = Game.builder().board(board).inputsManager(inputsManager).build();
         mctsGame = new MCTSGame(game);
         moves = game.board.getAllLegalMoves();
-        nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes());
+        nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         UpdateLr updateLr = nbGames -> 1e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         deepLearningWhite = DeepLearningAGZ.builder()
