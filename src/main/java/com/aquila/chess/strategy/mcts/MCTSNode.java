@@ -423,7 +423,8 @@ public class MCTSNode implements Serializable {
             log.error("Add a child to a node with already this child set:{}", this);
             log.error("OldChild:{}", oldChild);
             log.error("NewChild:{}", childNode);
-            throw new RuntimeException("Adding a child to a node that already have this child ");
+            return;
+            // throw new RuntimeException("Adding a child to a node that already have this child ");
         }
         if (childNode.parent != null) {
             log.warn("Child already builded:{}", childNode);
