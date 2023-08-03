@@ -148,24 +148,24 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.mctsGame = new MCTSGame(game);
         if (this.root == null) {
             long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            this.root = MCTSNode.createRootNode(mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
+            this.root = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
             this.directRoot = this.root;
             return;
         }
         assert (opponentMove != null);
         if (this.directRoot != null) {
-            assert (opponentMove != null && opponentMove.getMovedPiece().getPieceAllegiance() != this.alliance);
+            assert (opponentMove.getMovedPiece().getPieceAllegiance() != this.alliance);
             MCTSNode childNode = this.directRoot.findChild(opponentMove);
             if (childNode == null) {
-                long key = deepLearning.addState(mctsGame, "ROOT", opponentMove, statistic);
+                long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
                 this.directRoot = MCTSNode.createNode(opponentMove, mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
             } else {
                 directRoot = childNode;
                 directRoot.setAsRoot();
             }
         } else {
-            long key = deepLearning.addState(mctsGame, "ROOT", opponentMove, statistic);
-            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
+            long key = deepLearning.addState(mctsGame, "ROOT-2", opponentMove, statistic);
+            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
         }
     }
 

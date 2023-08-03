@@ -110,7 +110,7 @@ public class MCTSNode implements Serializable {
      * @param key
      * @param cacheValue
      */
-    public MCTSNode(final Alliance alliance, List<Move> childMoves, long key, CacheValues.CacheValue cacheValue) {
+    public MCTSNode(final Alliance alliance, final Move move, List<Move> childMoves, long key, CacheValues.CacheValue cacheValue) {
         nbBuild = 0;
         this.buildOrder = nbBuild++;
         childMoves.forEach(move1 -> childNodes.put(move1, null));
@@ -119,7 +119,7 @@ public class MCTSNode implements Serializable {
             throw new RuntimeException(String.format("CONNECTION PROBLEM [ROOT] ! cacheValue:%s already connected to node:%s",
                     cacheValue, cacheValue.getNode()));
         }
-        this.move = null;
+        this.move = move;
         this.key = key;
         this.dirichlet = true;
         this.cacheValue = cacheValue;
@@ -174,28 +174,13 @@ public class MCTSNode implements Serializable {
      */
     public static MCTSNode createNode(final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
-//            final MCTSNode ret = cacheValue.getNode();
-//            if (ret != null) {
-//                if (log.isDebugEnabled())
-//                    log.debug("RETURN MADE NODE[key:{}] -> move: {} cacheValue.Move:{}", key, move, ret.getMove());
-//                if (!ret.getMove().equals(move)) {
-//                    log.error("[CTX ERROR] createNode(\nparent=[{}],\nmove=[{}],\nkey={},\ncacheValue={})", parent, move, key, cacheValue);
-//                    log.error("[CTX ERROR] move:{} != cacheValue.move:{}", move, ret.getMove());
-//                    log.error(DotGenerator.toString(MCTSNode.getPreviousRoot(parent), 10, true));
-//                    throw new RuntimeException(String.format("[key:%s] CONNECTION PROBLEM [%s]\n! cacheValue:%s already connected to node:%s",
-//                            key, move, cacheValue, cacheValue.getNode()));
-//                }
-//                if (ret == parent) {
-//                    throw new RuntimeException(String.format("The children:%s is the same as the parent:%s", ret, parent));
-//                }
-//            }
             final Board selectBoard = move == null ? rootBoard : move.execute();
             final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
             return new MCTSNode(move, childMoves, key, cacheValue);
         }
     }
 
-    public static MCTSNode createRootNode(final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
+    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
             MCTSNode rootNode;
             final MCTSNode ret = cacheValue.getNode();
@@ -203,7 +188,7 @@ public class MCTSNode implements Serializable {
                 rootNode = ret;
             } else {
                 final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-                rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), childMoves, key, cacheValue);
+                rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
             }
             rootNode.setAsRoot();
             rootNode.parent = null;
