@@ -250,7 +250,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         MCTSNode ret;
         if (nbBests > 1) {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
-            log.error("[{}] WARNING in MCTS Best Search Move RANDOM from {} bests moves", nbBests);
+            log.error("[{}] WARNING in MCTS Best Search Move RANDOM from {} bests moves", getAlliance(), nbBests);
             log.error("[{}] Moves: {}", getAlliance(), bestNodes.stream().map(move -> move.getPiece() + "->" + move.getMove().toString())
                     .collect(Collectors.joining(" | ")));
             log.error("[{}] This could happen when we have the choices between many way to loose or win", getAlliance());

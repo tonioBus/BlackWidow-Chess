@@ -93,6 +93,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         if (rootValue != null) {
             log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot.getKey());
             MCTSNode.resetBuildOrder();
+            rootValue.reNormalize();
         }
         int nbSubmit = this.currentRoot.getVisits();
         int nbWorks;

@@ -240,13 +240,16 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     protected void createLooseNode(final MCTSNode opponentNode) {
         if (opponentNode.getState() != MCTSNode.State.LOOSE) {
+        // if (opponentNode.getState() != MCTSNode.State.WIN) {
             log.info("STOP LOSS NODE:{}", opponentNode);
             opponentNode.createLeaf();
             opponentNode.getCacheValue().setPropagated(false);
             opponentNode.getCacheValue().resetNbPropragate();
             opponentNode.getCacheValue().setInitialised(true);
             opponentNode.setState(MCTSNode.State.LOOSE);
+            // opponentNode.setState(MCTSNode.State.WIN);
             opponentNode.resetExpectedReward(LOOSE_VALUE);
+            // opponentNode.resetExpectedReward(WIN_VALUE);
             long key = opponentNode.getKey();
             this.deepLearning.addTerminalNodeToPropagate(key, opponentNode);
             opponentNode.incNbReturn();

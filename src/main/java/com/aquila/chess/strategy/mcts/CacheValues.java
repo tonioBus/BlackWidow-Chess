@@ -13,7 +13,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @Slf4j
 public class CacheValues {
@@ -75,6 +74,8 @@ public class CacheValues {
             return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
         }
 
+        private double[] sourcePolicies = null;
+
         @Setter
         private boolean initialised = false;
 
@@ -106,17 +107,25 @@ public class CacheValues {
             this.type = CacheValueType.ROOT;
         }
 
-        public synchronized void normalise(double[] policies) {
+        public synchronized void normalize(double[] policies) {
+            this.sourcePolicies = policies;
             int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
-            boolean isDirichlet =node.getState() == MCTSNode.State.ROOT;
+            boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
             isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
-            double[] normalisedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
+            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
 //            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
 //                throw new RuntimeException("ERROR, some policy with NaN value");
 //            }
-            this.policies = normalisedPolicies;
+            this.policies = normalizedPolicies;
+        }
+
+        public synchronized void reNormalize() {
+            if (sourcePolicies != null) {
+                log.info("re-normalize node:{}", this.node);
+                normalize(sourcePolicies);
+            }
         }
 
         public void setAsLeaf() {
@@ -138,7 +147,7 @@ public class CacheValues {
             if (initialised && type != CacheValueType.LEAF) {
                 node.syncSum();
                 log.debug("normalise: {} {} {}", policies[0], policies[1], policies[2]);
-                normalise(policies);
+                normalize(policies);
             }
         }
 

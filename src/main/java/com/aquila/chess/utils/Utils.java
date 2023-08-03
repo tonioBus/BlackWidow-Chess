@@ -82,7 +82,7 @@ public class Utils {
      * @param isDirichlet
      * @return
      */
-    public static double[] toDistribution(double[] policies, int[] indexes, boolean isDirichlet) {
+    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet) {
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {

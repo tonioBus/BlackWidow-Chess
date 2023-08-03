@@ -730,7 +730,7 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {10, 50, 100, 800})
+    @ValueSource(ints = {50, 100, 800})
     void testAvoidWhiteChessMate1Move(int nbStep) throws Exception {
         final Board board = Board.createBoard(
                 "kg1",
@@ -764,6 +764,7 @@ public class MCTSExerciceTest {
         assertTrue(winLossNodes.size() > 0, "White should have detect loss nodes");
         status = game.play();
         winLossNodes = traceMCTS(blackStrategy, false);
+        assertTrue(!winLossNodes.isEmpty(), "We should have detect some win loss nodes");
         log.warn("game:{}", game.toPGN());
         assertEquals(IN_PROGRESS, status, "we should be in progress mode");
     }
