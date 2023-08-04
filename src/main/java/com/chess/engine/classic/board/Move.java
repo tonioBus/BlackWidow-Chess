@@ -1,10 +1,13 @@
 package com.chess.engine.classic.board;
 
+import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board.Builder;
 import com.chess.engine.classic.pieces.Pawn;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.pieces.Rook;
 import lombok.Getter;
+
+import java.util.Collection;
 
 public abstract class Move {
 
@@ -14,10 +17,21 @@ public abstract class Move {
     protected final Piece movedPiece;
     protected final boolean isFirstMove;
 
+    public boolean isInitMove() {
+        return false;
+    }
+
     public static class InitMove extends Move {
 
-        public InitMove(final Board board) {
+        private final Alliance alliance;
+
+        public InitMove(final Board board, final Alliance alliance) {
             super(board, -1);
+            this.alliance = alliance;
+        }
+
+        public boolean isInitMove() {
+            return true;
         }
 
         @Override
@@ -38,6 +52,11 @@ public abstract class Move {
             return "INIT-MOVE";
         }
 
+        @Override
+        public Alliance getAllegiance() {
+            return alliance;
+        }
+
     }
 
     private Move(final Board board,
@@ -55,6 +74,10 @@ public abstract class Move {
         this.destinationCoordinate = destinationCoordinate;
         this.movedPiece = null;
         this.isFirstMove = false;
+    }
+
+    public Alliance getAllegiance() {
+        return this.getMovedPiece().getPieceAllegiance();
     }
 
     @Override

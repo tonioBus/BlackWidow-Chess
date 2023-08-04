@@ -55,7 +55,7 @@ public class MCTSStrategyConfig {
 
     public static boolean isDirichlet(Move move) {
         if (move == null) return DEFAULT_WHITE_INSTANCE.isDirichlet();
-        return isDirichlet(move.getMovedPiece().getPieceAllegiance());
+        return isDirichlet(move.getAllegiance());
     }
 
 }

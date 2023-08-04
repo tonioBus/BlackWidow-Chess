@@ -260,7 +260,7 @@ class ServiceNN {
             if (propagationValues.containsKey(key)) return;
         }
         if (possibleMove != null) {
-            Alliance possibleMoveColor = possibleMove.getMovedPiece().getPieceAllegiance();
+            Alliance possibleMoveColor = possibleMove.getAllegiance();
             if (possibleMoveColor != color2play) {
                 log.error("Not identical color: move:{} color2play:{}", possibleMove, color2play);
                 throw new RuntimeException(String.format("Color not Identical, move:%s color:%s",

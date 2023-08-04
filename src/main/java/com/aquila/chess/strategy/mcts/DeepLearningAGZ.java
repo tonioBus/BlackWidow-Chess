@@ -172,7 +172,7 @@ public class DeepLearningAGZ {
      */
     public synchronized long addState(final MCTSGame mctsGame, final String label, final Move possibleMove, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addState", Thread.currentThread().getName());
-        Alliance color2play = possibleMove.getMovedPiece().getPieceAllegiance();
+        Alliance color2play = possibleMove.getAllegiance();
         long key = mctsGame.hashCode(possibleMove);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())

@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,13 +39,13 @@ public class Helper {
     }
 
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
-        final MCTSNode root = mctsStrategy.getCurrentRoot();
+        final MCTSNode root = mctsStrategy.getDirectRoot();
         final List<String> ret = new ArrayList<>();
         if (mctsStrategy.getNbSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbSearchCalls()) {
             String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbSearchCalls());
             log.warn(msg);
         }
-        checkMCTSTreePoliciesAndValues(mctsStrategy.getCurrentRoot(), ret);
+        checkMCTSTreePoliciesAndValues(mctsStrategy.getDirectRoot(), ret);
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
         addNodes2NotTest(root, notTestedNodes);
         checkMCTSTreeVisits(root, ret, notTestedNodes);

@@ -44,7 +44,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     @Getter
     final private Statistic statistic = new Statistic();
 
-    private MCTSNode root = null;
+    // private MCTSNode root = null;
 
     @Getter
     private MCTSNode directRoot = null;
@@ -54,11 +54,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     @Setter
     private MCTSStrategy partnerStrategy = null;
-
-    public MCTSNode getCurrentRoot() {
-        if (directRoot == null) return null;
-        return directRoot.getParent();
-    }
 
     public MCTSStrategy(
             final Game originalGame,
@@ -105,18 +100,19 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-        if (isTraining() && this.partnerStrategy.getCurrentRoot() != null && this.mctsGame != null) {
+        if (isTraining() && this.partnerStrategy.getDirectRoot() != null && this.mctsGame != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
                     this.alliance.complementary(),
-                    this.partnerStrategy.getCurrentRoot()
+                    this.partnerStrategy.getDirectRoot()
             );
             trainGame.add(lastOneStepRecord);
         }
-        this.root = null;
+        // this.root = null;
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
+        assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
         this.nbStep++;
@@ -126,7 +122,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                     this.mctsGame,
                     move,
                     this.alliance,
-                    this.getCurrentRoot()
+                    this.directRoot
             );
             trainGame.add(lastOneStepRecord);
         }
@@ -139,33 +135,28 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     /**
+     * Modify the directRoot
      * @param game
      * @param opponentMove
      * @return
      */
     protected void createRootNode(final Game game, final Move opponentMove) {
+        assert (opponentMove != null);
+        assert (opponentMove.getAllegiance() != this.alliance);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
-        if (this.root == null) {
+        if (this.directRoot == null) {
             long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            this.root = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
-            this.directRoot = this.root;
+            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
             return;
         }
-        assert (opponentMove != null);
-        if (this.directRoot != null) {
-            assert (opponentMove.getMovedPiece().getPieceAllegiance() != this.alliance);
-            MCTSNode childNode = this.directRoot.findChild(opponentMove);
-            if (childNode == null) {
-                long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
-                this.directRoot = MCTSNode.createNode(opponentMove, mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
-            } else {
-                directRoot = childNode;
-                directRoot.setAsRoot();
-            }
+        MCTSNode childNode = this.directRoot.findChild(opponentMove);
+        if (childNode == null) {
+            long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
+            this.directRoot = MCTSNode.createNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
         } else {
-            long key = deepLearning.addState(mctsGame, "ROOT-2", opponentMove, statistic);
-            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
+            directRoot = childNode;
+            directRoot.setAsRoot();
         }
     }
 
@@ -197,28 +188,38 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
-        Move ret;
         if (optionalMove.isEmpty()) {
             log.warn(
                     "##########################################################################################################");
             log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
             log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
-            // log.warn(DotGenerator.toString(directRoot, 10));
-            // log.warn("[{}] Game:\n{}", this.getAlliance(), mctsGame.toPGN());
-            Collections.shuffle(currentMoves, rand);
-            ret = currentMoves.get(0);
-            long key = deepLearning.addState(mctsGame, "ALARM:" + directRoot.getMove().toString(), ret, statistic);
-            MCTSNode childNode = MCTSNode.createNode(ret, this.mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
-            directRoot.addChild(childNode);
-            log.warn("[{}] choosing randomly: {}", this.getAlliance(), ret);
-            log.warn(
-                    "##########################################################################################################");
-        } else {
-            ret = optionalMove.get();
         }
-        this.directRoot = directRoot.findChild(ret);
-        return ret;
+        return bestNode.getMove();
+//
+//        final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
+//        Move ret;
+//        if (optionalMove.isEmpty()) {
+//            log.warn(
+//                    "##########################################################################################################");
+//            log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
+//            log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
+//            log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
+//            // log.warn(DotGenerator.toString(directRoot, 10));
+//            // log.warn("[{}] Game:\n{}", this.getAlliance(), mctsGame.toPGN());
+//            Collections.shuffle(currentMoves, rand);
+//            ret = currentMoves.get(0);
+//            long key = deepLearning.addState(mctsGame, "ALARM:" + directRoot.getMove().toString(), ret, statistic);
+//            MCTSNode childNode = MCTSNode.createNode(ret, this.mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
+//            directRoot.addChild(childNode);
+//            log.warn("[{}] choosing randomly: {}", this.getAlliance(), ret);
+//            log.warn(
+//                    "##########################################################################################################");
+//        } else {
+//            ret = optionalMove.get();
+//        }
+//        this.directRoot = directRoot.findChild(ret);
+//        return ret;
     }
 
     public static double rewardWithLogVisit(final MCTSNode mctsNode) {
@@ -305,7 +306,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     public String mctsTree4log(boolean displayLastChilds, int maxDepth) {
-        return String.format("[%s] graph:\n############################\n%s\n############################", this.getAlliance(), DotGenerator.toString(this.getCurrentRoot(), maxDepth, displayLastChilds));
+        return String.format("[%s] graph:\n############################\n%s\n############################", this.getAlliance(), DotGenerator.toString(this.getDirectRoot(), maxDepth, displayLastChilds));
     }
 
     @Override

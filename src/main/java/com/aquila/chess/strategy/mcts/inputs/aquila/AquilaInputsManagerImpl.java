@@ -67,7 +67,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null)
             // if we move, the color2play will be the complementary of the player that just moved
-            this.createInputs(inputs, move.execute(), move.getMovedPiece().getPieceAllegiance().complementary());
+            this.createInputs(inputs, move.execute(), move.getAllegiance().complementary());
         else
             this.createInputs(inputs, board, color2play);
         return new AquilaInputsFullNN(inputs);
@@ -194,7 +194,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
     @Override
     public String getHashCodeString(Board board, Move move, Alliance color2play) {
         StringBuffer sb = new StringBuffer();
-        if (move != null) {
+        if (move != null && move.getMovedPiece() != null) {
             board = move.execute();
             sb.append(color2play);
             // sb.append(board.currentPlayer().getAlliance().toString());

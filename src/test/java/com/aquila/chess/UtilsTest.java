@@ -1,5 +1,6 @@
 package com.aquila.chess;
 
+import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0Last8Inputs;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.Coordinate2D;

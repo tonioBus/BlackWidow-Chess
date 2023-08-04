@@ -81,7 +81,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
             if (move.getMovedPiece() == null)
                 log.info("INIT POSITION");
             else
-                log.info("[{}:{}] initLastInputs", move.getMovedPiece().getPieceAllegiance(), move);
+                log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
         }
         int nbMoves = game.getMoves().size();
         if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
@@ -303,12 +303,12 @@ public class Lc0InputsManagerImpl implements InputsManager {
     public String getHashCodeString(Board board, final Move move, final Alliance color2play) {
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
-        if (move != null) {
+        if (move != null && !move.isInitMove()) {
             try {
                 board = move.execute();
                 moves8inputs.add(move);
             } catch (Exception e) {
-                log.error("[{}] move:{}", move.getMovedPiece().getPieceAllegiance(), move);
+                log.error("[{}] move:{}", move.getAllegiance(), move);
                 log.error("\n{}\n{}\n",
                         "##########################################",
                         board.toString()
@@ -330,7 +330,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
             Lc0Last8Inputs lastInput = this.getLc0Last8Inputs().get(size - 1);
             String moves = this.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
             if (lastInput != null) {
-                if (move.getMovedPiece().getPieceAllegiance().equals(lastInput.move().getMovedPiece().getPieceAllegiance()) &&
+                if (move.getAllegiance().equals(lastInput.move().getAllegiance()) &&
                         lastInput.move().toString().equals(move.toString())) {
                     log.error("Move:{} already inserted as last position, moves:{}", move, moves);
                     throw new RuntimeException("Move already inserted as last position");

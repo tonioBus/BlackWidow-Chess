@@ -110,13 +110,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
             if (log.isDebugEnabled()) log.debug("END synchronized 1.0 ({})", opponentNode);
             // expansion
             if (selectedNode == null) {
-                key = mctsGame.hashCode(selectedMove.getMovedPiece().getPieceAllegiance(), selectedMove);
+                key = mctsGame.hashCode(selectedMove.getAllegiance(), selectedMove);
                 CacheValues.CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
                 if (log.isDebugEnabled())
                     log.debug("EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
-                    selectedNode = MCTSNode.createNode(selectedMove, mctsGame.getBoard(), key, cacheValue);
+                    selectedNode = MCTSNode.createNode(mctsGame.getBoard(), selectedMove, key, cacheValue);
                     opponentNode.addChild(selectedNode);
                     assert (selectedNode != opponentNode);
                 } catch (Exception e) {
@@ -240,7 +240,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     protected void createLooseNode(final MCTSNode opponentNode) {
         if (opponentNode.getState() != MCTSNode.State.LOOSE) {
-        // if (opponentNode.getState() != MCTSNode.State.WIN) {
+            // if (opponentNode.getState() != MCTSNode.State.WIN) {
             log.info("STOP LOSS NODE:{}", opponentNode);
             opponentNode.createLeaf();
             opponentNode.getCacheValue().setPropagated(false);

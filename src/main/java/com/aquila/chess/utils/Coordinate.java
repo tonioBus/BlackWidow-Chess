@@ -65,7 +65,7 @@ public class Coordinate {
      * @param move
      */
     public Coordinate(final Move move) {
-        this(move.getDestinationCoordinate(), move.getMovedPiece().getPieceAllegiance());
+        this(move.getDestinationCoordinate(), move.getAllegiance());
     }
 
     public int getBoardPosition() {

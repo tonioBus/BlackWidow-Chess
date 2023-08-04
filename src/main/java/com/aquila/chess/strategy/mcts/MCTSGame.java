@@ -54,7 +54,7 @@ public class MCTSGame {
     }
 
     public synchronized long hashCode(@NonNull final Move move) {
-        final Alliance color2play = move.getMovedPiece().getPieceAllegiance();
+        final Alliance color2play = move.getAllegiance();
         return inputsManager.hashCode(getLastBoard(), move, color2play);
     }
 

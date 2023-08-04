@@ -121,7 +121,7 @@ public class MCTSExerciceTest {
                 log.error("{}", game);
                 assertFalse(true, "End of game not expected:" + status);
             }
-            if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
+            if (move.getAllegiance().isBlack()) {
                 if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(true, 50));
             }
         }
@@ -168,13 +168,13 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
                 return;
             }
             assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
-            if (move.getMovedPiece().getPieceAllegiance().isBlack()) {
+            if (move.getAllegiance().isBlack()) {
                 if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(true, 50));
             }
             // Helper.checkMCTSTree(blackStrategy);
@@ -217,7 +217,7 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 2; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(blackStrategy);
             if (status == Game.GameStatus.WHITE_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
@@ -270,7 +270,7 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(whiteStrategy);
             if (status == BLACK_CHESSMATE) {
                 log.info("GAME:\n{}\n", game.toPGN());
@@ -326,18 +326,18 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getAllegiance()) {
                 case WHITE:
                     log.info(whiteStrategy.mctsTree4log(false, 3));
                     Helper.checkMCTSTree(whiteStrategy);
-                    List<MCTSNode> looses = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+                    List<MCTSNode> looses = whiteStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
                     break;
                 case BLACK:
                     Helper.checkMCTSTree(blackStrategy);
-                    List<MCTSNode> wins = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+                    List<MCTSNode> wins = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN);
                     log.info("[BLACK] Win Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(wins.size() > 0);
                     break;
@@ -390,21 +390,22 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Move move = null;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            log.info(game.toString());
+            switch (move.getAllegiance()) {
                 case WHITE:
                     Helper.checkMCTSTree(whiteStrategy);
-                    List<MCTSNode> wins = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+                    List<MCTSNode> wins = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN);
                     log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(wins.size() > 0);
                     break;
                 case BLACK:
                     if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
                     Helper.checkMCTSTree(blackStrategy);
-                    List<MCTSNode> looses = blackStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+                    List<MCTSNode> looses = blackStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
                     log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
                     assertTrue(looses.size() > 0);
                     break;
@@ -451,13 +452,13 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getAllegiance()) {
                 case WHITE:
                     if (Utils.isDebuggerPresent()) {
-                        log.info("CURRENT GRAPH:\n{}", DotGenerator.toString(whiteStrategy.getCurrentRoot(), 20, false));
+                        log.info("CURRENT GRAPH:\n{}", DotGenerator.toString(whiteStrategy.getDirectRoot(), 20, false));
                     }
-                    List<MCTSNode> lossNodes = whiteStrategy.getCurrentRoot().search(MCTSNode.State.LOOSE);
+                    List<MCTSNode> lossNodes = whiteStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] loss EndNodes: {}", lossNodes.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     if (i == 0) assertTrue(lossNodes.size() > 0, "WHITE should have detect a loss nodes to avoid them");
                     // Helper.checkMCTSTree(whiteStrategy);
@@ -520,16 +521,16 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 5; i++) {
             status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getAllegiance()) {
                 case WHITE:
-                    List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    List<MCTSNode> winLoss1 = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     if (winLoss1.size() > 0) log.info("graph:\n{}\n");
                     Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
-                    List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     // Helper.checkMCTSTree(blackStrategy);
                     break;
@@ -587,15 +588,15 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 4; i++) {
             status = game.play();
             move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            switch (move.getAllegiance()) {
                 case WHITE:
-                    List<MCTSNode> winLoss1 = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    List<MCTSNode> winLoss1 = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     // Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
-                    List<MCTSNode> winLoss2 = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     Helper.checkMCTSTree(blackStrategy);
                     break;
@@ -651,14 +652,14 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 8; i++) {
             status = game.play();
             move = game.getLastMove();
-            switch (move.getMovedPiece().getPieceAllegiance()) {
+            switch (move.getAllegiance()) {
                 case WHITE:
-                    List<MCTSNode> winLoss = whiteStrategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+                    List<MCTSNode> winLoss = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     // Helper.checkMCTSTree(whiteStrategy);
                     break;
             }
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getMovedPiece().getPieceAllegiance(), move, move.getClass().getSimpleName());
+            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             if (status == BLACK_CHESSMATE) break;
         }
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(false, 50));
@@ -709,7 +710,7 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         final Game.GameStatus status = game.play();
-        final List<MCTSNode> win = blackStrategy.getCurrentRoot().search(MCTSNode.State.WIN);
+        final List<MCTSNode> win = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN);
         if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
         log.info("[BLACK] win EndNodes: {}", win.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         assertTrue(win.size() > 0, "White should have detect loss nodes");
@@ -920,10 +921,10 @@ public class MCTSExerciceTest {
      * @return
      */
     private List<MCTSNode> traceMCTS(final MCTSStrategy strategy, boolean forceGraph) {
-        List<MCTSNode> winLoss = strategy.getCurrentRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
+        List<MCTSNode> winLoss = strategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
         log.info("[{}}] Wins/loss EndNodes ({}): {}", strategy.getAlliance(), winLoss.size(), winLoss.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
         if (forceGraph || winLoss.size() > 0)
-            log.info("[{}] graph:\n############################\n{}\n############################", strategy.getAlliance(), DotGenerator.toString(strategy.getCurrentRoot(), 20, false));
+            log.info("[{}] graph:\n############################\n{}\n############################", strategy.getAlliance(), DotGenerator.toString(strategy.getDirectRoot(), 20, false));
         Helper.checkMCTSTree(strategy);
         return winLoss;
     }

@@ -151,7 +151,7 @@ public class MCTSNode implements Serializable {
         this.cacheValue = cacheValue;
         this.cacheValue.setNode(this);
         if (move != null) {
-            this.colorState = move.getMovedPiece().getPieceAllegiance();
+            this.colorState = move.getAllegiance();
             this.move = move;
             this.piece = move.getMovedPiece();
         } else {
@@ -172,7 +172,7 @@ public class MCTSNode implements Serializable {
      * @param cacheValue
      * @return
      */
-    public static MCTSNode createNode(final Move move, final Board rootBoard, final long key, final CacheValues.CacheValue cacheValue) {
+    public static MCTSNode createNode(final Board rootBoard, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
         synchronized (cacheValue) {
             final Board selectBoard = move == null ? rootBoard : move.execute();
             final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
@@ -181,6 +181,7 @@ public class MCTSNode implements Serializable {
     }
 
     public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
+        assert (move != null);
         synchronized (cacheValue) {
             MCTSNode rootNode;
             final MCTSNode ret = cacheValue.getNode();
@@ -188,7 +189,8 @@ public class MCTSNode implements Serializable {
                 rootNode = ret;
             } else {
                 final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-                rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
+                // rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
+                rootNode = new MCTSNode(move, childMoves, key, cacheValue);
             }
             rootNode.setAsRoot();
             rootNode.parent = null;
@@ -309,7 +311,7 @@ public class MCTSNode implements Serializable {
     }
 
     public String getMovesFromRootAsString() {
-        return this.getMovesFromRoot().stream().map(move -> String.format("%s-%s", move.getMovedPiece().getPieceAllegiance(), move)).collect(Collectors.joining(","));
+        return this.getMovesFromRoot().stream().map(move -> String.format("%s-%s", move.getAllegiance(), move)).collect(Collectors.joining(","));
     }
 
     public List<Move> getMovesFromRoot() {

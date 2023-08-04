@@ -23,6 +23,18 @@ import java.util.stream.Collectors;
 public class Game {
 
     @Getter
+    protected Strategy strategyWhite;
+
+    @Getter
+    protected Strategy strategyBlack;
+
+    @Getter
+    protected Board board;
+
+    @Getter
+    protected Move moveOpponent = null;
+
+    @Getter
     private InputsManager inputsManager;
 
     @Getter
@@ -34,22 +46,13 @@ public class Game {
     protected final List<Move> moves = new ArrayList<>(127);
 
     @Getter
-    protected Board board;
-
-    @Getter
     protected Strategy nextStrategy;
 
-    @Getter
-    protected Strategy strategyWhite;
-
-    @Getter
-    protected Strategy strategyBlack;
-    @Getter
-    protected Move moveOpponent = null;
 
     @Builder
     public Game(InputsManager inputsManager, Board board, Strategy strategyWhite, Strategy strategyBlack) {
         if (inputsManager == null) {
+            log.warn("USING DEFAULT INPUT-MANAGER -> LC0");
             this.inputsManager = new Lc0InputsManagerImpl();
         } else {
             this.inputsManager = inputsManager;
@@ -57,8 +60,6 @@ public class Game {
         this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
-        Move.InitMove initMove = new Move.InitMove(board);
-        this.getMoves().add(initMove);
     }
 
     public Alliance getColor2play() {
@@ -88,20 +89,22 @@ public class Game {
         sb.append(String.format("[White \"%s\"]\n", strategyWhite.getClass().getSimpleName()));
         sb.append(String.format("[Black \"%s\"]\n", strategyBlack.getClass().getSimpleName()));
         String result = "*";
-        switch (this.status) {
-            case WHITE_CHESSMATE:
-                result = "0-1";
-                break;
-            case BLACK_CHESSMATE:
-                result = "1-0";
-                break;
-            case DRAW_50:
-            case DRAW_300:
-            case PAT:
-            case DRAW_3:
-            case DRAW_NOT_ENOUGH_PIECES:
-                result = "1/2-1/2";
-                break;
+        if (this.status != null) {
+            switch (this.status) {
+                case WHITE_CHESSMATE:
+                    result = "0-1";
+                    break;
+                case BLACK_CHESSMATE:
+                    result = "1-0";
+                    break;
+                case DRAW_50:
+                case DRAW_300:
+                case PAT:
+                case DRAW_3:
+                case DRAW_NOT_ENOUGH_PIECES:
+                    result = "1/2-1/2";
+                    break;
+            }
         }
         sb.append(String.format("[Result \"%s\"]\n", result)); // [Result "0-1"], [Result "1-0"], [Result "1/2-1/2"],
         movesToPGN(sb);
@@ -153,6 +156,13 @@ public class Game {
             case WHITE -> strategyPlayerWhite;
             case BLACK -> strategyPlayerBlack;
         };
+        Move.InitMove initMove = switch (this.board.currentPlayer().getAlliance()) {
+            case WHITE -> new Move.InitMove(board, Alliance.BLACK);
+            case BLACK -> new Move.InitMove(board, Alliance.WHITE);
+        };
+        moveOpponent = initMove;
+        this.getMoves().add(initMove);
+
     }
 
     public Player getNextPlayer() {
