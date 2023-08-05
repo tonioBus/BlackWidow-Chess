@@ -69,7 +69,7 @@ public class GameManager {
 
         this.intermediateNbGame++;
         this.nbGames++;
-        Record record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, filename);
+        Record record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, trainFileName);
         log.info("Intermediate: whites:{} blacks:{} drawn:{} percentage White win:{} %"//
                 , record.intermediateWhiteWin//
                 , record.intermediateBlackWin//
