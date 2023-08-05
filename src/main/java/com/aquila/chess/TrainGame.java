@@ -14,26 +14,23 @@ public class TrainGame implements Serializable {
 
     static final long serialVersionUID = -2638786203240540104L;
 
-    static {
-        Path path = Paths.get("train/");
+    @Getter
+    Double value = null;
+    @Getter
+    final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
+    private static void createTrainDir(String trainDir) {
+        Path path = Paths.get(trainDir);
         try {
             Files.createDirectories(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-    @Getter
-    Double value = null;
-    @Getter
-    final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
-    public TrainGame() {
-    }
-
-    public static TrainGame load(String subDir, int num) throws IOException, ClassNotFoundException {
+    public static TrainGame load(String trainDir, int num) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
-                = new FileInputStream(subDir+"/" + num);
+                = new FileInputStream(trainDir + "/" + num);
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         TrainGame ret = (TrainGame) objectInputStream.readObject();
@@ -41,10 +38,11 @@ public class TrainGame implements Serializable {
         return ret;
     }
 
-    public void save(int num, final ResultGame resultGame) throws IOException {
+    public void save(String trainDir, int num, final ResultGame resultGame) throws IOException {
+        createTrainDir(trainDir);
         this.value = resultGame.reward;
         FileOutputStream fileOutputStream
-                = new FileOutputStream("train/" + num);
+                = new FileOutputStream(trainDir + "/" + num);
         ObjectOutputStream objectOutputStream
                 = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(this);
@@ -53,7 +51,9 @@ public class TrainGame implements Serializable {
     }
 
     public void add(final OneStepRecord oneStepRecord) {
+
         this.oneStepRecordList.add(oneStepRecord);
+
     }
 
     public void clear() {

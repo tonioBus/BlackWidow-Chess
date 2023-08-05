@@ -51,9 +51,11 @@ public class MainTrainingAGZTest {
 
     private static final Dirichlet dirichlet = nbStep -> true;
 
+    private static final String trainDir = "train";
+
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame("train/") + 1;
+        int lastSaveGame = Utils.maxGame("trainDir/") + 1;
         log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
@@ -119,9 +121,9 @@ public class MainTrainingAGZTest {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(resultGame, lastSaveGame);
+            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
             if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-//                MainFitNN.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
+//                MainFitNNLc0.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
 //                nnWhite.close();
 //                nnWhite = new NNDeep4j(NN_REFERENCE, false);
 //                deepLearningWhite = new DeepLearningAGZ(nnWhite, false);

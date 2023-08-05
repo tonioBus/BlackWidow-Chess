@@ -351,10 +351,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return lastOneStepRecord;
     }
 
-    public void saveBatch(ResultGame resultGame, int numGames) throws IOException {
+    public void saveBatch(String trainDir, ResultGame resultGame, int numGames) throws IOException {
         log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
         log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
-        trainGame.save(numGames, resultGame);
+        trainGame.save(trainDir, numGames, resultGame);
         log.info("SAVE DONE");
         clearTrainGame();
     }

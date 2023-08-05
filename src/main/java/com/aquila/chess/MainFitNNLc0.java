@@ -15,11 +15,11 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Scanner;
 
-public class MainFitNN {
+public class MainFitNNLc0 {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
     @SuppressWarnings("unused")
-    static private final Logger logger = LoggerFactory.getLogger(MainFitNN.class);
+    static private final Logger logger = LoggerFactory.getLogger(MainFitNNLc0.class);
 
     /**
      * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
@@ -54,7 +54,7 @@ public class MainFitNN {
     public static void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
-        logger.info("START MainFitNN");
+        logger.info("START MainFitNNLc0");
         int startGame = Integer.valueOf(appProps.getProperty("start.game"));
         int endGame = Integer.valueOf(appProps.getProperty("end.game"));
         logger.info("startGame: {}", startGame);

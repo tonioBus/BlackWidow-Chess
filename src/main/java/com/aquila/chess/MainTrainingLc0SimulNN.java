@@ -35,9 +35,11 @@ public class MainTrainingLc0SimulNN {
 
     private static final Dirichlet dirichlet = nbStep -> true; // nbStep <= 30;
 
+    private static final String trainDir = "train";
+
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame("train/") + 1;
+        int lastSaveGame = Utils.maxGame(trainDir + "/") + 1;
         log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
@@ -70,7 +72,7 @@ public class MainTrainingLc0SimulNN {
                     -1)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
-                    // .withNbThread(1);
+            // .withNbThread(1);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -80,7 +82,7 @@ public class MainTrainingLc0SimulNN {
                     -1)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
-                    // .withNbThread(1);
+            // .withNbThread(1);
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
@@ -94,7 +96,7 @@ public class MainTrainingLc0SimulNN {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(resultGame, lastSaveGame);
+            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
         }
     }
 }
