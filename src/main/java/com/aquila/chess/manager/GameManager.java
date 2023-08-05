@@ -63,7 +63,7 @@ public class GameManager {
         return new Sequence();
     }
 
-    public Status endGame(final Game game, final double nnScore, final Game.GameStatus gameStatus, final Sequence sequence, String filename)
+    public Status endGame(final Game game, final double nnScore, final Game.GameStatus gameStatus, final Sequence sequence, String trainFileName)
             throws IOException, NoSuchAlgorithmException {
         Status retStatus = Status.NORMAL;
 
@@ -84,7 +84,7 @@ public class GameManager {
             if (record.percentage >= this.maxPercentage) {
                 retStatus = Status.SWITCHING;
                 this.intermediateNbGame = 1;
-                record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, filename);
+                record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, trainFileName);
             }
         }
         FileWriter fileWriter = new FileWriter(filename, true);

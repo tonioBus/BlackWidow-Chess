@@ -110,3 +110,29 @@ java.lang.RuntimeException: Adding a child to a node that already have this chil
 [ERROR] For more information about the errors and possible solutions, please read the following articles:
 [ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
 
+Exception in thread "main" java.lang.RuntimeException: java.util.concurrent.ExecutionException: java.lang.NullPointerException: Cannot enter synchronized block because "parent" is null
+	at com.aquila.chess.strategy.mcts.MCTSSearchMultiThread.search(MCTSSearchMultiThread.java:149)
+	at com.aquila.chess.strategy.mcts.MCTSStrategy.mctsStep(MCTSStrategy.java:181)
+	at com.aquila.chess.strategy.mcts.MCTSStrategy.play(MCTSStrategy.java:116)
+	at com.aquila.chess.Game.play(Game.java:175)
+	at com.aquila.chess.MainTrainingAquila.main(MainTrainingAquila.java:92)
+Caused by: java.util.concurrent.ExecutionException: java.lang.NullPointerException: Cannot enter synchronized block because "parent" is null
+	at java.base/java.util.concurrent.FutureTask.report(FutureTask.java:122)
+	at java.base/java.util.concurrent.FutureTask.get(FutureTask.java:191)
+	at com.aquila.chess.strategy.mcts.MCTSSearchMultiThread.search(MCTSSearchMultiThread.java:121)
+	... 4 more
+Caused by: java.lang.NullPointerException: Cannot enter synchronized block because "parent" is null
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.removePropagation(MCTSSearchWalker.java:436)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.returnEndOfSimulatedGame(MCTSSearchWalker.java:406)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.search(MCTSSearchWalker.java:140)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.search(MCTSSearchWalker.java:148)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.search(MCTSSearchWalker.java:148)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.search(MCTSSearchWalker.java:148)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.call(MCTSSearchWalker.java:82)
+	at com.aquila.chess.strategy.mcts.MCTSSearchWalker.call(MCTSSearchWalker.java:22)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:833)
