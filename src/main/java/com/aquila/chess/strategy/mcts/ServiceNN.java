@@ -133,7 +133,7 @@ class ServiceNN {
                 if (nodes2propagate != null) {
                     deleteCaches.add(key);
                     double value2propagate = node.getValue();
-                    if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
+                    // if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
                     node.getCacheValue().setPropagated(true);
                     log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getCacheValue().getNbPropagate());
                     for (MCTSNode node2propagate : nodes2propagate) {
