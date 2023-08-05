@@ -19,6 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,7 +38,7 @@ public class SaveGameTest {
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
 
     @ParameterizedTest
-    @ValueSource(ints = {3, 6, 12})
+    @ValueSource(ints = {4, 6, 12})
     @Order(0)
     void testSaveGameLc0(int nbStep) throws Exception {
         GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
@@ -68,7 +69,7 @@ public class SaveGameTest {
         Game.GameStatus gameStatus = null;
         for (int i = 0; i < nbStep; i++) {
             gameStatus = game.play();
-            if(gameStatus != Game.GameStatus.IN_PROGRESS) break;
+            if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
             sequence.play();
             assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             log.info("####################################################");
@@ -79,8 +80,9 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch("train-test", resultGame, -666);
-        TrainGame trainGame = TrainGame.load("train-test", -666);
+        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
+        TrainGame trainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep - 1, trainGame.getOneStepRecordList().size());
@@ -125,7 +127,7 @@ public class SaveGameTest {
         Game.GameStatus gameStatus = null;
         for (int i = 0; i < nbStep; i++) {
             gameStatus = game.play();
-            if(gameStatus != Game.GameStatus.IN_PROGRESS) break;
+            if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
             sequence.play();
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
@@ -135,8 +137,9 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch("train", resultGame, -666);
-        TrainGame trainGame = TrainGame.load("train", -666);
+        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
+        TrainGame trainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(sequence.nbStep - 1, trainGame.getOneStepRecordList().size());
@@ -197,11 +200,12 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch("train-test", resultGame, -666);
-        TrainGame trainGame = TrainGame.load("train-test", -666);
+        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
+        TrainGame trainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0) , trainGame.getOneStepRecordList().size());
+        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), trainGame.getOneStepRecordList().size());
     }
 
     @Test

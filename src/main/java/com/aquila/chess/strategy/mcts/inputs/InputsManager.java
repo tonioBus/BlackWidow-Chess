@@ -13,8 +13,9 @@ public interface InputsManager {
     /**
      *
      * @param board - the board on which we apply the move
-     * @param move  - the move to apply or null if nothing should be applied
-     * @param color2play the color that will play
+     * @param move  - the move to apply or null if nothing need to be applied,
+     *              the complementary of the color of the move will be used as color2play
+     * @param color2play the color that will play, used only if move is not defined
      * @return
      */
     InputsFullNN createInputs(Board board,

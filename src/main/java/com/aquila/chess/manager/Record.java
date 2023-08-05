@@ -63,24 +63,14 @@ public class Record {
         this.png = recordSz[i++];
     }
 
-    @SuppressWarnings("incomplete-switch")
     public Record(final Record lastRecord, final Status status, final int intermediateNbGame, final Game.GameStatus gameStatus, final Sequence sequence,
-                  Game game, double nnScore) throws NoSuchAlgorithmException {
+                  Game game, double nnScore, String filename) throws NoSuchAlgorithmException {
         long endDate = System.currentTimeMillis();
         this.status = status;
         switch (gameStatus) {
-            case WHITE_CHESSMATE:
-                this.blackWin = 1;
-                break;
-            case BLACK_CHESSMATE:
-                this.whiteWin = 1;
-                break;
-            case DRAW_50:
-            case DRAW_300:
-            case DRAW_3:
-            case DRAW_NOT_ENOUGH_PIECES:
-                this.drawn = 1;
-                break;
+            case WHITE_CHESSMATE -> this.blackWin = 1;
+            case BLACK_CHESSMATE -> this.whiteWin = 1;
+            case DRAW_50, DRAW_300, DRAW_3, DRAW_NOT_ENOUGH_PIECES -> this.drawn = 1;
         }
         if (lastRecord != null) {
             if (status == Status.SWITCHING) {
@@ -116,7 +106,7 @@ public class Record {
         this.round = sequence.nbStep;
         this.nnScore = nnScore;
         String first6moves = game.getMoves().stream().limit(6).map(Object::toString).collect(Collectors.joining(","));
-        this.gameSha1 = String.format("%s %s", first6moves, Utils.toSha1(game.toPGN()));
+        this.gameSha1 = String.format("%s %s %s", filename, first6moves, Utils.toSha1(game.toPGN()));
         this.png = Base64.getEncoder().encodeToString(game.toPGN().getBytes());
     }
 

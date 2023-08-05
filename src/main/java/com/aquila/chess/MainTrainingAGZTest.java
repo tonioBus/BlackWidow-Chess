@@ -55,8 +55,6 @@ public class MainTrainingAGZTest {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame("trainDir/") + 1;
-        log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
@@ -121,16 +119,8 @@ public class MainTrainingAGZTest {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
-            if (lastSaveGame % BATCH_SIZE == 0 && lastSaveGame > 0) {
-//                MainFitNNLc0.trainGames("train", lastSaveGame - BATCH_SIZE + 1, lastSaveGame, updateLr, deepLearningWhite);
-//                nnWhite.close();
-//                nnWhite = new NNDeep4j(NN_REFERENCE, false);
-//                deepLearningWhite = new DeepLearningAGZ(nnWhite, false);
-//                deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
-            lastSaveGame++;
-            Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
+            final String filename = whiteStrategy.saveBatch(trainDir, resultGame);
+            Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
             if (status == Status.SWITCHING) {
                 final Path reference = Paths.get(NN_REFERENCE);
                 final Path opponent = Paths.get(NN_OPPONENT);

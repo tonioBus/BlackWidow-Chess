@@ -35,8 +35,6 @@ public class MainTrainingAGZ {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame(trainDir + "/") + 1;
-        log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
@@ -102,9 +100,8 @@ public class MainTrainingAGZ {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
-            lastSaveGame++;
-            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
+            final String filename = whiteStrategy.saveBatch(trainDir, resultGame);
+            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
         }
     }
 }

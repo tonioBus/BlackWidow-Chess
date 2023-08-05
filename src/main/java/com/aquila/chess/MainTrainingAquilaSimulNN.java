@@ -39,8 +39,6 @@ public class MainTrainingAquilaSimulNN {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame(trainDir + "/") + 1;
-        log.info("START MainTrainingAGZ: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AQUILA_NN/sequences-aquila.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
         // deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
@@ -96,7 +94,7 @@ public class MainTrainingAquilaSimulNN {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
+            whiteStrategy.saveBatch(trainDir, resultGame);
         }
     }
 

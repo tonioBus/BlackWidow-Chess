@@ -171,18 +171,6 @@ public class Utils {
         return UUID.nameUUIDFromBytes(md.digest(text.getBytes())).toString();
     }
 
-    static public int maxGame(String path) {
-        File dataDirectory = new File(path); // "train/"
-        int max = 0;
-        if (dataDirectory.canRead()) {
-            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
-                int currentNumber = Integer.valueOf(file.getName()).intValue();
-                if (currentNumber > max) max = currentNumber;
-            }
-        }
-        return max;
-    }
-
 
     static {
         Random rand = new Random();

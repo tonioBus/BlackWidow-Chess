@@ -8,13 +8,16 @@ import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -349,12 +352,26 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return lastOneStepRecord;
     }
 
-    public void saveBatch(String trainDir, ResultGame resultGame, int numGames) throws IOException {
+    public String saveBatch(String trainDir, ResultGame resultGame) throws IOException {
+        final int numGames = maxGame(trainDir + "/") + 1;
         log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
         log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
-        trainGame.save(trainDir, numGames, resultGame);
-        log.info("SAVE DONE");
+        final String filename = trainGame.save(trainDir, numGames, resultGame);
+        log.info("SAVE DONE in {}", filename);
         clearTrainGame();
+        return filename;
+    }
+
+    private int maxGame(String path) {
+        File dataDirectory = new File(path);
+        int max = 0;
+        if (dataDirectory.canRead()) {
+            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
+                int currentNumber = Integer.valueOf(file.getName()).intValue();
+                if (currentNumber > max) max = currentNumber;
+            }
+        }
+        return max;
     }
 
     public void clearTrainGame() {

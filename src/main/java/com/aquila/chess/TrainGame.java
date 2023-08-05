@@ -38,16 +38,26 @@ public class TrainGame implements Serializable {
         return ret;
     }
 
-    public void save(String trainDir, int num, final ResultGame resultGame) throws IOException {
+    /**
+     * Save a new game in the given folder with the given name
+     * @param trainDir the folder where to save the game
+     * @param num the game number
+     * @param resultGame the result of the game
+     * @return the saved file name
+     * @throws IOException
+     */
+    public String save(String trainDir, int num, final ResultGame resultGame) throws IOException {
         createTrainDir(trainDir);
         this.value = resultGame.reward;
+        String filename = trainDir + "/" + num;
         FileOutputStream fileOutputStream
-                = new FileOutputStream(trainDir + "/" + num);
+                = new FileOutputStream(filename);
         ObjectOutputStream objectOutputStream
                 = new ObjectOutputStream(fileOutputStream);
         objectOutputStream.writeObject(this);
         objectOutputStream.flush();
         objectOutputStream.close();
+        return filename;
     }
 
     public void add(final OneStepRecord oneStepRecord) {

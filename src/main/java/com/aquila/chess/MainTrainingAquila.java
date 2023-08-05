@@ -6,7 +6,6 @@ import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -33,8 +32,6 @@ public class MainTrainingAquila {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        int lastSaveGame = Utils.maxGame(trainDir + "/") + 1;
-        log.info("START MainTrainingAquila: game {}", lastSaveGame);
         GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 40000, 55);
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
@@ -100,9 +97,8 @@ public class MainTrainingAquila {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(trainDir, resultGame, lastSaveGame);
-            lastSaveGame++;
-            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence);
+            final String filename = whiteStrategy.saveBatch(trainDir, resultGame);
+            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
         }
     }
 }
