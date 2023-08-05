@@ -135,7 +135,7 @@ public class SaveGameTest {
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
         ResultGame resultGame = new ResultGame(1, 1);
-        whiteStrategy.saveBatch(resultGame, -666);
+        whiteStrategy.saveBatch("train", resultGame, -666);
         TrainGame trainGame = TrainGame.load("train", -666);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...

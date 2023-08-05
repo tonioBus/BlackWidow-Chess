@@ -44,8 +44,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     @Getter
     final private Statistic statistic = new Statistic();
 
-    // private MCTSNode root = null;
-
     @Getter
     private MCTSNode directRoot = null;
 
