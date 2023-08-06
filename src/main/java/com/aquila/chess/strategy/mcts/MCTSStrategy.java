@@ -8,7 +8,6 @@ import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
@@ -144,11 +143,15 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     protected void createRootNode(final Game game, final Move opponentMove) {
         assert (opponentMove != null);
         assert (opponentMove.getAllegiance() != this.alliance);
+        log.info("opponentMove:{}", opponentMove);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
         if (this.directRoot == null) {
             long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
+            CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+            if (cacheValue.getNode() != null)
+                assert (cacheValue.getNode().getMove().getAllegiance() == alliance.complementary());
+            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, cacheValue);
             return;
         }
         MCTSNode childNode = this.directRoot.findChild(opponentMove);

@@ -95,7 +95,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             MCTSNode.resetBuildOrder();
             rootValue.reNormalize();
         }
-        int nbSubmit = this.currentRoot.getVisits();
+        int nbSubmit = 0; // this.currentRoot.getVisits();
         int nbWorks;
         if (nbMaxSearchCalls < 1) nbWorks = nbThreads;
         else nbWorks = Math.min(nbThreads, (int) nbMaxSearchCalls);

@@ -197,6 +197,8 @@ public class AquilaInputsManagerImpl implements InputsManager {
         if (move != null && move.getMovedPiece() != null) {
             board = move.execute();
             sb.append(color2play);
+            sb.append("M:");
+            sb.append(move);
             // sb.append(board.currentPlayer().getAlliance().toString());
         } else {
             sb.append(color2play.toString());
