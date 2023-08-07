@@ -24,7 +24,7 @@ public class MainFitNNAquila {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static void main(final String[] args) throws Exception {
-        @NonNull InputsManager inputsManager = new AquilaInputsManagerImpl();
+        InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 15);
         UpdateLr updateLr = nbGames -> 1.0e-4;
         nnWhite.setUpdateLr(updateLr, 1);
@@ -32,6 +32,7 @@ public class MainFitNNAquila {
                 .builder()
                 .nn(nnWhite)
                 .train(true)
+                .batchSize(128)
                 .inputsManager(inputsManager)
                 .build();
         train("train-aquila-rog", deepLearningWhite);
@@ -52,7 +53,7 @@ public class MainFitNNAquila {
     public static void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
-        log.info("START MainFitNNLc0");
+        log.info("START MainFitNNAquila");
         int startGame = Integer.valueOf(appProps.getProperty("start.game"));
         int endGame = Integer.valueOf(appProps.getProperty("end.game"));
         log.info("startGame: {}", startGame);
