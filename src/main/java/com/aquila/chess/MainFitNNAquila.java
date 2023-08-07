@@ -68,7 +68,7 @@ public class MainFitNNAquila {
 //        waitForKey();
         train("train-aquila-grospc", deepLearningWhite);
 //        waitForKey();
-        train("train-aquila-linux", deepLearningWhite);
+        train("train-aquila-rog", deepLearningWhite);
         train("train-aquila", deepLearningWhite);
         deepLearningWhite.save();
     }
