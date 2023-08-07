@@ -34,11 +34,11 @@ public class MainFitNNAquila {
                 .train(true)
                 .inputsManager(inputsManager)
                 .build();
+        train("train-aquila-rog", deepLearningWhite);
+//        waitForKey();
         train("train-aquila", deepLearningWhite);
 //        waitForKey();
-        train("train-aquila.1080", deepLearningWhite);
-//        waitForKey();
-        train("train-aquila.grospc", deepLearningWhite);
+        train("train-aquila-grospc", deepLearningWhite);
 //        waitForKey();
         deepLearningWhite.save();
     }
