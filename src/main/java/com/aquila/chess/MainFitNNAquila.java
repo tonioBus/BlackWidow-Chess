@@ -8,6 +8,11 @@ import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.deeplearning4j.nn.conf.WorkspaceMode;
+import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.nd4j.jita.allocator.enums.AllocationStatus;
+import org.nd4j.jita.conf.Configuration;
+import org.nd4j.jita.conf.CudaEnvironment;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,6 +24,28 @@ public class MainFitNNAquila {
     static private final String NN_REFERENCE = "../AQUILA_NN/AGZ.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
+    private static void settingsCuda() {
+        CudaEnvironment.getInstance().getConfiguration()
+                // key option enabled
+                .allowMultiGPU(false) //
+                .setFirstMemory(AllocationStatus.HOST)
+                .setAllocationModel(Configuration.AllocationModel.CACHE_ALL)
+                .setMaximumDeviceMemoryUsed(0.90) //
+                .setMemoryModel(Configuration.MemoryModel.IMMEDIATE) //
+                // cross-device access is used for faster model averaging over pcie
+                .allowCrossDeviceAccess(false) //
+                .setNumberOfGcThreads(4)
+                // .setMaximumBlockSize(-1)
+                .setMaximumGridSize(256)
+                // .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
+                // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
+                .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
+                //.setMaximumHostCache(8L * 1024 * 1024 * 1024L)
+                .setNoGcWindowMs(100)
+                .enableDebug(false)
+                .setVerbose(false);
+    }
+
     /**
      * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
@@ -26,6 +53,8 @@ public class MainFitNNAquila {
     public static void main(final String[] args) throws Exception {
         InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 15);
+        settingsCuda();
+        ((ComputationGraph)nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         UpdateLr updateLr = nbGames -> 1.0e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
@@ -35,12 +64,12 @@ public class MainFitNNAquila {
                 .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
-        train("train-aquila-rog", deepLearningWhite);
 //        waitForKey();
-        train("train-aquila", deepLearningWhite);
+        train("train-aquila-linux", deepLearningWhite);
 //        waitForKey();
         train("train-aquila-grospc", deepLearningWhite);
 //        waitForKey();
+        train("train-aquila", deepLearningWhite);
         deepLearningWhite.save();
     }
 

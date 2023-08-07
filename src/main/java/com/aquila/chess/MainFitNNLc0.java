@@ -34,6 +34,7 @@ public class MainFitNNLc0 {
                 .builder()
                 .nn(nnWhite)
                 .train(true)
+                .batchSize(128)
                 .inputsManager(inputsManager)
                 .build();
         train("train", deepLearningWhite);
