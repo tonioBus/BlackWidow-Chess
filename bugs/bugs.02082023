@@ -136,3 +136,55 @@ Caused by: java.lang.NullPointerException: Cannot enter synchronized block becau
 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
 	at java.base/java.lang.Thread.run(Thread.java:833)
+
+
+Choosing KD8 but KD8 is a LOSS PATH: KF8 was another possibility
+2023-08-07 17:46:11,607 INFO [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:146] opponentMove:Re7
+2023-08-07 17:46:11,607 WARN [main] c.a.c.s.m.MCTSNode [MCTSNode.java:254] [White] SET AS ROOT:0.0 MCTSNode[1083375813924535868] -> Move: Re7 visit:0 expectedReward:0,000000e+00 parent:false childs:2 state:INTERMEDIATE virtual:0,000000
+2023-08-07 17:46:11,607 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:94] [21] RESET ROOT NORMALIZATION key: 1083375813924535868
+#268&|2023-08-07 17:46:14,447 WARN [Worker-27] c.a.c.u.Utils [Utils.java:135] dirichlet: MAX policy: 0.5095744729042053 move:Move-4-0-1[b8]
+2023-08-07 17:46:14,447 WARN [Worker-27] c.a.c.u.Utils [Utils.java:136] dirichlet: MIN policy: 0.4904254972934723 move:Move-4-0-1[b8]
+2023-08-07 17:46:14,447 WARN [Worker-27] c.a.c.u.Utils [Utils.java:137] dirichlet: indexes: 2 <-> 2 : policies>0
+104##290&|114##270&|42##287&|68##258&|30##265&|117##267&|31##257&|92##261&|63##281&|108##268&|26##260&|106##258&|141##277&|86##271&|88##267&|39##269&|172#2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-26] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re2
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-8] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re1
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-19] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Rf7
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-14] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re6
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-9] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re4
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-11] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re3
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-2] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re8
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-18] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Re5
+2023-08-07 17:47:01,359 WARN [ForkJoinPool.commonPool-worker-4] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rc3 last:Rg7
+2023-08-07 17:47:01,359 INFO [Worker-11] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:244] STOP LOSS NODE:MCTSNode[1018309873383377283] -> Move: Rc3 visit:0 expectedReward:-8,499682e-02 parent:true childs:45 state:INTERMEDIATE virtual:1,000000
+2023-08-07 17:47:01,359 WARN [Worker-11] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:442] removeState(MCTSNode[1018309873383377283] -> Move: Rc3 visit:0 expectedReward:-1,000000e+00 parent:true childs:0 state:LOOSE virtual:1,000000)
+#264&|113##291&|105##274&|26##267&|44##297&|100##268&|49##273&|136#2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-2] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re8
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-16] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re1
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-5] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Rg7
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-8] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Rf7
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-22] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re2
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-31] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re6
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-12] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re5
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-7] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re4
+2023-08-07 17:47:22,512 WARN [ForkJoinPool.commonPool-worker-23] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:187] DETECT LOSS MOVE: Black-Kd8,White-Bxb5,Black-Rb6 last:Re3
+2023-08-07 17:47:22,512 INFO [Worker-18] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:244] STOP LOSS NODE:MCTSNode[-3712498066881014809] -> Move: Rb6 visit:0 expectedReward:-8,499682e-02 parent:true childs:44 state:INTERMEDIATE virtual:1,000000
+2023-08-07 17:47:22,512 WARN [Worker-18] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:442] removeState(MCTSNode[-3712498066881014809] -> Move: Rb6 visit:0 expectedReward:-1,000000e+00 parent:true childs:0 state:LOOSE virtual:1,000000)
+#289&|64##283&|35#2023-08-07 17:47:28,597 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:143] [21] END OF SEARCH DETECTED childs:2
+#160&|32#2023-08-07 17:47:29,024 WARN [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:234] [Black] FINDBEST MCTS: MCTSNode[1083375813924535868] -> Move: Re7 visit:766 expectedReward:-7,375605e-03 parent:false childs:2 state:ROOT virtual:0,000000
+2023-08-07 17:47:29,024 WARN [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:278] [Black] State: GOOD:50.0% Step:21 nbChilds:2 nbBests:1 | RetNode:MCTSNode[6402225585591952869] -> Move: Kd8 visit:388 expectedReward:7,989199e-03 parent:true childs:40 state:INTERMEDIATE virtual:0,000000
+2023-08-07 17:47:29,024 WARN [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:190] bestNode: MCTSNode[6402225585591952869] -> Move: Kd8 visit:388 expectedReward:7,989199e-03 parent:true childs:40 state:INTERMEDIATE virtual:0,000000
+2023-08-07 17:47:29,024 WARN [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:191] [Black] CacheSize: 80000 STATS: nbCalls:800
+ nbPlay:2041
+ nbPossibleMoves:0
+ nbSubmitJobs:7239
+ nbRetrieveNNCachedValues:32898
+ nbRetrieveNNCachedPolicies:2841
+ nbRetrieveNNValues:798
+ nbGoodSelection:2155
+ MAXRandomSelectionBestMoves:47
+ MINRandomSelectionBestMoves:2
+ nbRandomSelection:702
+ nbRandomSelectionBestMoves:21648
+ average:30,000000
+2023-08-07 17:47:29,024 WARN [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:192] [Black] nbSearch calls:766 - term:77417 ms - speed:9 calls/s value:-0.08499681949615479 reward:0.007989198891157956
+2023-08-07 17:47:29,024 INFO [main] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:117] [21] MCTSStrategy{Black file:../AQUILA_NN/NN.partner Childs:799} nextPlay() -> Kd8
+2023-08-07 17:47:29,024 WARN [main] c.a.c.MainTrainingAquila [MainTrainingAquila.java:94] game:
+GAME STATUS:IN_PROGRESS

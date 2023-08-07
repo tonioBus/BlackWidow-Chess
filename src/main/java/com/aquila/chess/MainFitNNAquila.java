@@ -21,7 +21,7 @@ import java.util.Scanner;
 
 @Slf4j
 public class MainFitNNAquila {
-    static private final String NN_REFERENCE = "../AQUILA_NN/AGZ.reference";
+    static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
     private static void settingsCuda() {
@@ -68,7 +68,7 @@ public class MainFitNNAquila {
 //        waitForKey();
         train("train-aquila-grospc", deepLearningWhite);
 //        waitForKey();
-        train("train-aquila-rog", deepLearningWhite);
+        // train("train-aquila-rog", deepLearningWhite);
         train("train-aquila", deepLearningWhite);
         deepLearningWhite.save();
     }
@@ -100,7 +100,8 @@ public class MainFitNNAquila {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
                 deepLearningWhite.train(trainGame);
             } catch (Exception e) {
-                log.error("Error for the training game: " + numGame, e);
+                log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);
+                log.error("Stopping the training ... :(");
             }
         }
         return numGame;
