@@ -65,10 +65,10 @@ public class MainFitNNAquila {
                 .inputsManager(inputsManager)
                 .build();
 //        waitForKey();
-        train("train-aquila-linux", deepLearningWhite);
 //        waitForKey();
         train("train-aquila-grospc", deepLearningWhite);
 //        waitForKey();
+        train("train-aquila-linux", deepLearningWhite);
         train("train-aquila", deepLearningWhite);
         deepLearningWhite.save();
     }
