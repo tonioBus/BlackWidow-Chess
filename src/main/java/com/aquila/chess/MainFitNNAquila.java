@@ -32,7 +32,7 @@ public class MainFitNNAquila {
                 .builder()
                 .nn(nnWhite)
                 .train(true)
-                .batchSize(128)
+                .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
         train("train-aquila-rog", deepLearningWhite);
