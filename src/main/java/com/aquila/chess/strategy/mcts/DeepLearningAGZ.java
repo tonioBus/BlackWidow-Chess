@@ -311,7 +311,8 @@ public class DeepLearningAGZ {
         }
         double score = nn.getScore();
         log.info("NETWORK score: {}", score);
-        if ("NaN".equals(score + "")) throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
+        if ("NaN".equals(score + ""))
+            throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
@@ -327,12 +328,11 @@ public class DeepLearningAGZ {
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = oneStepRecord.policies();
+            normalize(policies);
             // actual reward for current state (inputs), so color complement color2play
             // if color2play is WHITE, the current node is BLACK, so -reward
             Alliance playedColor = oneStepRecord.color2play();
             double actualRewards = getActualRewards(value, playedColor);
-            // we train policy when rewards=+1 and color2play=WHITE OR rewards=1 and color2play is BLACK
-            double trainPolicy = -actualRewards;
             valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
             // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
             if (policies != null) {
@@ -344,6 +344,28 @@ public class DeepLearningAGZ {
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
         nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
     }
+
+    private void normalize(final Map<Integer, Double> policyMap) {
+        double sum = 0;
+        for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
+            double policy = policyEntry.getValue();
+            if (Double.isNaN(policy)) {
+                policyEntry.setValue(1.0);
+                policy = 1.0;
+            }
+            sum += policy;
+        }
+        if (policyMap.size() > 0 && sum == 0) {
+            log.warn("toDistribution(): sum of policies(nb:{})==0", policyMap.size());
+            return;
+        }
+        for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
+            double policy = policyEntry.getValue();
+            policy = policy / sum;
+            policyEntry.setValue(policy);
+        }
+    }
+
 
     /**
      * @param value

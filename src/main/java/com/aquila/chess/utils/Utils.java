@@ -56,7 +56,6 @@ public class Utils {
         }
     }
 
-    @Deprecated
     public static double[] normalise(double[] policies) {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
@@ -74,7 +73,6 @@ public class Utils {
         }
         return policies;
     }
-
 
     /**
      * @param policies
