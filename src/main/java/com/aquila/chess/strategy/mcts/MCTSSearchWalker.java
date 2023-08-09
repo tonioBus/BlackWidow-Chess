@@ -165,7 +165,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         opponentNode.setPrepared(true);
         if (opponentNode.getChildNodes().size() == 0) return;
         final Collection<Move> moves = opponentNode.getChildMoves();
-        synchronized (moves) {
+        synchronized (opponentNode) {
             try {
                 moves.parallelStream().forEach(possibleMove -> {
                     final Player childPlayer = possibleMove.execute().currentPlayer();
