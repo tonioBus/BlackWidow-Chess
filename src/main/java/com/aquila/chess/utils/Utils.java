@@ -130,8 +130,8 @@ public class Utils {
                         minPolicyIndex = i;
                     }
                 }
-                log.warn("dirichlet: MAX policy: {} move:{}", maxPolicy, PolicyUtils.moveFromIndex(maxPolicyIndex));
-                log.warn("dirichlet: MIN policy: {} move:{}", minPolicy, PolicyUtils.moveFromIndex(minPolicyIndex));
+                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex));
+                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex));
                 log.warn("dirichlet: indexes: {} <-> {} : policies>0",
                         indexes.length,
                         Arrays.stream(policies).filter(policy -> policy > 0).count());
