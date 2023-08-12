@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,12 +42,31 @@ class GameTest {
     public void testPoliciesUtils() {
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).build();
-        // game.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 2));
         List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
         for (Move move : moves) {
             int policyIndex = PolicyUtils.indexFromMove(move);
-            String moveSz = PolicyUtils.moveFromIndex(policyIndex);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves);
             log.info("move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
+        }
+    }
+
+    @Test
+    public void testEntireGamesPoliciesUtils() throws Exception {
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().board(board).build();
+        while (game.getStatus() == Game.GameStatus.IN_PROGRESS) {
+            List<Move> moves = game.getNextPlayer().getLegalMoves();
+//            List<Move> filteredMoves = moves.stream().filter(move -> index == PolicyUtils.indexFromMove(move)).collect(Collectors.toList());
+//            if (filteredMoves.isEmpty()) {
+//                log.error("Index : {} not found on possible moves", index);
+//                return String.format("Index:%s not found", index);
+//            }
+//            if (filteredMoves.size() != 1) {
+//                log.error("Index : {} get multiple moves: {}", filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+//                return String.format("Index:%s not found in %s", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+//            }
+//            return String.format("Move:%s", filteredMoves.get(0).toString());
+
         }
     }
 

@@ -6,6 +6,8 @@ import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.chess.engine.classic.board.BoardUtils.NUM_TILES_PER_ROW;
 
@@ -52,17 +54,35 @@ public class PolicyUtils {
                 piece);
     }
 
-    public static String moveFromIndex(int index) {
-        int coordinate = index / 73;
-        int x = coordinate / 8;
-        int y = index % 8;
-        String position;
-        try {
-            position = BoardUtils.INSTANCE.getPositionAtCoordinate(8 * x + y);
-        } catch (Exception e) {
-            position = "???";
+    public static String moveFromIndex(int index, Collection<Move> moves) {
+//        int x = index / 64;
+//        int rest = index - x * 64;
+//        moves.stream().filter( move -> {
+//            Coordinate2D srcCoordinate2D = new Coordinate2D(move.getCurrentCoordinate());
+//            Coordinate2D destCoordinate2D = new Coordinate2D(move.getDestinationCoordinate());
+//            if(srcCoordinate2D.getX() == x) {
+//
+//            }
+//        });
+//        int x = coordinate / 8;
+//        int y = index % 8;
+//        String position;
+//        try {
+//            position = BoardUtils.INSTANCE.getPositionAtCoordinate(8 * x + y);
+//        } catch (Exception e) {
+//            position = "???";
+//        }
+//        return String.format("Move-%d-%d-%d[%s]", coordinate, x, y, position);
+        List<Move> filteredMoves = moves.stream().filter(move -> index == indexFromMove(move)).collect(Collectors.toList());
+        if (filteredMoves.isEmpty()) {
+            log.error("Index : {} not found on possible moves", index);
+            return String.format("Index:%s not found", index);
         }
-        return String.format("Move-%d-%d-%d[%s]", coordinate, x, y, position);
+        if (filteredMoves.size() != 1) {
+            log.error("Index : {} get multiple moves: {}", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+            return String.format("Index:%s not found in %s", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+        }
+        return String.format("Move:%s", filteredMoves.get(0).toString());
     }
 
     /**

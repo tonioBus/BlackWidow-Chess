@@ -114,10 +114,7 @@ public class CacheValues {
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
             boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
             isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
-            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet);
-//            if (Arrays.stream(normalisedPolicies).filter(policy -> Double.isNaN(policy)).count() > 0) {
-//                throw new RuntimeException("ERROR, some policy with NaN value");
-//            }
+            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
             this.policies = normalizedPolicies;
         }
 
