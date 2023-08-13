@@ -302,7 +302,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 if (sumVisits > 0) {
-                    policy = policies[PolicyUtils.indexFromMove(possibleMove)];
+                    policy = policies[PolicyUtils.indexFromMove(possibleMove, true)];
                     if (log.isDebugEnabled()) log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
                     if (log.isDebugEnabled()) log.debug("policy:{}", policy);
                     exploration = exploration(opponentNode, cpuct, sumVisits, visits, policy);

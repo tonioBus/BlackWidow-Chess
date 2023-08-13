@@ -46,7 +46,7 @@ public class MainFitNNSpecificInputs {
                 .build();
         final double probability = 1.0 / moves.size();
         moves.forEach(m -> {
-            int index = PolicyUtils.indexFromMove(m);
+            int index = PolicyUtils.indexFromMove(m, false);
             policies.put(index, probability);
         });
     }

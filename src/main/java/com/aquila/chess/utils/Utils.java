@@ -78,7 +78,7 @@ public class Utils {
      * @param isDirichlet
      * @return
      */
-    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
+    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves, boolean old) {
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
@@ -128,8 +128,8 @@ public class Utils {
                         minPolicyIndex = i;
                     }
                 }
-                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves));
-                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves));
+                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves, old));
+                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves, old));
                 log.warn("dirichlet: indexes: {} <-> {} : policies>0",
                         indexes.length,
                         Arrays.stream(policies).filter(policy -> policy > 0).count());

@@ -44,9 +44,15 @@ class GameTest {
         final Game game = Game.builder().board(board).build();
         List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
         for (Move move : moves) {
-            int policyIndex = PolicyUtils.indexFromMove(move);
-            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves);
-            log.info("move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
+            int policyIndex = PolicyUtils.indexFromMove(move, false);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves, false);
+            log.info("WHITE move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
+        }
+        moves = game.getPlayer(Alliance.BLACK).getLegalMoves();
+        for (Move move : moves) {
+            int policyIndex = PolicyUtils.indexFromMove(move, false);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves, false);
+            log.info("BLACK move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
         }
     }
 

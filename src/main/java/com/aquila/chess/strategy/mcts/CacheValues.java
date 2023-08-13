@@ -107,21 +107,21 @@ public class CacheValues {
             this.type = CacheValueType.ROOT;
         }
 
-        public synchronized void normalize(double[] policies) {
+        public synchronized void normalize(double[] policies, boolean old) {
             this.sourcePolicies = policies;
-            int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
+            int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves(), old);
             if (log.isDebugEnabled())
                 log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
             boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
             isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
-            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
+            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves(), old);
             this.policies = normalizedPolicies;
         }
 
-        public synchronized void reNormalize() {
+        public synchronized void reNormalize(boolean old) {
             if (sourcePolicies != null) {
                 log.info("re-normalize node:{}", this.node);
-                normalize(sourcePolicies);
+                normalize(sourcePolicies, old);
             }
         }
 
@@ -144,7 +144,7 @@ public class CacheValues {
             if (initialised && type != CacheValueType.LEAF) {
                 node.syncSum();
                 log.debug("normalise: {} {} {}", policies[0], policies[1], policies[2]);
-                normalize(policies);
+                normalize(policies, false);
             }
         }
 

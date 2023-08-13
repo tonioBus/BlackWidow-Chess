@@ -1,7 +1,11 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
+import com.aquila.chess.strategy.FixStrategy;
+import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
@@ -9,6 +13,7 @@ import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.Builder;
@@ -294,6 +299,36 @@ public class DeepLearningAGZ {
                     (int) nbIn[7][y])); //
         }
         return sb.toString();
+    }
+
+    private void transform2NewPolicies(final TrainGame trainGame) throws IOException {
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().board(board).build();
+        FixStrategy whitePlayer = new FixStrategy(Alliance.WHITE);
+        FixStrategy blackPlayer = new FixStrategy(Alliance.BLACK);
+        game.setup(new FixStrategy(Alliance.WHITE), new FixStrategy(Alliance.BLACK));
+        trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
+            Map<Integer, Double> policies = oneStepRecord.policies();
+            String moveSz = oneStepRecord.move();
+            switch(game.getColor2play()) {
+                case WHITE -> {
+                    whitePlayer.setNextMoveSz(moveSz);
+                }
+                case BLACK -> {
+                    blackPlayer.setNextMoveSz(moveSz);
+                }
+            }
+        });
+        
+        try {
+            while (game.play() == Game.GameStatus.IN_PROGRESS) ;
+        } catch (Throwable t) {
+            log.error("Error during a play status:" + game.getStatus(), t);
+            log.info("GAME:\n{}", game);
+        } finally {
+            log.info("END GAME::\n{}", game);
+        }
+
     }
 
     public void train(final TrainGame trainGame) throws IOException {

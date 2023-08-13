@@ -129,7 +129,7 @@ public class DotGenerator {
         node.getChildsAsCollection().forEach(child -> {
             if (child != null) {
                 int visits = child.getVisits();
-                double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
+                double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove(), false)];
                 if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                     int hashCode = generate(g, child, depth + 1, depthMax);
                     double exploitation = child.getExpectedReward(false);

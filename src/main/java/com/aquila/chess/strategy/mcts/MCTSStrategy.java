@@ -327,7 +327,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         };
     }
 
-    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode, boolean old) {
         if (!stepNode.isSync()) {
             String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
             log.error(msg);
@@ -335,7 +335,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
         final Map<Integer, Double> probabilities = new HashMap<>();
         stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
-            int index = PolicyUtils.indexFromMove(child.getMove());
+            int index = PolicyUtils.indexFromMove(child.getMove(), old);
             double probability = (double) child.getVisits() / (double) stepNode.getVisits();
             probabilities.put(index, probability);
         });
@@ -344,7 +344,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
         InputsFullNN inputs = mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
-        Map<Integer, Double> policies = calculatePolicies(directParent);
+        Map<Integer, Double> policies = calculatePolicies(directParent, true);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 move.toString(),
