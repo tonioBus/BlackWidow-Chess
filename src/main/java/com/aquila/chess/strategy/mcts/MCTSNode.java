@@ -102,35 +102,6 @@ public class MCTSNode implements Serializable {
     }
 
     /**
-     * Only call for root node
-     *
-     * @param alliance
-     * @param childMoves
-     * @param dirichlet
-     * @param key
-     * @param cacheValue
-     */
-    public MCTSNode(final Alliance alliance, final Move move, List<Move> childMoves, long key, CacheValues.CacheValue cacheValue) {
-        nbBuild = 0;
-        this.buildOrder = nbBuild++;
-        childMoves.forEach(move1 -> childNodes.put(move1, null));
-        this.creator = Thread.currentThread();
-        if (cacheValue.getNode() != null) {
-            throw new RuntimeException(String.format("CONNECTION PROBLEM [ROOT] ! cacheValue:%s already connected to node:%s",
-                    cacheValue, cacheValue.getNode()));
-        }
-        this.move = move;
-        this.key = key;
-        this.dirichlet = true;
-        this.cacheValue = cacheValue;
-        this.cacheValue.setNode(this);
-        this.colorState = alliance;
-        this.syncSum();
-        if (log.isDebugEnabled())
-            log.debug("CREATE ROOT NODE[key:{}] -> cacheValue:{}", key, this.getCacheValue());
-    }
-
-    /**
      * @param move
      * @param childMoves
      * @param key
@@ -140,13 +111,8 @@ public class MCTSNode implements Serializable {
         this.buildOrder = nbBuild++;
         this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
-        // this.childNodes.keySet().addAll(childMoves);
         this.dirichlet = false;
         this.creator = Thread.currentThread();
-//        if (cacheValue.getNode() != null) {
-//            throw new RuntimeException(String.format("CONNECTION PROBLEM [%s] ! cacheValue:%s already connected to node:%s",
-//                    move, cacheValue, cacheValue.getNode()));
-//        }
         this.key = key;
         this.cacheValue = cacheValue;
         this.cacheValue.setNode(this);

@@ -182,10 +182,12 @@ public class SaveGameTest {
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        for (int i = 0; i < nbStep; i++) {
+        int i=0;
+        for (; i < nbStep; i++) {
             log.info("PLAYER:{}", game.getColor2play());
             log.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
             gameStatus = game.play();
+            if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
             assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             Move move = game.getLastMove();
             log.info("####################################################");
@@ -195,7 +197,7 @@ public class SaveGameTest {
             log.info("game step[{}] :\n{}", i, game);
             whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
         }
-        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
+        assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
@@ -205,7 +207,7 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep - ((nbStep & 0x01) == 0 ? 1 : 0), trainGame.getOneStepRecordList().size());
+        assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), trainGame.getOneStepRecordList().size());
     }
 
     @Test
