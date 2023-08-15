@@ -25,10 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -312,7 +309,13 @@ public class DeepLearningAGZ {
         trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
             final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
             if (!oneStepRecord.move().equals("INIT-MOVE")) {
-                Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oneStepRecord.move())).findFirst().get();
+                Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(oneStepRecord.move())).findFirst();
+                if (currentMoveOpt.isEmpty()) {
+                    log.error("no legal move found for: {}", oneStepRecord.move());
+                    log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                    throw new RuntimeException("no legal move found for: " + oneStepRecord.move());
+                }
+                Move currentMove = currentMoveOpt.get();
                 switch (game.getColor2play()) {
                     case WHITE -> {
                         whitePlayer.setNextMove(currentMove);
@@ -335,7 +338,7 @@ public class DeepLearningAGZ {
                             .stream()
                             .map(index -> PolicyUtils.moveFromIndex(index, currentMoves, true))
                             .collect(Collectors.joining(",")));
-            Map<Integer,Double> newPolicies = new HashMap<>();
+            Map<Integer, Double> newPolicies = new HashMap<>();
             oneStepRecord.policies().keySet().stream().forEach(oldIndex -> {
                 String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves, true);
                 Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oldMove)).findFirst().get();
