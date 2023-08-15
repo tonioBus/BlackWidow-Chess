@@ -6,23 +6,34 @@ import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
+import picocli.CommandLine;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 @Slf4j
-public class MainFitNNAquila {
+@CommandLine.Command(
+        name = "MainFitNNAquila",
+        description = "Fit the NN using AQUILA inputs schema"
+)
+public class MainFitNNAquila implements Runnable {
     static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
+
+    @CommandLine.Option(names = {"-td", "--trainDir"})
+    private String[] trainDirs;
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
@@ -51,10 +62,29 @@ public class MainFitNNAquila {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static void main(final String[] args) throws Exception {
+        CommandLine.run(new MainFitNNAquila(), args);
+    }
+
+    private void checkArguments() {
+        if (trainDirs == null || trainDirs.length == 0) {
+            log.error("no train directory specified (-td)");
+            System.exit(-1);
+        }
+        Arrays.stream(trainDirs).forEach(trainDir -> {
+            if (!Files.isReadable(Path.of(trainDir))) {
+                log.error("Can not access directory: {}", trainDir);
+                System.exit(-1);
+            }
+        });
+    }
+
+    @Override
+    public void run() {
+        checkArguments();
         InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 15);
         settingsCuda();
-        ((ComputationGraph)nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
+        ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         UpdateLr updateLr = nbGames -> 1.0e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
@@ -64,19 +94,33 @@ public class MainFitNNAquila {
                 .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
-        train("train-aquila-linux", deepLearningWhite);
-        train("train-aquila-rog", deepLearningWhite);
-        train("train-aquila", deepLearningWhite);
-        deepLearningWhite.save();
+        Arrays.stream(trainDirs).forEach(trainDir -> {
+            try {
+                train(trainDir, deepLearningWhite);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        });
+//        train("train-aquila", deepLearningWhite);
+//        train("train-aquila-linux", deepLearningWhite);
+//        train("train-aquila-rog", deepLearningWhite);
+        try {
+            deepLearningWhite.save();
+        } catch (IOException e) {
+            log.error("Error when saving NN", e);
+        }
+        log.info("Train done in directory:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("- ", "- ", "")));
     }
 
-    private static void waitForKey() {
+    private void waitForKey() {
         Scanner input = new Scanner(System.in);
         System.out.print("Press Enter to continue...");
         input.nextLine();
     }
 
-    public static void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
+    public void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
         log.info("START MainFitNNAquila");
@@ -88,7 +132,7 @@ public class MainFitNNAquila {
         log.info("{} -> Train {} games.", subDir, nbGames - startGame);
     }
 
-    public static int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite) {
+    public int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite) {
         log.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {

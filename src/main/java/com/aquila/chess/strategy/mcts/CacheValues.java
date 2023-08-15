@@ -144,7 +144,7 @@ public class CacheValues {
             if (initialised && type != CacheValueType.LEAF) {
                 node.syncSum();
                 log.debug("normalise: {} {} {}", policies[0], policies[1], policies[2]);
-                normalize(policies, false);
+                normalize(policies, true);
             }
         }
 

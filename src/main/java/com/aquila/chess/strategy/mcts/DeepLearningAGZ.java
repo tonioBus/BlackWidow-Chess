@@ -4,13 +4,13 @@ import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.FixStrategy;
-import com.aquila.chess.strategy.RandomStrategy;
-import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
+import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -302,24 +303,49 @@ public class DeepLearningAGZ {
     }
 
     private void transform2NewPolicies(final TrainGame trainGame) throws IOException {
+        log.info("transform training size: {}", trainGame.getOneStepRecordList().size());
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().board(board).inputsManager(new AquilaInputsManagerImpl()).build();
         FixStrategy whitePlayer = new FixStrategy(Alliance.WHITE);
         FixStrategy blackPlayer = new FixStrategy(Alliance.BLACK);
-        game.setup(new FixStrategy(Alliance.WHITE), new FixStrategy(Alliance.BLACK));
+        game.setup(whitePlayer, blackPlayer);
         trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
+            final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
             Map<Integer, Double> policies = oneStepRecord.policies();
-            String moveSz = oneStepRecord.move();
-            switch(game.getColor2play()) {
-                case WHITE -> {
-                    whitePlayer.setNextMoveSz(moveSz);
+            if (!oneStepRecord.move().equals("INIT-MOVE")) {
+                Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oneStepRecord.move())).findFirst().get();
+                switch (game.getColor2play()) {
+                    case WHITE -> {
+                        whitePlayer.setNextMove(currentMove);
+                    }
+                    case BLACK -> {
+                        blackPlayer.setNextMove(currentMove);
+                    }
                 }
-                case BLACK -> {
-                    blackPlayer.setNextMoveSz(moveSz);
+                try {
+                    game.play();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
+            log.info("moves:\n{}", currentMoves.stream().map(Move::toString).collect(Collectors.joining(",")));
+            log.info("Index-moves:\n{}",
+                    oneStepRecord
+                            .policies()
+                            .keySet()
+                            .stream()
+                            .map(index -> PolicyUtils.moveFromIndex(index, currentMoves, true))
+                            .collect(Collectors.joining(",")));
+            Map<Integer,Double> newPolicies = new HashMap<>();
+            oneStepRecord.policies().keySet().stream().forEach(oldIndex -> {
+                String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves, true);
+                Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oldMove)).findFirst().get();
+                int newIndex = PolicyUtils.indexFromMove(currentMove, false);
+                newPolicies.put(newIndex, oneStepRecord.policies().get(oldIndex));
+            });
+            oneStepRecord.policies().clear();
+            oneStepRecord.policies().putAll(newPolicies);
         });
-        
         try {
             while (game.play() == Game.GameStatus.IN_PROGRESS) ;
         } catch (Throwable t) {
@@ -328,11 +354,11 @@ public class DeepLearningAGZ {
         } finally {
             log.info("END GAME::\n{}", game);
         }
-
     }
 
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
+        transform2NewPolicies(trainGame);
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());

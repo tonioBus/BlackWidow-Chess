@@ -4,7 +4,6 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -16,7 +15,6 @@ import lombok.Getter;
  *     <li>e2 -> [4,1]</li>
  * </ul>
  */
-@AllArgsConstructor
 @Getter
 public class Coordinate {
     private int xInput;
@@ -24,7 +22,40 @@ public class Coordinate {
     private Alliance alliance;
 
     /**
+     * Create a coordinate <strong>WITHOUT</strong> taking care of the alliance
+     * @param xInput
+     * @param yInput
+     * @param alliance
+     */
+    public Coordinate(int xInput, int yInput, Alliance alliance) {
+        this.xInput = xInput;
+        this.yInput = yInput;
+        this.alliance = alliance;
+    }
+
+    /**
+     * Build a coordinate based on the destination of the move, <strong>NOT</strong> the origin
+     * This Constructor take care of the alliance to get coordinate from the player point of view
+     *
+     * @param move
+     */
+    public static Coordinate destinationCoordinate(final Move move) {
+        return new Coordinate(move.getDestinationCoordinate(), move.getAllegiance());
+    }
+
+    /**
+     * Build a coordinate based on the source of the move, <strong>NOT</strong> the destination
+     * This Constructor take care of the alliance to get coordinate from the player point of view
+     *
+     * @param move
+     */
+    public static Coordinate sourceCoordinate(final Move move) {
+        return new Coordinate(move.getCurrentCoordinate(), move.getAllegiance());
+    }
+
+    /**
      * Convert from position as given by initializeAlgebraicNotation to cartesian coordinate
+     * This Constructor take care of the alliance to get coordinate from the player point of view
      * <ul>
      *     <li>a8 -> <strong>0</strong> -> [0,7]</li>
      *     <li>h8 -> <strong>7</strong> -> [7,7]</li>
@@ -57,15 +88,6 @@ public class Coordinate {
      */
     public Coordinate(final Piece piece) {
         this(piece.getPiecePosition(), piece.getPieceAllegiance());
-    }
-
-    /**
-     * Build a coordinate based on the destination of the move, <strong>NOT</strong> the origin
-     *
-     * @param move
-     */
-    public Coordinate(final Move move) {
-        this(move.getDestinationCoordinate(), move.getAllegiance());
     }
 
     public int getBoardPosition() {

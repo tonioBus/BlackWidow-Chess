@@ -14,5 +14,4 @@ public record OneStepRecord(InputsFullNN inputs,
                             String move,
                             Alliance color2play,
                             Map<Integer, Double> policies) implements Serializable {
-
 }

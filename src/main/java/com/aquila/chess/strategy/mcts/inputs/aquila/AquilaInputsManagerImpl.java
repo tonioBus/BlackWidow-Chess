@@ -79,21 +79,12 @@ public class AquilaInputsManagerImpl implements InputsManager {
      * [12][NB_COL][NB_COL]
      */
     private void createInputs(double[][][] inputs, Board board, Alliance color2play) {
-//        board.setCheckBoard(false);
-//        board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
-//            Coordinate movesCoordinate = new Coordinate(move);
-//            inputs[12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-//        });
-//        board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE).forEach(move -> {
-//            Coordinate movesCoordinate = new Coordinate(move);
-//            inputs[6 + 12][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-//        });
-//        board.setCheckBoard(true);
         board.getAllPieces().parallelStream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
                 case BLACK -> board.blackPlayer();
             };
+            // coordinate calculated from the point of view of the player
             Coordinate coordinate = new Coordinate(currentPiece);
             int currentPieceIndex = getPlanesIndex(currentPiece);
             // Position 0 (6+6 planes)
@@ -101,8 +92,9 @@ public class AquilaInputsManagerImpl implements InputsManager {
             // Moves 12 (6+6 planes)
             Collection<Move> moves = currentPiece.calculateLegalMoves(board);
             moves.stream().forEach(move -> {
-                Coordinate movesCoordinate = new Coordinate(move);
-                inputs[12+currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+                // movesCoordinate calculated from the point of view of the player
+                Coordinate movesCoordinate = Coordinate.destinationCoordinate(move);
+                inputs[12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
             });
             // Attacks 24 (6+6 planes)
             moves.stream().filter(move -> move.isAttack()).forEach(move -> {
@@ -116,7 +108,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
                 moves.stream().forEach(move -> {
                     Move.MoveStatus status = player.makeMove(move).getMoveStatus();
                     if (status == Move.MoveStatus.DONE) {
-                        Coordinate coordinateKingMoves = new Coordinate(move);
+                        Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
                         inputs[36 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
                     }
                 });

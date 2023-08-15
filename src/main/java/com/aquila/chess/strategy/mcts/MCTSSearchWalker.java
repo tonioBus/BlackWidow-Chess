@@ -152,26 +152,16 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return null;
     }
 
-    static class StopException extends RuntimeException {
-        @Getter
-        private final MCTSNode opponentNode;
-
-        public StopException(MCTSNode opponentNode) {
-            this.opponentNode = opponentNode;
-        }
-    }
-
     private void prepareChilds(final MCTSNode opponentNode) {
         if (opponentNode.isPrepared()) return;
         opponentNode.setPrepared(true);
         if (opponentNode.getChildNodes().size() == 0) return;
-        final Collection<Move> moves = opponentNode.getChildMoves();
         AtomicBoolean stop = new AtomicBoolean(false);
         synchronized (opponentNode) {
-            moves.parallelStream().takeWhile(move -> !stop.get()).forEach(possibleMove -> {
+            final Collection<Move> moves = opponentNode.getChildMoves();
+            moves.stream().takeWhile(move -> !stop.get()).forEach(possibleMove -> {
                 final Player childPlayer = possibleMove.execute().currentPlayer();
                 final List<Move> allLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
-                // log.info("legalMoves[{}]:{}", possibleMove, allLegalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 if (allLegalMoves.isEmpty()) {
                     if (Utils.isDebuggerPresent()) {
                         log.info("prepareChilds:\n{}", DotGenerator.toString(opponentNode.getRoot(), 5, true));
