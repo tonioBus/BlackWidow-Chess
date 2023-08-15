@@ -313,6 +313,7 @@ public class DeepLearningAGZ {
                 if (currentMoveOpt.isEmpty()) {
                     log.error("no legal move found for: {}", oneStepRecord.move());
                     log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                    log.error("game:\n{}", game.getBoard().toString());
                     throw new RuntimeException("no legal move found for: " + oneStepRecord.move());
                 }
                 Move currentMove = currentMoveOpt.get();
@@ -343,7 +344,11 @@ public class DeepLearningAGZ {
                 String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves, true);
                 Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oldMove)).findFirst().get();
                 int newIndex = PolicyUtils.indexFromMove(currentMove, false);
-                newPolicies.put(newIndex, oneStepRecord.policies().get(oldIndex));
+                double policy = oneStepRecord.policies().get(oldIndex);
+                if (Double.isNaN(policy)) {
+                    policy = 1;
+                }
+                newPolicies.put(newIndex, policy);
             });
             oneStepRecord.policies().clear();
             oneStepRecord.policies().putAll(newPolicies);
