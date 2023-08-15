@@ -95,6 +95,7 @@ public class MainFitNNAquila implements Runnable {
                 .inputsManager(inputsManager)
                 .build();
         Arrays.stream(trainDirs).forEach(trainDir -> {
+            log.info("TRAIN DIR: {}", trainDir);
             try {
                 train(trainDir, deepLearningWhite);
             } catch (IOException e) {
@@ -106,12 +107,13 @@ public class MainFitNNAquila implements Runnable {
 //        train("train-aquila", deepLearningWhite);
 //        train("train-aquila-linux", deepLearningWhite);
 //        train("train-aquila-rog", deepLearningWhite);
+
         try {
             deepLearningWhite.save();
         } catch (IOException e) {
             log.error("Error when saving NN", e);
         }
-        log.info("Train done in directory:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("- ", "- ", "")));
+        log.info("Train done in directories:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("- ", "- ", "")));
     }
 
     private void waitForKey() {
@@ -142,7 +144,7 @@ public class MainFitNNAquila implements Runnable {
                 deepLearningWhite.train(trainGame);
             } catch (Exception e) {
                 log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);
-                log.error("Stopping the training ... :(");
+                log.error("Stopping this training ... :(");
             }
         }
         return numGame;

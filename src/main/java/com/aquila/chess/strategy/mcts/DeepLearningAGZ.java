@@ -311,7 +311,6 @@ public class DeepLearningAGZ {
         game.setup(whitePlayer, blackPlayer);
         trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
             final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
-            Map<Integer, Double> policies = oneStepRecord.policies();
             if (!oneStepRecord.move().equals("INIT-MOVE")) {
                 Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oneStepRecord.move())).findFirst().get();
                 switch (game.getColor2play()) {
@@ -346,14 +345,6 @@ public class DeepLearningAGZ {
             oneStepRecord.policies().clear();
             oneStepRecord.policies().putAll(newPolicies);
         });
-        try {
-            while (game.play() == Game.GameStatus.IN_PROGRESS) ;
-        } catch (Throwable t) {
-            log.error("Error during a play status:" + game.getStatus(), t);
-            log.info("GAME:\n{}", game);
-        } finally {
-            log.info("END GAME::\n{}", game);
-        }
     }
 
     public void train(final TrainGame trainGame) throws IOException {

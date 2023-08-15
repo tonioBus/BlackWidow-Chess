@@ -60,7 +60,7 @@ public class PolicyUtils {
         List<Move> filteredMoves = moves.stream().filter(move -> index == indexFromMove(move, old)).collect(Collectors.toList());
         if (filteredMoves.isEmpty()) {
             log.error("Index : {} not found on possible moves", index);
-            throw new RuntimeException(String.format("Index:%s not found", index));
+            return moves.stream().findAny().get().toString();
         }
         if (filteredMoves.size() != 1) {
             log.error("Index : {} get multiple moves: {}", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
