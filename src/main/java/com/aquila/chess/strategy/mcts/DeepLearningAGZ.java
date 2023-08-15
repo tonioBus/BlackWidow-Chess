@@ -331,14 +331,14 @@ public class DeepLearningAGZ {
                     throw new RuntimeException(e);
                 }
             }
-            log.info("moves:\n{}", currentMoves.stream().map(Move::toString).collect(Collectors.joining(",")));
-            log.info("Index-moves:\n{}",
-                    oneStepRecord
-                            .policies()
-                            .keySet()
-                            .stream()
-                            .map(index -> PolicyUtils.moveFromIndex(index, currentMoves, true))
-                            .collect(Collectors.joining(",")));
+            // log.info("moves:\n{}", currentMoves.stream().map(Move::toString).collect(Collectors.joining(",")));
+//            log.info("Index-moves:\n{}",
+//                    oneStepRecord
+//                            .policies()
+//                            .keySet()
+//                            .stream()
+//                            .map(index -> PolicyUtils.moveFromIndex(index, currentMoves, true))
+//                            .collect(Collectors.joining(",")));
             Map<Integer, Double> newPolicies = new HashMap<>();
             oneStepRecord.policies().keySet().stream().forEach(oldIndex -> {
                 String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves, true);
@@ -369,10 +369,6 @@ public class DeepLearningAGZ {
         if (restChunk > 0) {
             trainChunk(nbChunk, restChunk, trainGame);
         }
-        double score = nn.getScore();
-        log.info("NETWORK score: {}", score);
-        if ("NaN".equals(score + ""))
-            throw new IOException("NN score not defined (0 / 0 ?), the saving will not work");
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
@@ -403,6 +399,12 @@ public class DeepLearningAGZ {
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
         nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
+        double score = nn.getScore();
+        log.info("NETWORK score: {}", score);
+        if ("NaN".equals(score + "")) {
+            log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");
+            System.exit(-1);
+        }
     }
 
     private void normalize(final Map<Integer, Double> policyMap) {
@@ -410,8 +412,8 @@ public class DeepLearningAGZ {
         for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
             double policy = policyEntry.getValue();
             if (Double.isNaN(policy)) {
-                policyEntry.setValue(1.0);
                 policy = 1.0;
+                policyEntry.setValue(policy);
             }
             sum += policy;
         }
@@ -422,6 +424,8 @@ public class DeepLearningAGZ {
         for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
             double policy = policyEntry.getValue();
             policy = policy / sum;
+            if (policy < 0.0) policy = 0.0;
+            if (policy > 1.0) policy = 1.0;
             policyEntry.setValue(policy);
         }
     }

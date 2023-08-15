@@ -59,11 +59,11 @@ public class PolicyUtils {
     public static String moveFromIndex(int index, Collection<Move> moves, boolean old) {
         List<Move> filteredMoves = moves.stream().filter(move -> index == indexFromMove(move, old)).collect(Collectors.toList());
         if (filteredMoves.isEmpty()) {
-            log.error("Index : {} not found on possible moves", index);
+            // log.error("Index : {} not found on possible moves", index);
             return moves.stream().findAny().get().toString();
         }
         if (filteredMoves.size() != 1) {
-            log.error("Index : {} get multiple moves: {}", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+            // log.error("Index : {} get multiple moves: {}", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
             return filteredMoves.get(0).toString();
         }
         return filteredMoves.get(0).toString();

@@ -127,7 +127,7 @@ public class TrainTest {
                 .withNbSearchCalls(10);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
-        TrainGame trainGame = TrainGame.load("train-aquila", 54);
+        TrainGame trainGame = TrainGame.load("train-aquila-linux", 146);
         deepLearningWhite.train(trainGame);
     }
 

@@ -102,6 +102,9 @@ public class MainFitNNAquila implements Runnable {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
+            } catch(RuntimeException e) {
+                log.error("RuntimeException, we will close without saving", e);
+                System.exit(-1);
             }
         });
 //        train("train-aquila", deepLearningWhite);
@@ -138,7 +141,7 @@ public class MainFitNNAquila implements Runnable {
         log.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
-            log.info("load game:{}", numGame);
+            log.info("load game:{}/{}", subDir, numGame);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
                 deepLearningWhite.train(trainGame);
