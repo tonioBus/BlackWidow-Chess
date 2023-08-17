@@ -1,13 +1,14 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.OutputNN;
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class NNSimul extends NNConstants {
@@ -20,13 +21,21 @@ public class NNSimul extends NNConstants {
     public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+            double value;
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
-            for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
-                if (offsets.containsKey(policyIndex)) {
-                    double offset = offsets.get(policyIndex);
-                    policies[policyIndex] += offset;
+            if (randomGenerator.nextFloat() > 0.5) {
+                value = mediumValue + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+                for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
+                    policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+                    if (offsets.containsKey(policyIndex)) {
+                        double offset = offsets.get(policyIndex);
+                        policies[policyIndex] += offset;
+                    }
+                }
+            } else {
+                value = mediumValue;
+                for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
+                    policies[policyIndex] = mediumPolicies;
                 }
             }
             ret.add(new OutputNN(value, policies));

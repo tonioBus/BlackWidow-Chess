@@ -2,6 +2,7 @@ package com.aquila.chess;
 
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
+import com.aquila.chess.strategy.check.GameChecker;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
@@ -35,7 +36,7 @@ public class MainTrainingAquilaSimulNN {
 
     private static final Dirichlet dirichlet = nbStep -> true; // nbStep <= 30;
 
-    private static final String trainDir = "train-aquila";
+    private static final String trainDir = "train-todel";
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
@@ -83,11 +84,13 @@ public class MainTrainingAquilaSimulNN {
             // .withNbThread(1);
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
+            GameChecker gameChecker = new GameChecker();
             Game.GameStatus gameStatus;
             do {
                 gameStatus = game.play();
                 sequence.play();
                 Move move = game.getLastMove();
+                gameChecker.play(move.toString());
                 log.info("move:{} game:\n{}", move, game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");

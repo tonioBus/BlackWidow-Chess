@@ -4,6 +4,7 @@ import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.FixStrategy;
+import com.aquila.chess.strategy.check.GameChecker;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
@@ -299,37 +300,13 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    private void transform2NewPolicies(final TrainGame trainGame) throws IOException {
+    private void transform2NewPolicies(final TrainGame trainGame) {
         log.info("transform training size: {}", trainGame.getOneStepRecordList().size());
-        final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).inputsManager(new AquilaInputsManagerImpl()).build();
-        FixStrategy whitePlayer = new FixStrategy(Alliance.WHITE);
-        FixStrategy blackPlayer = new FixStrategy(Alliance.BLACK);
-        game.setup(whitePlayer, blackPlayer);
+        final GameChecker gameChecker = new GameChecker();
         trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
-            final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
+            final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
             if (!oneStepRecord.move().equals("INIT-MOVE")) {
-                Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(oneStepRecord.move())).findFirst();
-                if (currentMoveOpt.isEmpty()) {
-                    log.error("no legal move found for: {}", oneStepRecord.move());
-                    log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-                    log.error("game:\n{}", game.getBoard().toString());
-                    throw new RuntimeException("no legal move found for: " + oneStepRecord.move());
-                }
-                Move currentMove = currentMoveOpt.get();
-                switch (game.getColor2play()) {
-                    case WHITE -> {
-                        whitePlayer.setNextMove(currentMove);
-                    }
-                    case BLACK -> {
-                        blackPlayer.setNextMove(currentMove);
-                    }
-                }
-                try {
-                    game.play();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                gameChecker.play(oneStepRecord.move());
             }
             // log.info("moves:\n{}", currentMoves.stream().map(Move::toString).collect(Collectors.joining(",")));
 //            log.info("Index-moves:\n{}",

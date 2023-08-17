@@ -28,7 +28,6 @@ public class AquilaUtils {
                 int indexInput = (piece + 6 * color.ordinal()) + index;
                 for (int x = 0; x < Board.NB_COL; x++) {
                     for (int y = 0; y < Board.NB_COL; y++) {
-                        Coordinate coordinate = new Coordinate(x, y, color);
                         if (inputs[indexInput][x][y] != 0.0) {
                             int piecePosition;
                             if (color.isWhite()) {
