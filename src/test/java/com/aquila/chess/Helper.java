@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -49,7 +50,7 @@ public class Helper {
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
         addNodes2NotTest(root, notTestedNodes);
         checkMCTSTreeVisits(root, ret, notTestedNodes);
-        // assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
+        assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {

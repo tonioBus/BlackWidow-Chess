@@ -1,32 +1,30 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
-import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.check.GameChecker;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
-import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -102,11 +100,11 @@ public class DeepLearningAGZ {
 //    }
 
     @Builder
-    public DeepLearningAGZ(@NonNull final INN nn, boolean train, @NonNull int batchSize, @NonNull final InputsManager inputsManager) {
+    public DeepLearningAGZ(final INN nn, boolean train, int batchSize, final InputsManager inputsManager) {
         this(nn, train, batchSize, inputsManager.getNbFeaturesPlanes());
     }
 
-    public DeepLearningAGZ(@NonNull final INN nn, DeepLearningAGZ deepLearningAGZ) {
+    public DeepLearningAGZ(final INN nn, DeepLearningAGZ deepLearningAGZ) {
         this(nn, deepLearningAGZ.isTrain(), deepLearningAGZ.getBatchSize(), deepLearningAGZ.getNbFeaturesPlanes());
     }
 
@@ -161,7 +159,7 @@ public class DeepLearningAGZ {
      */
     public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
         if (node.getMove() == null)
-            return addRootState(mctsGame, label, node.getColorState().complementary(), statistic);
+            return addRootCacheValue(mctsGame, label, node.getColorState().complementary(), statistic);
         final Move possibleMove = node.getMove();
         return addState(mctsGame, label, possibleMove, statistic);
     }
@@ -202,7 +200,7 @@ public class DeepLearningAGZ {
      * @param statistic
      * @return
      */
-    public synchronized long addRootState(final MCTSGame mctsGame, final String label, final Alliance color2play, final Statistic statistic) {
+    public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final Alliance color2play, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addRootState", Thread.currentThread().getName());
         long key = mctsGame.hashCode(color2play);
         if (!cacheValues.containsKey(key)) {
@@ -235,24 +233,24 @@ public class DeepLearningAGZ {
         return key;
     }
 
-    public CacheValues.CacheValue getBatchedValue(long key, final Move possibleMove, final Statistic statistic) {
+    public CacheValue getBatchedValue(long key, final Move possibleMove, final Statistic statistic) {
         if (!cacheValues.containsKey(key)) {
             String msg = String.format("KEY:%d SHOULD HAVE CREATED MOVE:%s", key, possibleMove);
             log.error(msg);
             log.error("- {}",
                     cacheValues.getValues()
                             .stream()
-                            .map(v -> v.getNode() != null ? String.valueOf(v.getNode().getMove()) : "v.getNode:null")
+                            .map(v -> v.getNodes() != null ? String.valueOf(v.getNodes().get(0).getMove()) : "v.getNode:null")
                             .collect(Collectors.joining("\n")));
             throw new RuntimeException(msg);
         }
-        CacheValues.CacheValue cacheValue = cacheValues.get(key);
+        CacheValue cacheValue = cacheValues.get(key);
         statistic.nbRetrieveNNValues++;
         return cacheValue;
     }
 
     public double[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
-        CacheValues.CacheValue output = cacheValues.get(key);
+        CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
                 log.debug("getBatchedPolicies(): key:{} type:{}", key, output.getType());
@@ -428,13 +426,8 @@ public class DeepLearningAGZ {
     }
 
     public void addTerminalNodeToPropagate(long key, final MCTSNode node) {
-        CacheValues.CacheValue cacheValue = node.getCacheValue();
-        if (cacheValue != null) {
-            cacheValue.incPropagate();
-            this.serviceNN.addValueToPropagate(key, cacheValue);
-        } else {
-            this.serviceNN.addValueToPropagate(key, node.getCacheValue());
-        }
+        node.setNbPropagationsToExecute(node.getNbPropagationsToExecute() + 1);
+        this.serviceNN.addNodeToPropagate(node);
     }
 
 }

@@ -19,7 +19,7 @@ class ServiceNN {
     private final Map<Long, ServiceNNInputsJobs> batchJobs2Commit = new HashMap<>();
 
     @Getter
-    private final Map<Long, CacheValues.CacheValue> propagationValues = new LinkedHashMap<>();
+    private final Map<Long, MCTSNode> propagationNodes = new LinkedHashMap<>();
 
     private final DeepLearningAGZ deepLearningAGZ;
 
@@ -39,29 +39,21 @@ class ServiceNN {
     /**
      * Add a node to the propagation list, it will be taken in account at the next commit of Job ({@link #executeJobs})
      * Internally only the cacheValue is store for a propagation
-     *
-     * @param key
-     * @param node
      */
-    public synchronized void addNodeToPropagate(long key, final MCTSNode node) {
-        CacheValues.CacheValue cacheValue = node.getCacheValue();
-        if (cacheValue.isInitialised()) {
-            log.debug("adding a node already initialized: {} cacheValue:{}", node, cacheValue);
-            return;
-        }
-        this.addValueToPropagate(key, cacheValue);
+    public void addNodeToPropagate(final MCTSNode... nodes) {
+//        CacheValue cacheValue = node.getCacheValue();
+//        if (cacheValue != null && cacheValue.isInitialised()) {
+//            log.debug("adding a node already initialized: {} cacheValue:{}", node, cacheValue);
+//            return;
+//        }
+        addNodeToPropagate(List.of(nodes));
     }
 
-    /**
-     * Add a node to the propagation list, it will be taken in account at the next commit of Job ({@link #executeJobs})
-     *
-     * @param key
-     * @param cacheValue
-     */
-    public synchronized void addValueToPropagate(long key, final CacheValues.CacheValue cacheValue) {
-        synchronized (this.propagationValues) {
-            this.propagationValues.put(key, cacheValue);
-        }
+    public synchronized void addNodeToPropagate(Collection<MCTSNode> nodes) {
+        nodes.forEach(node -> {
+            node.incNbPropationsToExecute();
+            this.propagationNodes.put(node.getKey(), node);
+        });
     }
 
     /**
@@ -71,8 +63,8 @@ class ServiceNN {
      */
     public synchronized void removeNodeToPropagate(final MCTSNode node) {
         long key = node.getKey();
-        synchronized (this.propagationValues) {
-            this.propagationValues.remove(key);
+        synchronized (this.propagationNodes) {
+            this.propagationNodes.remove(key);
         }
         this.removeJob(key);
     }
@@ -87,7 +79,7 @@ class ServiceNN {
 
     public synchronized void clearAll() {
         this.batchJobs2Commit.clear();
-        this.getPropagationValues().clear();
+        this.getPropagationNodes().clear();
     }
 
     /**
@@ -102,7 +94,12 @@ class ServiceNN {
         log.debug("END executeJobs({})", submit2NN);
     }
 
-    private void retrieveValuesPoliciesFromNN(int length) {
+    /**
+     * <strong>INFERENCE</strong> of the current batched inputs
+     *
+     * @param length
+     */
+    private void inferNN(int length) {
         log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
         final var nbIn = new double[length][nbFeaturesPlanes][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
@@ -112,43 +109,34 @@ class ServiceNN {
         updateCacheValuesAndPolicies(outputsNN);
     }
 
-    private void propagateValues(boolean submit2NN, int length, boolean optimiseNodes) {
+    private void propagateValues(boolean submit2NN, int length) {
         int nbPropagate = 0;
         List<Long> deleteCaches = new ArrayList<>();
-        synchronized (propagationValues) {
-            for (Map.Entry<Long, CacheValues.CacheValue> entry : propagationValues.entrySet()) {
+        synchronized (propagationNodes) {
+            for (Map.Entry<Long, MCTSNode> entry : propagationNodes.entrySet()) {
                 long key = entry.getKey();
-                CacheValues.CacheValue cacheValue = entry.getValue();
-                MCTSNode node = cacheValue.getNode();
-                if (node == null) {
-                    log.debug("DELETING1[key:{}]  CACHE FROM PROPAGATE (cacheValue not connected to a Node):{}", key, cacheValue);
-                    continue;
-                }
+                MCTSNode node = entry.getValue();
+                CacheValue cacheValue = node.getCacheValue();
                 node.syncSum();
                 if (!node.isSync()) {
-                    log.debug("DELETING2[key:{}] CACHE FROM PROPAGATE (node not synchronised):{}", key, cacheValue);
+                    log.error("DELETING2[key:{}] CACHE FROM PROPAGATE (node not synchronised):{}", key, cacheValue);
                     continue;
                 }
                 List<MCTSNode> nodes2propagate = createPropragationList(node.getParent(), key);
                 if (nodes2propagate != null) {
                     deleteCaches.add(key);
                     double value2propagate = node.getValue();
-                    // if (node.getState() == MCTSNode.State.LOOSE) value2propagate = -value2propagate;
-                    node.getCacheValue().setPropagated(true);
-                    log.debug("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getCacheValue().getNbPropagate());
+                    node.setPropagated(true);
+                    log.info("PROPAGATE VALUE:{} CHILD:{} NB of TIMES:{}", value2propagate, node, node.getNbPropagationsToExecute());
                     for (MCTSNode node2propagate : nodes2propagate) {
                         value2propagate = -value2propagate;
-                        for (int i = 0; i < node.getCacheValue().getNbPropagate(); i++) {
-                            node2propagate.propagate(value2propagate);
-                        }
-                        nbPropagate += node.getCacheValue().getNbPropagate();
+                        nbPropagate += node2propagate.propagate(value2propagate);
                     }
-                    node.getCacheValue().resetNbPropragate();
                 }
             }
             if (submit2NN && length > 0) System.out.printf("%d#", nbPropagate);
             for (long key : deleteCaches) {
-                propagationValues.remove(key);
+                propagationNodes.remove(key);
             }
         }
     }
@@ -156,10 +144,10 @@ class ServiceNN {
     private void initValueAndPolicies(boolean submit2NN) {
         int length = batchJobs2Commit.size();
         if (submit2NN && length > 0) {
-            retrieveValuesPoliciesFromNN(length);
+            inferNN(length);
             batchJobs2Commit.clear();
         }
-        propagateValues(submit2NN, length, false);
+        propagateValues(submit2NN, length);
     }
 
     private List<MCTSNode> createPropragationList(final MCTSNode child, long key) {
@@ -174,10 +162,7 @@ class ServiceNN {
             if (log.isDebugEnabled()) log.debug("CREATE PROPRAGATION LIST: add:{}", node);
             nodes2propagate.add(node);
             node = node.getParent();
-//            if (node == null) {
-//                throw new RuntimeException("Node null !! Child:" + child);
-//            }
-        } while (node != null && node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT);
+        } while (node != null && node.getCacheValue().getType() != CacheValue.CacheValueType.ROOT);
         if (node != null) nodes2propagate.add(node);
         return nodes2propagate.size() == 0 ? null : nodes2propagate;
     }
@@ -198,12 +183,12 @@ class ServiceNN {
             long key = entry.getKey();
             double value = outputsNN.get(index).getValue();
             double[] policies = outputsNN.get(index).getPolicies();
-            CacheValues.CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
-            synchronized (propagationValues) {
-                if (propagationValues.containsKey(key)) {
-                    CacheValues.CacheValue oldCacheValue = propagationValues.get(key);
+            CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
+            synchronized (propagationNodes) {
+                if (propagationNodes.containsKey(key)) {
+                    CacheValue oldCacheValue = propagationNodes.get(key).getCacheValue();
                     if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
-                            oldCacheValue.getType() != CacheValues.CacheValue.CacheValueType.LEAF) {
+                            oldCacheValue.getType() != CacheValue.CacheValueType.LEAF) {
                         log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), ToStringBuilder.reflectionToString(oldCacheValue, ToStringStyle.JSON_STYLE));
                         log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), ToStringBuilder.reflectionToString(cacheValue, ToStringStyle.JSON_STYLE));
                         throw new Error("OldCacheValue != current cacheValue");
@@ -211,7 +196,7 @@ class ServiceNN {
                     if (log.isDebugEnabled())
                         log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
                 } else {
-                    propagationValues.put(key, cacheValue);
+                    addNodeToPropagate(cacheValue.getNodes());
                     if (log.isDebugEnabled())
                         log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                 }
@@ -220,24 +205,6 @@ class ServiceNN {
         }
         return index;
     }
-
-    /**
-     * @param nodeP
-     * @return
-     */
-    @Deprecated
-    public boolean isOnUpdateList(final MCTSNode nodeP) {
-        MCTSNode node = nodeP;
-        while (node.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT) {
-            synchronized (propagationValues) {
-                CacheValues.CacheValue cacheValue = propagationValues.get(node.getKey());
-                if (cacheValue == null || cacheValue.isInitialised()) return true;
-                node = node.getParent();
-            }
-        }
-        return false;
-    }
-
 
     /**
      * Submit a NN Job that will be committed later
@@ -256,8 +223,8 @@ class ServiceNN {
                                        final boolean isDirichlet,
                                        final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
-        synchronized (propagationValues) {
-            if (propagationValues.containsKey(key)) return;
+        synchronized (propagationNodes) {
+            if (propagationNodes.containsKey(key)) return;
         }
         if (possibleMove != null) {
             Alliance possibleMoveColor = possibleMove.getAllegiance();
@@ -278,8 +245,8 @@ class ServiceNN {
 
 
     public String toString() {
-        synchronized (propagationValues) {
-            return String.format("cacheValues.size():%d batchJobs.size:%d", this.propagationValues.size(), this.batchJobs2Commit.size());
+        synchronized (propagationNodes) {
+            return String.format("cacheValues.size():%d batchJobs.size:%d", this.propagationNodes.size(), this.batchJobs2Commit.size());
         }
     }
 }

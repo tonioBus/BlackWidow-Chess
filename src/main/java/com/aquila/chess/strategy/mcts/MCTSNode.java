@@ -36,7 +36,7 @@ public class MCTSNode implements Serializable {
     public final boolean dirichlet;
 
     @Getter
-    private final CacheValues.CacheValue cacheValue;
+    private final CacheValue cacheValue;
 
     @Getter
     private final long key;
@@ -46,8 +46,9 @@ public class MCTSNode implements Serializable {
 
     @Getter
     private double sum;
+
     @Getter
-    private transient Thread creator;
+    private final transient Thread creator;
 
     @Getter
     private int visits = 0;
@@ -83,8 +84,13 @@ public class MCTSNode implements Serializable {
     @Getter
     private final List<PropragateValue> values = new ArrayList<>();
 
+    @Setter
     @Getter
-    private int propagate;
+    private boolean propagated = false;
+
+    @Setter
+    @Getter
+    private int nbPropagationsToExecute = 0;
 
     @Getter
     private final transient Map<Move, MCTSNode> childNodes = new HashMap<>();
@@ -102,12 +108,58 @@ public class MCTSNode implements Serializable {
     }
 
     /**
+     * Standard constructor for new MCTSNode
+     *
+     * @param possibleMove
+     * @param cacheValue
+     * @return
+     */
+    public static MCTSNode createNode(Move possibleMove, CacheValue cacheValue) {
+        return new MCTSNode(possibleMove, new ArrayList<>(), -1, cacheValue);
+    }
+
+    /**
+     * Create a node. This method is not responsible to attach this node to his parent
+     *
+     * @param move       the move this node represent
+     * @param rootBoard  the board
+     * @param key
+     * @param cacheValue
+     * @return
+     */
+    public static MCTSNode createNode(final Board rootBoard, final Move move, final long key, final CacheValue cacheValue) {
+        synchronized (cacheValue) {
+            final Board selectBoard = move == null ? rootBoard : move.execute();
+            final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+            return new MCTSNode(move, childMoves, key, cacheValue);
+        }
+    }
+
+    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValue cacheValue) {
+        assert (move != null);
+        synchronized (cacheValue) {
+            MCTSNode rootNode;
+            Optional<MCTSNode> optRootNode = cacheValue.getNodes().stream().filter(node -> node.getState() == ROOT).findFirst();
+            if (optRootNode.isPresent()) {
+                rootNode = optRootNode.get();
+            } else {
+                final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                // rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
+                rootNode = new MCTSNode(move, childMoves, key, cacheValue);
+                rootNode.setAsRoot();
+                rootNode.parent = null;
+            }
+            return rootNode;
+        }
+    }
+
+    /**
      * @param move
      * @param childMoves
      * @param key
      * @param cacheValue
      */
-    public MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValues.CacheValue cacheValue) {
+    private MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
@@ -115,7 +167,7 @@ public class MCTSNode implements Serializable {
         this.creator = Thread.currentThread();
         this.key = key;
         this.cacheValue = cacheValue;
-        this.cacheValue.setNode(this);
+        this.cacheValue.addNode(this);
         if (move != null) {
             this.colorState = move.getAllegiance();
             this.move = move;
@@ -129,44 +181,8 @@ public class MCTSNode implements Serializable {
     }
 
     /**
-     * Create a node. This method is not responsible to attach this node to his parent
-     *
-     * @param move       the move this node represent
-     * @param rootBoard  the board
-     * @param dirichlet
-     * @param key
-     * @param cacheValue
-     * @return
-     */
-    public static MCTSNode createNode(final Board rootBoard, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
-        synchronized (cacheValue) {
-            final Board selectBoard = move == null ? rootBoard : move.execute();
-            final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-            return new MCTSNode(move, childMoves, key, cacheValue);
-        }
-    }
-
-    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValues.CacheValue cacheValue) {
-        assert (move != null);
-        synchronized (cacheValue) {
-            MCTSNode rootNode;
-            final MCTSNode ret = cacheValue.getNode();
-            if (ret != null) {
-                rootNode = ret;
-            } else {
-                final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-                // rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
-                rootNode = new MCTSNode(move, childMoves, key, cacheValue);
-            }
-            rootNode.setAsRoot();
-            rootNode.parent = null;
-            return rootNode;
-        }
-    }
-
-    /**
      * synchronized the node:
-     * If {@link #cadcheValue} is initialised
+     * If {@link #cacheValue} is initialised
      * <ul>
      *     <li>set {@link #visits} to 0</li>
      *     <li>set {@link #sum} to {@link #getCacheValue()}.value</li>
@@ -188,29 +204,32 @@ public class MCTSNode implements Serializable {
      *
      * @param value the value used to updateValueAndPolicies the reward
      */
-    public void propagate(double value) {
+    public int propagate(double value) {
         //FIXME only for display this.values.add(new PropragateValue(value, propragateSrc, buildOrder));
+        int nbPropagation;
+//        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
         this.sum += value;
-        this.propagate++;
         this.incVisits();
-        if (log.isDebugEnabled())
-            log.debug("PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
+//        }
+        log.info("PROPAGATE DONE: {}", this);
+        this.nbPropagationsToExecute = 0;
+//        return nbPropagation;
+        return 1;
     }
 
     public void unPropagate(double value, final PropragateSrc propragateSrc, int buildOrder) {
         this.values.add(new PropragateValue(-value, propragateSrc, buildOrder));
         this.sum -= value;
-        this.propagate--;
+        this.nbPropagationsToExecute--;
         this.decVisits();
-        if (log.isDebugEnabled())
-            log.debug("UN-PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
+        log.info("UN-PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
     }
 
     private static MCTSNode getPreviousRoot(final MCTSNode nodeP) {
         MCTSNode node = nodeP;
         while (node.getParent() != null) {
             node = node.getParent();
-            if (node.getCacheValue() != null && node.getCacheValue().getType() == CacheValues.CacheValue.CacheValueType.ROOT)
+            if (node.getCacheValue() != null && node.getCacheValue().getType() == CacheValue.CacheValueType.ROOT)
                 break;
         }
         return node;
@@ -245,7 +264,6 @@ public class MCTSNode implements Serializable {
     }
 
     /**
-     *
      * @return all childs and descendant of child until leaf
      */
     public List<MCTSNode> allChildNodes() {
@@ -312,6 +330,10 @@ public class MCTSNode implements Serializable {
             case REPETITION_X3 -> Game.GameStatus.DRAW_3;
             default -> Game.GameStatus.IN_PROGRESS;
         };
+    }
+
+    public void incNbPropationsToExecute() {
+        this.nbPropagationsToExecute++;
     }
 
     static public enum PropragateSrc {
@@ -408,13 +430,14 @@ public class MCTSNode implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("MCTSNode[%d] -> Move: %s visit:%d expectedReward:%e parent:%b childs:%d state:%s virtual:%f", //
+        return String.format("MCTSNode[%d] -> Move: %s visit:%d expectedReward:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
                 this.move == null ? "Starting" : this.move, //
                 this.visits, //
                 this.getExpectedReward(false), //
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //
+                this.nbPropagationsToExecute,
                 this.getState(),
                 this.getVirtualLoss());
     }
@@ -446,10 +469,9 @@ public class MCTSNode implements Serializable {
     }
 
     public boolean equals(final MCTSNode mctsNode) {
-        if (move == null) {
-            return mctsNode.move == null;
-        }
-        return move.equals(mctsNode.move);
+        return mctsNode.key == key &&
+                buildOrder == mctsNode.buildOrder &&
+                move == null ? true : move.equals(mctsNode.move);
     }
 
     public int getNumberAllSubNodes() {

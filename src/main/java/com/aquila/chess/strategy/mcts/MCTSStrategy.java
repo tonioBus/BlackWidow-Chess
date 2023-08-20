@@ -141,16 +141,19 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      * @return
      */
     protected void createRootNode(final Game game, final Move opponentMove) {
-        assert (opponentMove != null);
-        assert (opponentMove.getAllegiance() != this.alliance);
+        assert opponentMove != null;
+        assert opponentMove.getAllegiance() != this.alliance;
         log.info("opponentMove:{}", opponentMove);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
         if (this.directRoot == null) {
-            long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-            if (cacheValue.getNode() != null)
-                assert (cacheValue.getNode().getMove().getAllegiance() == alliance.complementary());
+            long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
+            CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+            if (cacheValue.getNodes().size() >0) {
+                cacheValue.getNodes().stream().forEach(node -> {
+                    assert (node.getMove().getAllegiance() == alliance.complementary());
+                });
+            }
             this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, cacheValue);
             return;
         }

@@ -31,7 +31,7 @@ import static com.chess.engine.classic.Alliance.WHITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-public class MCTSSearchTest {
+public class MCTSSearchLc0InputsTest {
 
     Lc0NNTest lc0NnTest;
 
@@ -135,7 +135,7 @@ public class MCTSSearchTest {
      * PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
-    @ValueSource(ints = {30, 50, 100})
+    @ValueSource(ints = {2, 30, 50, 100})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
@@ -146,7 +146,7 @@ public class MCTSSearchTest {
                 .nn(nnConstant)
                 .inputsManager(inputsManager)
                 .train(false)
-                .batchSize(1)
+                .batchSize(10)
                 .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -155,7 +155,6 @@ public class MCTSSearchTest {
                 10,
                 updateCpuct,
                 -1)
-               // .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
@@ -188,7 +187,7 @@ public class MCTSSearchTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {200})
+    @ValueSource(ints = {50, 200, 400, 800})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMateWith2Rooks(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg8,rh2", WHITE);
@@ -208,7 +207,7 @@ public class MCTSSearchTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearchCalls);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus status = game.play();
