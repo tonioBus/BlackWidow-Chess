@@ -136,7 +136,7 @@ public class MCTSNode implements Serializable {
     }
 
     public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValue cacheValue) {
-        assert (move != null);
+        assert move != null;
         synchronized (cacheValue) {
             MCTSNode rootNode;
             Optional<MCTSNode> optRootNode = cacheValue.getNodes().stream().filter(node -> node.getState() == ROOT).findFirst();
@@ -161,6 +161,7 @@ public class MCTSNode implements Serializable {
      */
     private MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
+        log.debug("CREATE NODE MOVE:{} key:{}", move, key);
         this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
         this.dirichlet = false;
@@ -225,19 +226,8 @@ public class MCTSNode implements Serializable {
         log.info("UN-PROPAGATE DONE[BuildOrder:{}]: {} -> move:{} visits:", this.buildOrder, value, this.move, this.visits);
     }
 
-    private static MCTSNode getPreviousRoot(final MCTSNode nodeP) {
-        MCTSNode node = nodeP;
-        while (node.getParent() != null) {
-            node = node.getParent();
-            if (node.getCacheValue() != null && node.getCacheValue().getType() == CacheValue.CacheValueType.ROOT)
-                break;
-        }
-        return node;
-    }
-
     public void setAsRoot() {
         log.warn("[{}] SET AS ROOT:{} {}", this.getColorState(), getCacheValue().value, this);
-        getCacheValue().setAsRoot();
         this.state = ROOT;
         if (this.parent != null) {
             this.parent.clearChildrens();
@@ -495,7 +485,6 @@ public class MCTSNode implements Serializable {
     public void createLeaf() {
         this.childNodes.clear();
         this.visits = 0;
-        this.getCacheValue().setAsLeaf();
         this.getCacheValue().setInitialised(true);
     }
 

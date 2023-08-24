@@ -135,7 +135,7 @@ public class MCTSSearchAquilaInputsTest {
      * PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
-    @ValueSource(ints = {2, 30, 50, 100})
+    @ValueSource(ints = {4, 5, 10, 30, 50, 100})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
@@ -154,6 +154,7 @@ public class MCTSSearchAquilaInputsTest {
                 10,
                 updateCpuct,
                 -1)
+                .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);

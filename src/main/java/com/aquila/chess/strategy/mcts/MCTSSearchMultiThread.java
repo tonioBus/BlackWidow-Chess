@@ -102,8 +102,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         if (nbWorks < 1) nbWorks = 1;
         for (int i = 0; i < nbWorks; i++) {
             final MCTSSearchWalker mctsSearchWalker = createSearchWalker(nbStep, i, nbSubmit);
-            if (log.isDebugEnabled())
-                log.debug("[{}] CREATING TASK:{} childs:{}", nbStep, i, currentRoot.getNonNullChildsAsCollection().size());
+            log.debug("[{}] SUBMIT NEW TASK({}) 0:{} childs:{}", nbStep, nbSubmit, i, currentRoot.getNonNullChildsAsCollection().size());
             executorService.submit(mctsSearchWalker);
             nbSubmit++;
         }
@@ -127,17 +126,16 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         case NB_STEP -> nbSubmit < nbMaxSearchCalls;
                     };
                     if (isContinue) {
-                        MCTSSearchWalker MCTSSearchWalker = createSearchWalker(
+                        MCTSSearchWalker mctsSearchWalker = createSearchWalker(
                                 nbStep,
                                 nbSearchWalker.intValue(),
                                 nbSubmit);
-                        if (log.isDebugEnabled())
-                            log.debug("[{}] CREATING new TASK:{} childs:{}", nbStep, nbSearchWalker.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
-                        executorService.submit(MCTSSearchWalker);
+                        log.debug("[{}] SUBMIT NEW TASK({}) 1:{} childs:{}", nbStep, nbSubmit, nbSearchWalker.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
+                        executorService.submit(mctsSearchWalker);
                         nbSubmit++;
                     } else {
                         WORKER_THREAD_POOL.shutdown();
-                        while (!WORKER_THREAD_POOL.awaitTermination(200, TimeUnit.MILLISECONDS)) ;
+                        while (!WORKER_THREAD_POOL.awaitTermination(100, TimeUnit.MILLISECONDS)) ;
                         isEnding = true;
                         if (log.isInfoEnabled())
                             log.info("[{}] END OF SEARCH DETECTED childs:{}", nbStep, currentRoot.getChildsAsCollection().size());

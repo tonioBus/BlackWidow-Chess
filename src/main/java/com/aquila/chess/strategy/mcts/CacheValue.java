@@ -32,8 +32,6 @@ public class CacheValue extends OutputNN implements Serializable {
 
     final private List<MCTSNode> nodes = new ArrayList<>();
 
-    private CacheValueType type = CacheValueType.INTERMEDIATE;
-
     private CacheValue(double value, String label, double[] policies) {
         super(value, policies);
         this.label = label;
@@ -43,10 +41,6 @@ public class CacheValue extends OutputNN implements Serializable {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
 
-    public void setAsRoot() {
-        this.type = CacheValueType.ROOT;
-    }
-
     public synchronized void normalizePolicies(double[] policies, boolean old) {
         this.sourcePolicies = policies;
         if (nodes.size() == 0) {
@@ -54,7 +48,7 @@ public class CacheValue extends OutputNN implements Serializable {
             return;
         }
         int[] indexes = PolicyUtils.getIndexesFilteredPolicies(nodes.get(0).getChildMoves(), old);
-        log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, nodes.get(0).getChildMoves().size(), nodes.get(0).isDirichlet());
+        log.debug("NORMALIZED move.size:{} dirichlet:{}",  nodes.get(0).getChildMoves().size(), nodes.get(0).isDirichlet());
         boolean isDirichlet = nodes.get(0).getState() == MCTSNode.State.ROOT;
         isDirichlet = MCTSStrategyConfig.isDirichlet(nodes.get(0).getMove()) && isDirichlet;
         double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, nodes.get(0).getChildMoves(), old);
@@ -66,10 +60,6 @@ public class CacheValue extends OutputNN implements Serializable {
             log.info("re-normalize node:{}", this.nodes);
             normalizePolicies(sourcePolicies, old);
         }
-    }
-
-    public void setAsLeaf() {
-        this.type = CacheValueType.LEAF;
     }
 
     public OutputNN setTrueValuesAndPolicies(final double value, final double[] policies) {
@@ -84,7 +74,7 @@ public class CacheValue extends OutputNN implements Serializable {
     }
 
     public void setTrueValuesAndPolicies() {
-        if (initialised && type != CacheValueType.LEAF) {
+        if (initialised) {
             nodes.forEach(MCTSNode::syncSum);
             normalizePolicies(policies, false);
         }
@@ -96,10 +86,6 @@ public class CacheValue extends OutputNN implements Serializable {
         });
         this.nodes.add(node);
         setTrueValuesAndPolicies();
-    }
-
-    public enum CacheValueType {
-        INTERMEDIATE, ROOT, LEAF
     }
 
 }

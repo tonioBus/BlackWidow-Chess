@@ -162,7 +162,7 @@ class ServiceNN {
             if (log.isDebugEnabled()) log.debug("CREATE PROPRAGATION LIST: add:{}", node);
             nodes2propagate.add(node);
             node = node.getParent();
-        } while (node != null && node.getCacheValue().getType() != CacheValue.CacheValueType.ROOT);
+        } while (node != null && node.getState() != MCTSNode.State.ROOT);
         if (node != null) nodes2propagate.add(node);
         return nodes2propagate.size() == 0 ? null : nodes2propagate;
     }
@@ -186,9 +186,11 @@ class ServiceNN {
             CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
             synchronized (propagationNodes) {
                 if (propagationNodes.containsKey(key)) {
-                    CacheValue oldCacheValue = propagationNodes.get(key).getCacheValue();
+                    MCTSNode propagationNode = propagationNodes.get(key);
+                    CacheValue oldCacheValue = propagationNode.getCacheValue();
                     if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
-                            oldCacheValue.getType() != CacheValue.CacheValueType.LEAF) {
+                            propagationNode.getState() != MCTSNode.State.ROOT ||
+                            propagationNode.getState() != MCTSNode.State.INTERMEDIATE) {
                         log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), ToStringBuilder.reflectionToString(oldCacheValue, ToStringStyle.JSON_STYLE));
                         log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), ToStringBuilder.reflectionToString(cacheValue, ToStringStyle.JSON_STYLE));
                         throw new Error("OldCacheValue != current cacheValue");

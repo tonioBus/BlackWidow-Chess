@@ -96,7 +96,7 @@ public class DotGenerator {
         Shape shape = Shape.record;
         switch (node.getState()) {
             case INTERMEDIATE:
-                if (node.getCacheValue().getType() == CacheValue.CacheValueType.ROOT) {
+                if (node.getState() == MCTSNode.State.ROOT) {
                     shape = Shape.box3d;
                 } else {
                     shape = Shape.record;

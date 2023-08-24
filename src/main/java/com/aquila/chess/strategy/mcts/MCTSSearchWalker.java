@@ -78,7 +78,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Thread.currentThread().setName(String.format("Worker-%d", numThread));
+        Thread.currentThread().setName(String.format("W:%d S:%d", numThread, nbSubmit));
         cpuct = updateCpuct.update(mctsGame.getMoves().size());
         SearchResult searchResult = search(currentRoot, 0, true);
         if (searchResult == null) {
@@ -91,6 +91,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     }
 
     protected SearchResult search(final MCTSNode opponentNode, int depth, final boolean isRootNode) throws Exception {
+        log.debug("MCTS SEARCH: depth:{} opponentNode:{}", depth, opponentNode);
         try {
             deepLearning.flushJob(false);
         } catch (ExecutionException e) {
@@ -108,14 +109,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
             selectedMove = selection(opponentNode, isRootNode, depth);
             if (selectedMove == null) return null;
             selectedNode = opponentNode.findChild(selectedMove);
-            if (log.isDebugEnabled()) log.debug("END synchronized 1.0 ({})", opponentNode);
+            log.debug("MCTS SEARCH END synchronized 1.0 ({})", opponentNode);
             // expansion
             if (selectedNode == null) {
                 key = mctsGame.hashCode(selectedMove.getAllegiance(), selectedMove);
                 CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
-                if (log.isDebugEnabled())
-                    log.debug("EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
-                if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
+                log.debug("MCTS SEARCH EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
+                log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
                     selectedNode = MCTSNode.createNode(mctsGame.getBoard(), selectedMove, key, cacheValue);
                     opponentNode.addChild(selectedNode);
@@ -125,10 +125,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     throw e;
                 }
                 selectedNode.syncSum();
-                if (log.isDebugEnabled()) log.debug("END synchronized 1.1 ({})", opponentNode);
+                log.debug("END synchronized 1.1 ({})", opponentNode);
                 return null;
             } else {
-                // log.info("found child:{} node:{}", selectedMove, selectedNode);
+                log.debug("MCTS SEARCH found child:{} node:{}", selectedMove, selectedNode);
             }
         }
         // evaluate
@@ -141,8 +141,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
         }
         if (key != 0 && !selectedNode.isSync()) {
-            if (log.isDebugEnabled()) log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
-            if (log.isDebugEnabled()) log.debug("\tparent:{}", opponentNode);
+            log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
+            log.debug("\tparent:{}", opponentNode);
             this.deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
         }
         // recursive calls
@@ -192,7 +192,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             String label = String.format("OPTIMIZE [S:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
             final CacheValue cacheValue = CacheValues.createDummy(label);
             synchronized (opponentNode.getChildNodes()) {
-                if( opponentNode.findChild(possibleMove)==null) {
+                if (opponentNode.findChild(possibleMove) == null) {
                     child = MCTSNode.createNode(possibleMove, cacheValue);
                     log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), label);
                     opponentNode.addChild(child);
@@ -285,7 +285,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
                     CacheValue cacheValue = deepLearning.getCacheValues().get(key);
                     if (log.isDebugEnabled())
-                        log.debug("GET CACHE VALUE[key:{}] possibleMove:{} CACHEVALUE:{}", key, possibleMove, cacheValue);
+                        log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
                 } else {
                     exploitation = child.getExpectedReward(true);
@@ -428,7 +428,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 synchronized (parent) {
                     parent.decVirtualLoss();
                 }
-            } while (parent.getCacheValue().getType() != CacheValue.CacheValueType.ROOT);
+            } while (parent.getState() != MCTSNode.State.ROOT);
         } else {
             log.warn("removeState({}) ", node);
             deepLearning.removeState(mctsGame, simulatedPlayerColor, selectedMove);

@@ -253,7 +253,7 @@ public class DeepLearningAGZ {
         CacheValue output = cacheValues.get(key);
         if (output != null) {
             if (log.isDebugEnabled())
-                log.debug("getBatchedPolicies(): key:{} type:{}", key, output.getType());
+                log.debug("getBatchedPolicies(): key:{}", key);
             statistic.nbRetrieveNNCachedPolicies++;
             return output.getPolicies();
         } else {
