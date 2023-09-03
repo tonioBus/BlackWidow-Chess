@@ -42,9 +42,11 @@ public class Helper {
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
         final MCTSNode root = mctsStrategy.getDirectRoot();
         final List<String> ret = new ArrayList<>();
-        if (mctsStrategy.getNbSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbSearchCalls()) {
-            String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbSearchCalls());
-            log.warn(msg);
+        int numberAllSubNodes = root.getNumberAllSubNodes();
+        if (mctsStrategy.getNbSearchCalls() > 1 && numberAllSubNodes != mctsStrategy.getNbSearchCalls()) {
+            String msg = String.format("number of sub-nodes of ROOT node:%d should be == number of search:%d", numberAllSubNodes, mctsStrategy.getNbSearchCalls());
+            log.error(msg);
+            ret.add(msg);
         }
         checkMCTSTreePoliciesAndValues(mctsStrategy.getDirectRoot(), ret);
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();

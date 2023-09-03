@@ -52,7 +52,7 @@ public class MCTSSearchAquilaInputsTest {
     void testSimpleSearch(int nbStep) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(aquilaNNTest)
                 .inputsManager(inputsManager)
@@ -215,6 +215,7 @@ public class MCTSSearchAquilaInputsTest {
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 5));
         Helper.checkMCTSTree(whiteStrategy);
         assertTrue(lossNodes.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
+
         log.warn("game:{}", game.toPGN());
     }
 
@@ -274,26 +275,26 @@ public class MCTSSearchAquilaInputsTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 5, 10, 50, 100, 800})
     void testSearchMonoThreads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 1, 5);
+        testSearchThreads(nbMaxSearchCalls, 1, 100);
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 20, 30, 50, 100, 800})
+    @ValueSource(ints = {1, 2, 3, 5, 10, 20, 30, 50, 100, 800})
     void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 2, 50);
+        testSearchThreads(nbMaxSearchCalls, 2, 100);
     }
 
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
     void testSearch4Threads(int nbStep) throws Exception {
-        testSearchThreads(nbStep, 4, 10);
+        testSearchThreads(nbStep, 4, 100);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
     void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 8, 10);
+        testSearchThreads(nbMaxSearchCalls, 8, 100);
     }
 
     @ParameterizedTest

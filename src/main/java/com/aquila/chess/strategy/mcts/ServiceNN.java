@@ -46,7 +46,7 @@ class ServiceNN {
     }
 
     private synchronized void addNodeToPropagate(Collection<MCTSNode> nodes) {
-        nodes.forEach(node -> {
+        nodes.stream().filter(node -> node.getState() != MCTSNode.State.ROOT && !node.isPropagated()).forEach(node -> {
             node.incNbPropationsToExecute();
             log.debug("ADD NODE TO PROPAGATE:{}", node);
             this.nodesToPropagate.put(node.getKey(), node);
@@ -107,6 +107,7 @@ class ServiceNN {
     }
 
     private void propagateValues(boolean submit2NN, int length) {
+        if (nodesToPropagate.isEmpty()) return;
         int nbPropagate = 0;
         List<Long> deleteCaches = new ArrayList<>();
         synchronized (nodesToPropagate) {
@@ -118,24 +119,27 @@ class ServiceNN {
                 CacheValue cacheValue = node.getCacheValue();
                 node.syncSum();
                 if (!node.isSync()) {
-                    log.error("DELETING2[key:{}] CACHE FROM PROPAGATE (node not synchronised):{}", key, cacheValue);
+                    log.info("POSTPONED PROPAGATE [key:{}] -> node not synchronised:{}", key, cacheValue);
                     continue;
                 }
                 List<MCTSNode> propagationListUntilRoot = createPropragationList(node.getParent(), key);
                 if (propagationListUntilRoot != null) {
                     deleteCaches.add(key);
                     double value2propagate = node.getCacheValue().getValue();
-                    node.setPropagated(true);
-                    log.info("PROPAGATE NODE:{} VALUE:{} PATH:[ {} ] NB of TIMES:{}",
+                    int nbPropagation2Apply = node.getNbPropagationsToExecute();
+                    if (log.isDebugEnabled()) log.debug("PROPAGATE NODE:{} VALUE:{} PATH:[ {} ] NB of TIMES:{}",
                             node.getMove(),
                             value2propagate,
                             propagationListUntilRoot.stream().map(node1 -> node1.getMove().toString()).collect(Collectors.joining(" / ")),
                             node.getNbPropagationsToExecute());
-                    for (MCTSNode node2propagate : propagationListUntilRoot) {
-                        value2propagate = -value2propagate;
-                        nbPropagate += node2propagate.propagate(value2propagate);
+                    for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
+                        for (MCTSNode node2propagate : propagationListUntilRoot) {
+                            value2propagate = -value2propagate;
+                            nbPropagate += node2propagate.propagate(value2propagate);
+                        }
                     }
                 }
+                node.setPropagated(true);
             }
             if (submit2NN && length > 0) System.out.printf("%d#", nbPropagate);
             for (long key : deleteCaches) {
@@ -155,7 +159,7 @@ class ServiceNN {
     }
 
     private List<MCTSNode> createPropragationList(final MCTSNode child, long key) {
-        if (child == null ) return null; // || child.getState() == MCTSNode.State.ROOT) return null;
+        if (child == null) return null; // || child.getState() == MCTSNode.State.ROOT) return null;
         List<MCTSNode> nodes2propagate = new ArrayList<>();
         MCTSNode node = child;
         do {

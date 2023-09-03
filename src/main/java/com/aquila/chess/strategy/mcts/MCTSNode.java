@@ -191,15 +191,15 @@ public class MCTSNode implements Serializable {
      * @param value the value used to updateValueAndPolicies the reward
      */
     public int propagate(double value) {
-        int nbPropagation;
-        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
+//        int nbPropagation;
+//        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
             this.sum += value;
             this.incVisits();
-        }
-        log.info("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
+//        }
+        log.debug("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
         this.nbPropagationsToExecute = 0;
-        return nbPropagation;
-//        return 1;
+//        return nbPropagation;
+        return 1;
     }
 
     public void unPropagate(double value, final PropragateSrc propragateSrc, int buildOrder) {

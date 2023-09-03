@@ -39,9 +39,9 @@ public class CacheValue extends OutputNN implements Serializable {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("initialized=" + this.initialized);
-        sb.append("label=" + this.label);
-        sb.append("value=" + this.value);
-        sb.append("nodes=" + nodes.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+        sb.append(" label=" + this.label);
+        sb.append(" value=" + this.value);
+        sb.append(" nodes=" + nodes.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
         return sb.toString();
     }
 
