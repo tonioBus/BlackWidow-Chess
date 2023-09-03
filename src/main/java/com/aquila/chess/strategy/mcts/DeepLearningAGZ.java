@@ -425,7 +425,7 @@ public class DeepLearningAGZ {
         return nn.getFilename();
     }
 
-    public void addTerminalNodeToPropagate(long key, final MCTSNode node) {
+    public void addDefinedNodeToPropagate(final MCTSNode node) {
         node.setNbPropagationsToExecute(node.getNbPropagationsToExecute() + 1);
         this.serviceNN.addNodeToPropagate(node);
     }

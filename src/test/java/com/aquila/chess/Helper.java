@@ -61,7 +61,7 @@ public class Helper {
         if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: Node:%s sum of policies should be ~= 1. (sum:%f)", node, sumPolicies));
         }
-        if (!node.getCacheValue().isInitialised()) {
+        if (!node.getCacheValue().isInitialized()) {
             ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: node %s should be initialized", node));
         }
         for (MCTSNode child : node.getChildsAsCollection()) {

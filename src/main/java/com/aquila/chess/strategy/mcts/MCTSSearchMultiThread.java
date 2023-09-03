@@ -95,7 +95,8 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             MCTSNode.resetBuildOrder();
             rootValue.reNormalizePolicies(false);
         }
-        int nbSubmit = 0; // this.currentRoot.getVisits();
+        int nbSubmit = 0;
+        int nbSearchCalls = 0;
         int nbWorks;
         if (nbMaxSearchCalls < 1) nbWorks = nbThreads;
         else nbWorks = Math.min(nbThreads, (int) nbMaxSearchCalls);
@@ -114,23 +115,24 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 if (log.isErrorEnabled())
                     log.error("FUTURE is NULL. NB_THREAD:{} ", threadPoolExecutor.getActiveCount());
                 throw new Error("future null !!!");
-                // continue;
             }
             try {
-                final Integer nbSearchWalker = future.get();
+                final Integer effectiveNbSearchCalls = future.get();
+                nbSearchCalls += effectiveNbSearchCalls;
+                log.debug("NUMBER OF SEARCH CALLS: {} MAX:{} SUBMITTED:{}", nbSearchCalls, nbMaxSearchCalls, nbSubmit);
                 if (log.isDebugEnabled())
-                    log.debug("[{}] IS DONE {}:{} childs:{}", nbStep, nbSearchWalker.intValue(), future.isDone(), this.currentRoot.getChildsAsCollection().size());
+                    log.debug("[{}] IS DONE {}:{} childs:{}", nbStep, effectiveNbSearchCalls.intValue(), future.isDone(), this.currentRoot.getChildsAsCollection().size());
                 if (isEnding == false) {
                     boolean isContinue = switch (this.stopMode) {
                         case TIMING -> (System.currentTimeMillis() - start) < timeMillisPerStep;
-                        case NB_STEP -> nbSubmit < nbMaxSearchCalls;
+                        case NB_STEP -> nbSearchCalls < nbMaxSearchCalls && nbSubmit < nbMaxSearchCalls;
                     };
                     if (isContinue) {
                         MCTSSearchWalker mctsSearchWalker = createSearchWalker(
                                 nbStep,
-                                nbSearchWalker.intValue(),
+                                effectiveNbSearchCalls.intValue(),
                                 nbSubmit);
-                        log.debug("[{}] SUBMIT NEW TASK({}) 1:{} childs:{}", nbStep, nbSubmit, nbSearchWalker.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
+                        log.debug("[{}] SUBMIT NEW TASK({}) 1:{} childs:{}", nbStep, nbSubmit, effectiveNbSearchCalls.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
                         executorService.submit(mctsSearchWalker);
                         nbSubmit++;
                     } else {

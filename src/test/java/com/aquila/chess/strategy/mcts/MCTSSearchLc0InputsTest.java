@@ -350,7 +350,7 @@ public class MCTSSearchLc0InputsTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @CsvSource({"4,6,2", "1,6,2", "1,12,2", "1,15,1", "1,16,1", "1,20,1", "1,20,2", "1,50,2", "1,800,50", "2,5,6", "2,10,2", "5,10,2", "2,10,5", "2,20,2", "2,20,5", "2,100,20", "2,800,50"})
+    @CsvSource({"1, 4, 4", "4,6,2", "1,6,2", "1,12,2", "1,15,1", "1,16,1", "1,20,1", "1,20,2", "1,50,2", "1,800,50", "2,5,6", "2,10,2", "5,10,2", "2,10,5", "2,20,2", "2,20,5", "2,100,20", "2,800,50"})
     void testEndWithBlackPromotionThreads(final String nbThreadsSz, final String nbMaxSearchCallsSz, final String batchSizeSz) throws Exception {
         int nbMaxSearchCalls = Integer.parseInt(nbMaxSearchCallsSz);
         int batchSize = Integer.parseInt(batchSizeSz);

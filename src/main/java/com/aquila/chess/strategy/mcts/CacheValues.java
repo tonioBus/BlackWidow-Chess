@@ -11,17 +11,27 @@ public class CacheValues {
 
     private final Map<Long, CacheValue> lruMap;
 
+    public static final CacheValue WIN_CACHE_VALUE = new CacheValue(1, "WIN", new double[0]);
+
+    public static final CacheValue LOST_CACHE_VALUE = new CacheValue(-1, "LOST", new double[0]);
+
+    public static final CacheValue DRAWN_CACHE_VALUE = new CacheValue(0, "DRAWN", new double[0]);
+
     public Collection<CacheValue> getValues() {
         return lruMap.values();
     }
 
     public CacheValues(final int size) {
         lruMap = new LRUMap<>(size);
+        clearCache();
     }
 
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.clear();
+        this.lruMap.put(-1L, LOST_CACHE_VALUE);
+        this.lruMap.put(0L, DRAWN_CACHE_VALUE);
+        this.lruMap.put(1L, WIN_CACHE_VALUE);
     }
 
     public synchronized CacheValue get(final long key) {
@@ -48,12 +58,19 @@ public class CacheValues {
         return ret;
     }
 
-    public synchronized CacheValue updateValueAndPolicies(long key, double value, double[] notNormalisedPolicies) {
+    /**
+     * update value and policies on 1 node. The node is define by the key
+     * @param key
+     * @param value
+     * @param notNormalisedPolicies
+     * @return
+     */
+    synchronized CacheValue updateValueAndPolicies(long key, double value, double[] notNormalisedPolicies) {
         CacheValue cacheValue = this.lruMap.get(key);
         if (cacheValue == null) {
             throw new RuntimeException("node for key:" + key + " not found");
         }
-        cacheValue.setTrueValuesAndPolicies(value, notNormalisedPolicies);
+        cacheValue.setInferenceValuesAndPolicies(value, notNormalisedPolicies);
         return cacheValue;
     }
 

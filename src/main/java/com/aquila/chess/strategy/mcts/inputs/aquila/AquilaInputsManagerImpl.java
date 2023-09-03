@@ -185,16 +185,19 @@ public class AquilaInputsManagerImpl implements InputsManager {
 
     @Override
     public String getHashCodeString(Board board, Move move, Alliance color2play) {
-        StringBuffer sb = new StringBuffer();
         if (move != null && move.getMovedPiece() != null) {
             board = move.execute();
-            sb.append(color2play);
-            sb.append("M:");
-            sb.append(move);
-            // sb.append(board.currentPlayer().getAlliance().toString());
-        } else {
-            sb.append(color2play.toString());
         }
+        StringBuffer sb = new StringBuffer();
+//        if (move != null && move.getMovedPiece() != null) {
+//            board = move.execute();
+//            sb.append(color2play.toString());
+//            sb.append("M:");
+//            sb.append(move);
+//            // sb.append(board.currentPlayer().getAlliance().toString());
+//        } else {
+            sb.append(color2play.toString());
+//        }
         sb.append("\n");
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);

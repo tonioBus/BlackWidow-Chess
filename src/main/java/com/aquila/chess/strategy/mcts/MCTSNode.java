@@ -24,10 +24,7 @@ public class MCTSNode implements Serializable {
 
     @Getter
     @Setter
-    private boolean isPrepared = false;
-
-    @Getter
-    public int nbReturn;
+    private boolean leafDetected = false;
 
     @Getter
     private double virtualLoss = 0.0;
@@ -36,7 +33,7 @@ public class MCTSNode implements Serializable {
     public final boolean dirichlet;
 
     @Getter
-    private final CacheValue cacheValue;
+    private CacheValue cacheValue;
 
     @Getter
     private final long key;
@@ -108,17 +105,6 @@ public class MCTSNode implements Serializable {
     }
 
     /**
-     * Standard constructor for new MCTSNode
-     *
-     * @param possibleMove
-     * @param cacheValue
-     * @return
-     */
-    public static MCTSNode createNode(Move possibleMove, CacheValue cacheValue) {
-        return new MCTSNode(possibleMove, new ArrayList<>(), -1, cacheValue);
-    }
-
-    /**
      * Create a node. This method is not responsible to attach this node to his parent
      *
      * @param move       the move this node represent
@@ -159,7 +145,7 @@ public class MCTSNode implements Serializable {
      * @param key
      * @param cacheValue
      */
-    private MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValue cacheValue) {
+    MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         log.debug("CREATE NODE MOVE:{} key:{}", move, key);
         this.piece = move == null ? null : move.getMovedPiece();
@@ -168,7 +154,6 @@ public class MCTSNode implements Serializable {
         this.creator = Thread.currentThread();
         this.key = key;
         this.cacheValue = cacheValue;
-        this.cacheValue.addNode(this);
         if (move != null) {
             this.colorState = move.getAllegiance();
             this.move = move;
@@ -177,8 +162,8 @@ public class MCTSNode implements Serializable {
             this.move = null;
         }
         this.syncSum();
-        if (log.isDebugEnabled())
-            log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
+        this.cacheValue.addNode(this);
+        log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
     }
 
     /**
@@ -193,9 +178,9 @@ public class MCTSNode implements Serializable {
      * @return true if we are syncing this node, false if already done or cacheValue not initialised yet
      */
     public void syncSum() {
-        if (!getCacheValue().isInitialised() || this.isSync()) return;
+        if (!getCacheValue().isInitialized() || this.isSync()) return;
         this.visits = 0;
-        this.sum = 0;
+        this.sum = getCacheValue().getValue();
         this.setSync(true);
     }
 
@@ -206,16 +191,15 @@ public class MCTSNode implements Serializable {
      * @param value the value used to updateValueAndPolicies the reward
      */
     public int propagate(double value) {
-        //FIXME only for display this.values.add(new PropragateValue(value, propragateSrc, buildOrder));
         int nbPropagation;
-//        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
-        this.sum += value;
-        this.incVisits();
-//        }
-        log.info("PROPAGATE DONE: {}", this);
+        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
+            this.sum += value;
+            this.incVisits();
+        }
+        log.info("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
         this.nbPropagationsToExecute = 0;
-//        return nbPropagation;
-        return 1;
+        return nbPropagation;
+//        return 1;
     }
 
     public void unPropagate(double value, final PropragateSrc propragateSrc, int buildOrder) {
@@ -247,10 +231,6 @@ public class MCTSNode implements Serializable {
         this.getChildsAsCollection().forEach(child -> {
             if (child != null) child.traverse(consumer);
         });
-    }
-
-    public void incNbReturn() {
-        this.nbReturn++;
     }
 
     /**
@@ -326,6 +306,7 @@ public class MCTSNode implements Serializable {
         this.nbPropagationsToExecute++;
     }
 
+
     static public enum PropragateSrc {
         SERVICE_NN("SE"), MCTS("MC"), SAVE_BATCH("SA"), CALL("CA"), UN_PROPAGATE("UP");
 
@@ -339,7 +320,7 @@ public class MCTSNode implements Serializable {
 
     void resetExpectedReward(float value) {
         this.cacheValue.value = value;
-        this.cacheValue.setInitialised(true);
+        this.cacheValue.setInitialized(true);
         syncSum();
         if (log.isDebugEnabled()) log.debug("RESET EXPECTED REWARD DONE: {}", this);
     }
@@ -355,7 +336,7 @@ public class MCTSNode implements Serializable {
     public double getExpectedReward(boolean withVirtualLoss) {
         syncSum();
         if (this.getVisits() == 0) return this.getCacheValue().value - (withVirtualLoss ? virtualLoss : 0);
-        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / this.getVisits();
+        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits() + 1);
     }
 
     public List<MCTSNode> search(final State... states) {
@@ -485,11 +466,15 @@ public class MCTSNode implements Serializable {
     public void createLeaf() {
         this.childNodes.clear();
         this.visits = 0;
-        this.getCacheValue().setInitialised(true);
+        this.getCacheValue().setInitialized(true);
     }
 
-    public double getValue() {
-        return cacheValue.getValue();
+    public void createLeaf(CacheValue cacheValue) {
+        createLeaf();
+        this.cacheValue = cacheValue;
+        this.cacheValue.addNode(this);
+        this.sum = cacheValue.getValue();
+        this.sync = true;
     }
 
     public enum State {

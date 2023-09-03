@@ -10,7 +10,7 @@ import java.util.*;
 public class Lc0NNTest implements INN {
 
     double step = 0.000001;
-    private double value = 0.1;
+    private double value = 0.0;
 
     private final Map<Integer, Double> offsets = new HashMap<>();
 
