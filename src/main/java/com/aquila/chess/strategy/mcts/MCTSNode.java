@@ -193,8 +193,8 @@ public class MCTSNode implements Serializable {
     public int propagate(double value) {
 //        int nbPropagation;
 //        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
-            this.sum += value;
-            this.incVisits();
+        this.sum += value;
+        this.incVisits();
 //        }
         log.debug("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
         this.nbPropagationsToExecute = 0;
@@ -445,11 +445,11 @@ public class MCTSNode implements Serializable {
                 move == null ? true : move.equals(mctsNode.move);
     }
 
-    public int getNumberAllSubNodes() {
+    public int getNumberOfAllNodes() {
         int subNode = 1;
         for (final MCTSNode node : this.getChildsAsCollection()) {
             if (node != null) {
-                subNode += node.getNumberAllSubNodes();
+                subNode += node.getNumberOfAllNodes();
             }
         }
         return subNode;

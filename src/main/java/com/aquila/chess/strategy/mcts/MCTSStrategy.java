@@ -309,7 +309,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.getClass().getSimpleName(),
                 alliance,
                 this.deepLearning.getFilename(),
-                directRoot != null ? directRoot.getNumberAllSubNodes() : 0);
+                directRoot != null ? directRoot.getNumberOfAllNodes() : 0);
     }
 
     public String mctsTree4log(boolean displayLastChilds, int maxDepth) {

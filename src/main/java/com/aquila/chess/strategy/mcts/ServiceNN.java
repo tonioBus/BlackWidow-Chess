@@ -132,12 +132,12 @@ class ServiceNN {
                             value2propagate,
                             propagationListUntilRoot.stream().map(node1 -> node1.getMove().toString()).collect(Collectors.joining(" / ")),
                             node.getNbPropagationsToExecute());
-                    for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
+                    // for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
                         for (MCTSNode node2propagate : propagationListUntilRoot) {
                             value2propagate = -value2propagate;
                             nbPropagate += node2propagate.propagate(value2propagate);
                         }
-                    }
+                    // }
                 }
                 node.setPropagated(true);
             }

@@ -105,6 +105,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         MCTSNode selectedNode;
         Move selectedMove;
         long key = 0;
+        boolean newNodeCreated = false;
         synchronized (opponentNode) {
             log.debug("detectAndCreateLeaf({})", opponentNode);
             int nbCreatedLeafNodes = detectAndCreateLeaf(opponentNode);
@@ -113,9 +114,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 return new SearchResult("DETECTED LEAF NODES", nbCreatedLeafNodes);
             }
             selectedMove = selection(opponentNode, isRootNode, depth);
+            log.debug("SELECTION: {}", selectedMove);
             if (selectedMove == null) return new SearchResult("NO SELECTION POSSIBLE", 0);
             selectedNode = opponentNode.findChild(selectedMove);
             log.debug("MCTS SEARCH END synchronized 1.0 ({})", opponentNode);
+
             // expansion
             if (selectedNode == null) {
                 key = mctsGame.hashCode(selectedMove.getAllegiance(), selectedMove);
@@ -138,7 +141,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
 //                if(selectedNode.isSync()) {
 //                    deepLearning.addDefinedNodeToPropagate(selectedNode);
 //                }
-                return new SearchResult("CREATED NODE", 1);
+                newNodeCreated = true;
+                // return new SearchResult("CREATED NODE", 1);
             } else {
                 log.debug("MCTS SEARCH found child:{} node:{}", selectedMove, selectedNode);
             }
@@ -154,16 +158,20 @@ public class MCTSSearchWalker implements Callable<Integer> {
             return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus);
         }
         // if (key != 0 && selectedNode.isSync()) {
-            log.debug("ADD NODE TO PROPAGATE: selectedNode:{}", selectedNode);
-            log.debug("\tparent:{}", opponentNode);
-            this.deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
+        log.debug("ADD NODE TO PROPAGATE: selectedNode:{}", selectedNode);
+        log.debug("\tparent:{}", opponentNode);
+        this.deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
         // }
+        if (newNodeCreated) {
+            selectedNode.decVirtualLoss();
+            return new SearchResult("CREATED NODE", 1);
+        }
         // recursive calls
         SearchResult searchResult = search(selectedNode, depth + 1, false);
         // retro-propagate done in ServiceNN
         selectedNode.decVirtualLoss();
         log.debug("RETRO-PROPAGATION: {}", selectedNode);
-        return new SearchResult("RETRO-PROPAGATION", 1);
+        return searchResult;
     }
 
     /**
@@ -485,9 +493,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     }
 
     public Move getRandomMove(final Collection<Move> moves) {
-        int num = rand.nextInt() * moves.size();
-        for (Move move : moves) if (--num < 0) return move;
-        return null;
+        return moves.stream().skip(rand.nextInt(moves.size())).findFirst().get();
     }
 
     public Statistic getStatistic() {

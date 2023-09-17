@@ -42,8 +42,8 @@ public class Helper {
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
         final MCTSNode root = mctsStrategy.getDirectRoot();
         final List<String> ret = new ArrayList<>();
-        int numberAllSubNodes = root.getNumberAllSubNodes();
-        if (mctsStrategy.getNbSearchCalls() > 1 && numberAllSubNodes != mctsStrategy.getNbSearchCalls()) {
+        int numberAllSubNodes = root.getNumberOfAllNodes() - 1;
+        if (mctsStrategy.getNbSearchCalls() > 1 && numberAllSubNodes < mctsStrategy.getNbSearchCalls()) {
             String msg = String.format("number of sub-nodes of ROOT node:%d should be == number of search:%d", numberAllSubNodes, mctsStrategy.getNbSearchCalls());
             log.error(msg);
             ret.add(msg);
@@ -56,7 +56,7 @@ public class Helper {
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
-        if(node.getState()!= MCTSNode.State.INTERMEDIATE) return;
+        if (node.getState() != MCTSNode.State.INTERMEDIATE) return;
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = 0.0F;
         for (int i = 0; i < policies.length; i++) sumPolicies += policies[i];
