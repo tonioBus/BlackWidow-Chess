@@ -14,9 +14,7 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -29,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SaveGameTest {
 
     static public final int NB_STEP = 2;
@@ -100,7 +99,7 @@ public class SaveGameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {6, 12, 30})
-    @Order(0)
+    @Order(1)
     void testSaveGameAquila(int nbStep) throws Exception {
         GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
@@ -157,7 +156,7 @@ public class SaveGameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 4, 5, 6})
-    @Order(0)
+    @Order(2)
     void testIntermediateSaveGame(int nbStep) throws Exception {
         GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
         INN nnWhite = new NNSimul(1);
@@ -214,9 +213,9 @@ public class SaveGameTest {
     }
 
     @Test
-    @Order(1)
+    @Order(3)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load("train-test", 0);
+        TrainGame trainGame = TrainGame.load("train-test", 1);
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
     }
 

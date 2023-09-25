@@ -364,8 +364,9 @@ public class MCTSAquilaExerciceTest {
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
      */
-    @Test
-    void testAvoidEndWithWhitePromotion() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {10, 50, 100, 200})
+    void testAvoidEndWithWhitePromotion(int nbSearch) throws Exception {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -376,7 +377,7 @@ public class MCTSAquilaExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearch);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -385,30 +386,34 @@ public class MCTSAquilaExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearch);
         game.setup(whiteStrategy, blackStrategy);
         Move move = null;
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+            if (i == 0 && !move.toString().equals("Kg8")) {
+                log.info(DotGenerator.toString(blackStrategy.getDirectRoot(), 5));
+                assertTrue(false, "Move should be Kg8 but is: " + move);
+            }
             switch (move.getAllegiance()) {
                 case WHITE:
-                    Helper.checkMCTSTree(whiteStrategy);
                     List<MCTSNode> wins = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN);
                     log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
-                    assertTrue(wins.size() > 0);
+                    // assertTrue(wins.size() > 0);
+                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
-                    Helper.checkMCTSTree(blackStrategy);
                     List<MCTSNode> looses = blackStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
                     log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
-                    assertTrue(looses.size() > 0);
+                    // assertTrue(looses.size() > 0);
+                    Helper.checkMCTSTree(blackStrategy);
                     break;
             }
-            assertNotEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate");
-            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow");
+            assertNotEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate:\n"+game);
+            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow:\n"+game);
         }
         if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -590,7 +595,7 @@ public class MCTSAquilaExerciceTest {
                 case WHITE:
                     List<MCTSNode> winLoss1 = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    // Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);

@@ -359,7 +359,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     public String saveBatch(String trainDir, ResultGame resultGame) throws IOException {
-        final int numGames = maxGame(trainDir + "/") + 1;
+        final int numGames = maxGame(trainDir + "/")+1;
         log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
         log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
         final String filename = trainGame.save(trainDir, numGames, resultGame);

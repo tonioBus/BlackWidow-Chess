@@ -598,6 +598,7 @@ public class MCTSExerciceTest {
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(false, 50));
                     Helper.checkMCTSTree(blackStrategy);
                     break;
             }

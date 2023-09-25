@@ -109,6 +109,11 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         }
         boolean isEnding = false;
         while (isEnding == false) {
+            try {
+                deepLearning.flushJob(false);
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Error during last flushJobs", e);
+            }
             Future<Integer> future = executorService.take();
             if (future == null) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) WORKER_THREAD_POOL;

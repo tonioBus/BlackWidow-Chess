@@ -24,7 +24,11 @@ public class MCTSNode implements Serializable {
 
     @Getter
     @Setter
-    private boolean leafDetected = false;
+    private boolean leaf = false;
+
+    @Getter
+    @Setter
+    private boolean containsChildleaf = false;
 
     @Getter
     private double virtualLoss = 0.0;
@@ -401,9 +405,10 @@ public class MCTSNode implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("MCTSNode[%d] -> Move: %s visit:%d expectedReward:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
+        return String.format("MCTSNode[%d] -> Move:%s leaf:%b visit:%d expectedReward:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
                 this.move == null ? "Starting" : this.move, //
+                this.leaf,
                 this.visits, //
                 this.getExpectedReward(false), //
                 this.parent != null, //
@@ -466,6 +471,7 @@ public class MCTSNode implements Serializable {
     public void createLeaf() {
         this.childNodes.clear();
         this.visits = 0;
+        this.setLeaf(true);
         this.getCacheValue().setInitialized(true);
     }
 

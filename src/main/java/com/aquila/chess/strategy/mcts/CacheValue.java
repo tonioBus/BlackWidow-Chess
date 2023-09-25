@@ -95,7 +95,12 @@ public class CacheValue extends OutputNN implements Serializable {
 //        nodes.forEach(previousNode -> {
 //            assert previousNode.getChildNodes().keySet().equals(node.getChildNodes().keySet());
 //        });
-        this.nodes.add(node);
+        try {
+            this.nodes.add(node);
+        } catch(ArrayIndexOutOfBoundsException e) {
+            log.error("Error when adding a node: {}", node);
+            throw e;
+        }
         setInferenceValuesAndPolicies();
     }
 
