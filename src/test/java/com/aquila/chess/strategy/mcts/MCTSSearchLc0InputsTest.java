@@ -75,7 +75,7 @@ public class MCTSSearchLc0InputsTest {
         log.info("parent:{}", node);
         log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
-        double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move, false)];
+        double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
         Helper.checkMCTSTree(whiteStrategy);
@@ -377,8 +377,8 @@ public class MCTSSearchLc0InputsTest {
                 .withNbSearchCalls(nbMaxSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn, false);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn, false);
+        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
+        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         lc0NnTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getDirectRoot());

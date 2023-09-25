@@ -11,9 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 public class Helper {
@@ -53,7 +50,7 @@ public class Helper {
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
         addNodes2NotTest(root, notTestedNodes);
         checkMCTSTreeVisits(root, ret, notTestedNodes);
-        if(ret.size()>0) {
+        if (ret.size() > 0) {
             log.error(DotGenerator.toString(mctsStrategy.getDirectRoot(), 5));
             // assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
         }

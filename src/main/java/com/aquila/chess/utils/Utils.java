@@ -7,12 +7,10 @@ import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 import umontreal.ssj.randvarmulti.DirichletGen;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
-import java.io.File;
 import java.lang.management.RuntimeMXBean;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -78,7 +76,7 @@ public class Utils {
      * @param isDirichlet
      * @return
      */
-    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves, boolean old) {
+    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
@@ -128,8 +126,8 @@ public class Utils {
                         minPolicyIndex = i;
                     }
                 }
-                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves, old));
-                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves, old));
+                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves));
+                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves));
                 log.warn("dirichlet: indexes: {} <-> {} : policies>0",
                         indexes.length,
                         Arrays.stream(policies).filter(policy -> policy > 0).count());

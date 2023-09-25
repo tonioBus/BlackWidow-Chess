@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -44,14 +43,14 @@ class GameTest {
         final Game game = Game.builder().board(board).build();
         List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves();
         for (Move move : moves) {
-            int policyIndex = PolicyUtils.indexFromMove(move, false);
-            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves, false);
+            int policyIndex = PolicyUtils.indexFromMove(move);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves);
             log.info("WHITE move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
         }
         moves = game.getPlayer(Alliance.BLACK).getLegalMoves();
         for (Move move : moves) {
-            int policyIndex = PolicyUtils.indexFromMove(move, false);
-            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves, false);
+            int policyIndex = PolicyUtils.indexFromMove(move);
+            String moveSz = PolicyUtils.moveFromIndex(policyIndex, moves);
             log.info("BLACK move:{} index:{} moveSz:{}", move, policyIndex, moveSz);
         }
     }

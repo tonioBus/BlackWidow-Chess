@@ -105,8 +105,8 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn, false);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn, false);
+        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
+        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nnBlack.addIndexOffset(0.5F, index1, index2);
         for (int i = 0; i < 5; i++) {
             Game.GameStatus status = game.play();
@@ -162,8 +162,8 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2", false);
-        int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1", false);
+        int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2");
+        int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1");
         nnBlack.addIndexOffset(0.9F, index1, index2);
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();

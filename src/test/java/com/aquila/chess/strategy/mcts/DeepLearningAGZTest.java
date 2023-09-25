@@ -41,15 +41,15 @@ class DeepLearningAGZTest {
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         game.setup(new RandomStrategy(Alliance.WHITE, 1), new RandomStrategy(Alliance.BLACK, 1000));
         List<Move> legalMovesBlack = game.getPlayer(Alliance.BLACK).getLegalMoves(Move.MoveStatus.DONE);
-        assertEquals(944, PolicyUtils.indexFromMove(BoardUtils.getMove("a7-a6", legalMovesBlack).get(), false));
-        assertEquals(1456, PolicyUtils.indexFromMove(BoardUtils.getMove("a7-a5", legalMovesBlack).get(), false));
-        assertEquals(945, PolicyUtils.indexFromMove(BoardUtils.getMove("b7-b6", legalMovesBlack).get(), false));
-        assertEquals(946, PolicyUtils.indexFromMove(BoardUtils.getMove("c7-c6", legalMovesBlack).get(), false));
-        assertEquals(947, PolicyUtils.indexFromMove(BoardUtils.getMove("d7-d6", legalMovesBlack).get(), false));
-        assertEquals(948, PolicyUtils.indexFromMove(BoardUtils.getMove("e7-e6", legalMovesBlack).get(), false));
-        assertEquals(949, PolicyUtils.indexFromMove(BoardUtils.getMove("f7-f6", legalMovesBlack).get(), false));
-        assertEquals(950, PolicyUtils.indexFromMove(BoardUtils.getMove("g7-g6", legalMovesBlack).get(), false));
-        assertEquals(951, PolicyUtils.indexFromMove(BoardUtils.getMove("h7-h6", legalMovesBlack).get(), false));
+        assertEquals(944, PolicyUtils.indexFromMove(BoardUtils.getMove("a7-a6", legalMovesBlack).get()));
+        assertEquals(1456, PolicyUtils.indexFromMove(BoardUtils.getMove("a7-a5", legalMovesBlack).get()));
+        assertEquals(945, PolicyUtils.indexFromMove(BoardUtils.getMove("b7-b6", legalMovesBlack).get()));
+        assertEquals(946, PolicyUtils.indexFromMove(BoardUtils.getMove("c7-c6", legalMovesBlack).get()));
+        assertEquals(947, PolicyUtils.indexFromMove(BoardUtils.getMove("d7-d6", legalMovesBlack).get()));
+        assertEquals(948, PolicyUtils.indexFromMove(BoardUtils.getMove("e7-e6", legalMovesBlack).get()));
+        assertEquals(949, PolicyUtils.indexFromMove(BoardUtils.getMove("f7-f6", legalMovesBlack).get()));
+        assertEquals(950, PolicyUtils.indexFromMove(BoardUtils.getMove("g7-g6", legalMovesBlack).get()));
+        assertEquals(951, PolicyUtils.indexFromMove(BoardUtils.getMove("h7-h6", legalMovesBlack).get()));
     }
 
     /**

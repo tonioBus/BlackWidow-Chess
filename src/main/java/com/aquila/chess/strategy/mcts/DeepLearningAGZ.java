@@ -307,9 +307,9 @@ public class DeepLearningAGZ {
 //                            .collect(Collectors.joining(",")));
             Map<Integer, Double> newPolicies = new HashMap<>();
             oneStepRecord.policies().keySet().stream().forEach(oldIndex -> {
-                String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves, true);
+                String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves);
                 Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oldMove)).findFirst().get();
-                int newIndex = PolicyUtils.indexFromMove(currentMove, false);
+                int newIndex = PolicyUtils.indexFromMove(currentMove);
                 double policy = oneStepRecord.policies().get(oldIndex);
                 if (Double.isNaN(policy)) {
                     policy = 1;
