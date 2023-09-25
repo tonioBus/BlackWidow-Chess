@@ -24,9 +24,9 @@ public class NNSimul extends NNConstants {
             double value;
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             if (randomGenerator.nextFloat() > 0.5) {
-                value = mediumValue + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+                value = mediumValue + (-0.0001F + 0.0002F * randomGenerator.nextFloat());
                 for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
-                    policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
+                    policies[policyIndex] = mediumPolicies + (-0.0001F + 0.0002F * randomGenerator.nextFloat());
                     if (offsets.containsKey(policyIndex)) {
                         double offset = offsets.get(policyIndex);
                         policies[policyIndex] += offset;

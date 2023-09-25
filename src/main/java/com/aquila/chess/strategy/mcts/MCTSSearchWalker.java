@@ -108,7 +108,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             }
             log.debug("detectAndCreateLeaf({})", opponentNode);
             int nbCreatedLeafNodes = detectAndCreateLeaf(opponentNode);
-            if (nbCreatedLeafNodes > 0) {
+            if (nbCreatedLeafNodes < 0) {
                 log.debug("DETECTED {} LEAF NODES", nbCreatedLeafNodes);
                 return new SearchResult("DETECTED LEAF NODES", nbCreatedLeafNodes);
             }
@@ -191,6 +191,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
         if (opponentNode.isContainsChildleaf()) return 0;
         opponentNode.setContainsChildleaf(true);
         if (opponentNode.getChildNodes().size() == 0) return 0;
+        if(opponentNode.allChildNodes().stream().filter(node -> node.isLeaf()).count() == opponentNode.getChildNodes().size()) {
+            log.warn("TERMINAL NODE: {}", opponentNode);
+            return -1;
+        }
         synchronized (opponentNode) {
             final Collection<Move> moves = opponentNode.getChildMoves();
             assert moves.size() > 0;
@@ -216,8 +220,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 }
             });
             if (stop.get()) {
+                int nbRemovedChild = opponentNode.getNumberOfAllNodes();
+                log.info("Removed child:{}", nbRemovedChild);
                 createLooseNode(opponentNode);
-                return 1;
+                return -nbRemovedChild;
             }
             final AtomicInteger nbCreatedNodes = new AtomicInteger(0);
             allLegalsMoves.entrySet().parallelStream().forEach(entry -> {

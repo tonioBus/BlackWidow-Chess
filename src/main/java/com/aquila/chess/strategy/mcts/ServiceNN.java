@@ -120,7 +120,7 @@ class ServiceNN {
                 CacheValue cacheValue = node.getCacheValue();
                 node.syncSum();
                 if (!node.isSync()) {
-                    log.info("POSTPONED PROPAGATE [key:{}] -> node not synchronised:{}", key, cacheValue);
+                    log.debug("POSTPONED PROPAGATE [key:{}] -> node not synchronised:{}", key, cacheValue);
                     continue;
                 }
                 List<MCTSNode> propagationListUntilRoot = createPropragationList(node.getParent(), key);
@@ -133,12 +133,12 @@ class ServiceNN {
                             value2propagate,
                             propagationListUntilRoot.stream().map(node1 -> node1.getMove().toString()).collect(Collectors.joining(" / ")),
                             node.getNbPropagationsToExecute());
-                    // for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
-                        for (MCTSNode node2propagate : propagationListUntilRoot) {
-                            value2propagate = -value2propagate;
+                    for (MCTSNode node2propagate : propagationListUntilRoot) {
+                        value2propagate = -value2propagate;
+                        for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
                             nbPropagate += node2propagate.propagate(value2propagate);
                         }
-                    // }
+                    }
                 }
                 node.setPropagated(true);
             }

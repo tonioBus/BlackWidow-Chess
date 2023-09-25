@@ -35,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class MCTSAquilaExerciceTest {
 
+    public static int NB_THREAD = 8;
+
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 2.5; // Math.exp(-0.04 * nbStep) / 2;
     };
@@ -143,7 +145,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 300, 400, 800})
+    @ValueSource(ints = {50, 100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
     void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
@@ -412,8 +414,8 @@ public class MCTSAquilaExerciceTest {
                     Helper.checkMCTSTree(blackStrategy);
                     break;
             }
-            assertNotEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate:\n"+game);
-            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow:\n"+game);
+            assertNotEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate:\n" + game);
+            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow:\n" + game);
         }
         if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
         log.info("GAME:\n{}\n", game.toPGN());
@@ -490,9 +492,10 @@ public class MCTSAquilaExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {50, 100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
-    void testMakeWhiteChessMateIn2() throws Exception {
+    void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -502,8 +505,8 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbStep);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -511,16 +514,16 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
-                .withNbSearchCalls(800);
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece rootA8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a8"));
         nnBlack.addIndexOffset(1F, "a8-a3", board);
-        nnBlack.addIndexOffset(0.5F, "g2-g3", board);
-        nnBlack.addIndexOffset(0.1F, "a3-a1", rootA8);
+        nnBlack.addIndexOffset(1F, "g2-g3", board);
+        nnBlack.addIndexOffset(1F, "a3-a1", rootA8);
         Game.GameStatus status = null;
         Move move;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             status = game.play();
             move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
@@ -534,8 +537,14 @@ public class MCTSAquilaExerciceTest {
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    // Helper.checkMCTSTree(blackStrategy);
+                    if (winLoss2.size() > 0) log.info("graph:\n{}\n");
+                    assertTrue(winLoss2.size() > 0);
+                    Helper.checkMCTSTree(blackStrategy);
                     break;
+            }
+            switch(i) {
+               // case 0 -> assertEquals("Ra3", move.toString());
+                // case 4 -> assertEquals("Ra1", move.toString());
             }
             if (status == WHITE_CHESSMATE) break;
             assertEquals(IN_PROGRESS, status, "wrong status: only WHITE_CHESSMATE or in progress is allow");

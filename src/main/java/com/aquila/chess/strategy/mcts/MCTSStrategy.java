@@ -267,7 +267,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             ret = getRandomNodes(bestNodes);
         } else if (nbBests == 0) {
-            log.error("[{}] NO BEST NODES, opponentNode:{}", getAlliance(), opponentNode.toString());
+            log.error("[{}] NO BEST NODES, opponentNode:{}", getAlliance(), opponentNode);
             throw new RuntimeException("NO BEST NODES");
         } else {
             ret = bestNodes.get(0);

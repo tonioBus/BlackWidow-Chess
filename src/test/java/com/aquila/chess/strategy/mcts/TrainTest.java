@@ -101,36 +101,6 @@ public class TrainTest {
         deepLearningWhite.train(trainGame);
     }
 
-    @Test
-    void todel() throws IOException, ClassNotFoundException {
-        final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
-        long seed = 314;
-        final MCTSStrategy whiteStrategy = new MCTSStrategy(
-                game,
-                Alliance.WHITE,
-                deepLearningWhite,
-                seed,
-                updateCpuct,
-                -1)
-                .withNbThread(10)
-                .withNbSearchCalls(10);
-        // .withNbThread(1);
-        final MCTSStrategy blackStrategy = new MCTSStrategy(
-                game,
-                Alliance.BLACK,
-                deepLearningBlack,
-                seed,
-                updateCpuct,
-                -1)
-                .withNbThread(10)
-                .withNbSearchCalls(10);
-        whiteStrategy.setPartnerStrategy(blackStrategy);
-        game.setup(whiteStrategy, blackStrategy);
-        TrainGame trainGame = TrainGame.load("train-aquila-linux", 146);
-        deepLearningWhite.train(trainGame);
-    }
-
     @AfterAll
     static void afterAll() throws IOException {
         File directory = new File("train-test");
