@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.LRUMap;
 
@@ -11,11 +12,14 @@ public class CacheValues {
 
     private final Map<Long, CacheValue> lruMap;
 
-    public static final CacheValue WIN_CACHE_VALUE = new CacheValue(1, "WIN", new double[0]);
+    @Getter
+    private final CacheValue winCacheValue = new CacheValue(1, "WIN", new double[0]);
 
-    public static final CacheValue LOST_CACHE_VALUE = new CacheValue(-1, "LOST", new double[0]);
+    @Getter
+    private final CacheValue lostCacheValue = new CacheValue(-1, "LOST", new double[0]);
 
-    public static final CacheValue DRAWN_CACHE_VALUE = new CacheValue(0, "DRAWN", new double[0]);
+    @Getter
+    private final CacheValue drawnCacheValue = new CacheValue(0, "DRAWN", new double[0]);
 
     public Collection<CacheValue> getValues() {
         return lruMap.values();
@@ -29,12 +33,12 @@ public class CacheValues {
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.clear();
-        LOST_CACHE_VALUE.getNodes().clear();
-        DRAWN_CACHE_VALUE.getNodes().clear();
-        WIN_CACHE_VALUE.getNodes().clear();
-        this.lruMap.put(-1L, LOST_CACHE_VALUE);
-        this.lruMap.put(0L, DRAWN_CACHE_VALUE);
-        this.lruMap.put(1L, WIN_CACHE_VALUE);
+        lostCacheValue.getNodes().clear();
+        drawnCacheValue.getNodes().clear();
+        winCacheValue.getNodes().clear();
+        this.lruMap.put(-1L, lostCacheValue);
+        this.lruMap.put(0L, drawnCacheValue);
+        this.lruMap.put(1L, winCacheValue);
     }
 
     public synchronized CacheValue get(final long key) {

@@ -114,7 +114,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
-        log.info("[{}] {} nextPlay() -> {}", this.getAlliance(), this.nbStep, this, move);
+        log.info("[{}] {} nextPlay() -> {}", this.getAlliance(), this, move);
         this.nbStep++;
 
         if (isTraining()) {
@@ -192,7 +192,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final MCTSNode bestNode = findBestReward(directRoot, false);
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
-        log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}", this.getAlliance(), CacheValues.WIN_CACHE_VALUE.getNodes().size(), CacheValues.LOST_CACHE_VALUE.getNodes().size(), CacheValues.DRAWN_CACHE_VALUE.getNodes().size());
+        log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}",
+                this.getAlliance(),
+                this.deepLearning.getCacheValues().getWinCacheValue().getNodes().size(),
+                this.deepLearning.getCacheValues().getLostCacheValue().getNodes().size(),
+                this.deepLearning.getCacheValues().getDrawnCacheValue().getNodes().size());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();

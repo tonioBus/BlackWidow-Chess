@@ -468,15 +468,10 @@ public class MCTSNode implements Serializable {
         this.visits++;
     }
 
-    public void createLeaf() {
+    public void createLeaf(CacheValue cacheValue) {
         this.childNodes.clear();
         this.visits = 0;
         this.setLeaf(true);
-        this.getCacheValue().setInitialized(true);
-    }
-
-    public void createLeaf(CacheValue cacheValue) {
-        createLeaf();
         this.cacheValue = cacheValue;
         this.cacheValue.addNode(this);
         this.sum = cacheValue.getValue();
