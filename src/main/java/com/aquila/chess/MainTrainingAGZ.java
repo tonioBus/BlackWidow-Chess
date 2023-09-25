@@ -6,10 +6,8 @@ import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,8 +17,6 @@ public class MainTrainingAGZ {
 
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
     static public final int NB_STEP = 800;
-
-    static public final int NB_THREADS = 1;
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
@@ -93,7 +89,6 @@ public class MainTrainingAGZ {
             do {
                 gameStatus = game.play();
                 sequence.play();
-                Move move = game.getLastMove();
                 log.warn("game:\n{}", game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");

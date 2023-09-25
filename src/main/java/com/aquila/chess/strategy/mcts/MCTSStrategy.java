@@ -114,7 +114,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
-        log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);
+        log.info("[{}] {} nextPlay() -> {}", this.getAlliance(), this.nbStep, this, move);
         this.nbStep++;
 
         if (isTraining()) {
@@ -141,16 +141,19 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      * @return
      */
     protected void createRootNode(final Game game, final Move opponentMove) {
-        assert (opponentMove != null);
-        assert (opponentMove.getAllegiance() != this.alliance);
+        assert opponentMove != null;
+        assert opponentMove.getAllegiance() != this.alliance;
         log.info("opponentMove:{}", opponentMove);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
         if (this.directRoot == null) {
-            long key = deepLearning.addRootState(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-            if (cacheValue.getNode() != null)
-                assert (cacheValue.getNode().getMove().getAllegiance() == alliance.complementary());
+            long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
+            CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+            if (cacheValue.getNodes().size() > 0) {
+                cacheValue.getNodes().stream().forEach(node -> {
+                    assert (node.getMove().getAllegiance() == alliance.complementary());
+                });
+            }
             this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, cacheValue);
             return;
         }
@@ -187,8 +190,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
         final MCTSNode bestNode = findBestReward(directRoot, false);
-        log.warn("bestNode: {}", bestNode);
+        log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
+        log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}", this.getAlliance(), CacheValues.WIN_CACHE_VALUE.getNodes().size(), CacheValues.LOST_CACHE_VALUE.getNodes().size(), CacheValues.DRAWN_CACHE_VALUE.getNodes().size());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
@@ -263,7 +267,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             ret = getRandomNodes(bestNodes);
         } else if (nbBests == 0) {
-            log.error("NO BEST NODES, opponentNode:{}", opponentNode.toString());
+            log.error("[{}] NO BEST NODES, opponentNode:{}", getAlliance(), opponentNode.toString());
             throw new RuntimeException("NO BEST NODES");
         } else {
             ret = bestNodes.get(0);
@@ -306,7 +310,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.getClass().getSimpleName(),
                 alliance,
                 this.deepLearning.getFilename(),
-                directRoot != null ? directRoot.getNumberAllSubNodes() : 0);
+                directRoot != null ? directRoot.getNumberOfAllNodes() : 0);
     }
 
     public String mctsTree4log(boolean displayLastChilds, int maxDepth) {

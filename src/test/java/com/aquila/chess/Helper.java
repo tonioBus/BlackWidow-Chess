@@ -2,6 +2,7 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.aquila.chess.strategy.mcts.MCTSStrategy;
+import com.aquila.chess.utils.DotGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -41,26 +43,31 @@ public class Helper {
     static public void checkMCTSTree(final MCTSStrategy mctsStrategy) {
         final MCTSNode root = mctsStrategy.getDirectRoot();
         final List<String> ret = new ArrayList<>();
-        if (mctsStrategy.getNbSearchCalls() > 1 && root.getVisits() != mctsStrategy.getNbSearchCalls()) {
-            String msg = String.format("number of visits of ROOT node:%d should be > number of search:%d", root.getVisits(), mctsStrategy.getNbSearchCalls());
-            log.warn(msg);
-        }
+//        int numberAllSubNodes = root.getNumberOfAllNodes() - 1;
+//        if (mctsStrategy.getNbSearchCalls() > 1 && numberAllSubNodes < mctsStrategy.getNbSearchCalls()) {
+//            String msg = String.format("number of sub-nodes of ROOT node:%d should be == number of search:%d", numberAllSubNodes, mctsStrategy.getNbSearchCalls());
+//            log.error(msg);
+//            ret.add(msg);
+//        }
         checkMCTSTreePoliciesAndValues(mctsStrategy.getDirectRoot(), ret);
         Map<Long, MCTSNode> notTestedNodes = new HashMap<>();
         addNodes2NotTest(root, notTestedNodes);
         checkMCTSTreeVisits(root, ret, notTestedNodes);
-        // assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
+        if(ret.size()>0) {
+            log.error(DotGenerator.toString(mctsStrategy.getDirectRoot(), 5));
+            // assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
+        }
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
-        if(node.getState()!= MCTSNode.State.INTERMEDIATE) return;
+        if (node.getState() != MCTSNode.State.INTERMEDIATE) return;
         double[] policies = node.getCacheValue().getPolicies();
         double sumPolicies = 0.0F;
         for (int i = 0; i < policies.length; i++) sumPolicies += policies[i];
         if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: Node:%s sum of policies should be ~= 1. (sum:%f)", node, sumPolicies));
         }
-        if (!node.getCacheValue().isInitialised()) {
+        if (!node.getCacheValue().isInitialized()) {
             ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: node %s should be initialized", node));
         }
         for (MCTSNode child : node.getChildsAsCollection()) {

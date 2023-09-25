@@ -28,8 +28,6 @@ import java.util.List;
 public class NNDeep4j implements INN {
     private final String filename;
     public final int numberResidualBlocks;
-    // public final int NUM_RESIDUAL_BLOCKS = 15;
-    // public final int NUM_FEATURE_PLANES = DL4JAlphaGoZeroBuilder.FEATURES_PLANES;
     private UpdateLr updateLr;
 
     private ComputationGraph network;

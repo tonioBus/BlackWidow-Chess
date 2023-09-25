@@ -10,15 +10,16 @@ import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.player.Player;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import static com.aquila.chess.strategy.mcts.MCTSNode.State.*;
 
 @Slf4j
 @Getter
@@ -78,175 +79,234 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Thread.currentThread().setName(String.format("Worker-%d", numThread));
+        Thread.currentThread().setName(String.format("W:%d S:%d", numThread, nbSubmit));
         cpuct = updateCpuct.update(mctsGame.getMoves().size());
         SearchResult searchResult = search(currentRoot, 0, true);
         if (searchResult == null) {
             log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
-            log.debug("[{}] END SEARCH: {} <- {}", nbStep, searchResult.getValue(), searchResult.getSource());
+            log.debug("[{}] END SEARCH: {}", nbStep, searchResult.getLabel());
         }
         getStatistic().nbCalls++;
-        return numThread;
+        log.debug("SEARCH RESULT:{}", searchResult);
+        return searchResult.nbSearchCalls;
     }
 
     protected SearchResult search(final MCTSNode opponentNode, int depth, final boolean isRootNode) throws Exception {
-        try {
-            deepLearning.flushJob(false);
-        } catch (ExecutionException e) {
-            throw new RuntimeException("Error during last flushJobs", e);
-        }
+        log.debug("MCTS SEARCH: depth:{} opponentNode:{}", depth, opponentNode);
         final Alliance colorOpponent = opponentNode.getColorState();
         final Alliance color2play = colorOpponent.complementary();
 
         MCTSNode selectedNode;
         Move selectedMove;
         long key = 0;
+        boolean newNodeCreated = false;
         synchronized (opponentNode) {
-            log.debug("BEGIN synchronized 1.0 ({})", opponentNode);
-            prepareChilds(opponentNode);
+            if (opponentNode.isLeaf()) {
+                log.debug("OPPONENT NODE IS A LEAF: {}", opponentNode);
+                return new SearchResult("OPPONENT NODE IS A LEAF NODE", 0);
+            }
+            log.debug("detectAndCreateLeaf({})", opponentNode);
+            int nbCreatedLeafNodes = detectAndCreateLeaf(opponentNode);
+            if (nbCreatedLeafNodes > 0) {
+                log.debug("DETECTED {} LEAF NODES", nbCreatedLeafNodes);
+                return new SearchResult("DETECTED LEAF NODES", nbCreatedLeafNodes);
+            }
             selectedMove = selection(opponentNode, isRootNode, depth);
-            if (selectedMove == null) return null;
+            log.debug("SELECTION: {}", selectedMove);
+            if (selectedMove == null) return new SearchResult("NO SELECTION POSSIBLE", 0);
             selectedNode = opponentNode.findChild(selectedMove);
-            if (log.isDebugEnabled()) log.debug("END synchronized 1.0 ({})", opponentNode);
+            log.debug("MCTS SEARCH END synchronized 1.0 ({})", opponentNode);
+
             // expansion
             if (selectedNode == null) {
                 key = mctsGame.hashCode(selectedMove.getAllegiance(), selectedMove);
-                CacheValues.CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
-                if (log.isDebugEnabled())
-                    log.debug("EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
-                if (log.isDebugEnabled()) log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
+                CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
+                log.debug("MCTS SEARCH EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
+                log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
+                    log.debug("MCTS CREATE NODE for MOVE:{}", selectedMove);
                     selectedNode = MCTSNode.createNode(mctsGame.getBoard(), selectedMove, key, cacheValue);
                     opponentNode.addChild(selectedNode);
+                    // log.debug("CACHE VALUE ALREADY DEFINED: ADDING NODE TO PROPAGATE:\n{}", selectedNode);
+                    // if (cacheValue.isInitialized()) deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
                     assert (selectedNode != opponentNode);
                 } catch (Exception e) {
                     log.error(String.format("[S:%d D:%d] Error during the creation of a new MCTSNode", mctsGame.getNbStep(), depth), e);
                     throw e;
                 }
                 selectedNode.syncSum();
-                if (log.isDebugEnabled()) log.debug("END synchronized 1.1 ({})", opponentNode);
-                return null;
+                log.debug("END synchronized 1.1 ({})", opponentNode);
+//                if(selectedNode.isSync()) {
+//                    deepLearning.addDefinedNodeToPropagate(selectedNode);
+//                }
+                newNodeCreated = true;
+                // return new SearchResult("CREATED NODE", 1);
             } else {
-                // log.info("found child:{} node:{}", selectedMove, selectedNode);
+                log.debug("MCTS SEARCH found child:{} node:{}", selectedMove, selectedNode);
             }
         }
         // evaluate
         selectedNode.incVirtualLoss();
+        log.debug("SIMULATE PLAY: {}", selectedMove);
         Game.GameStatus gameStatus = mctsGame.play(opponentNode, selectedMove);
         getStatistic().nbPlay++;
         if (gameStatus != Game.GameStatus.IN_PROGRESS) {
             deepLearning.removeState(mctsGame, color2play, selectedMove);
             selectedNode.decVirtualLoss();
-            return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus).negate();
+            return returnEndOfSimulatedGame(selectedNode, depth, color2play, selectedMove, gameStatus);
         }
-        if (key != 0 && !selectedNode.isSync()) {
-            if (log.isDebugEnabled()) log.debug("NOT ADD TO PROPAGATE: selectedNode:{}", selectedNode);
-            if (log.isDebugEnabled()) log.debug("\tparent:{}", opponentNode);
-            this.deepLearning.getServiceNN().addNodeToPropagate(key, selectedNode);
+        // if (key != 0 && selectedNode.isSync()) {
+        log.debug("ADD NODE TO PROPAGATE: selectedNode:{}", selectedNode);
+        log.debug("\tparent:{}", opponentNode);
+        this.deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
+        // }
+        if (newNodeCreated) {
+            selectedNode.decVirtualLoss();
+            return new SearchResult("CREATED NODE", 1);
+        } else if (selectedNode.isLeaf()) {
+            selectedNode.decVirtualLoss();
+            return new SearchResult("LEAF NODE", 1);
+        } else {
+            // recursive calls
+            if (selectedNode.isLeaf()) {
+                log.error("AAAARGHHHH ! Comment c'est possible bordel de merde");
+                selectedNode.decVirtualLoss();
+                return new SearchResult("BORDEL", 1);
+            }
+            SearchResult searchResult = search(selectedNode, depth + 1, false);
+            // retro-propagate done in ServiceNN
+            selectedNode.decVirtualLoss();
+            log.debug("RETRO-PROPAGATION: {}", selectedNode);
+            return searchResult;
         }
-        // recursive calls
-        SearchResult searchResult = search(selectedNode, depth + 1, false);
-        // retro-propagate done in ServiceNN
-        selectedNode.decVirtualLoss();
-        return null;
     }
 
-    private void prepareChilds(final MCTSNode opponentNode) {
-        if (opponentNode.isPrepared()) return;
-        opponentNode.setPrepared(true);
-        if (opponentNode.getChildNodes().size() == 0) return;
-        AtomicBoolean stop = new AtomicBoolean(false);
+    /**
+     * Create possible WIN / DRAWN / LOST node found as child of the current opponentNode
+     *
+     * @param opponentNode
+     */
+    private int detectAndCreateLeaf(final MCTSNode opponentNode) {
+        if (opponentNode.isContainsChildleaf()) return 0;
+        opponentNode.setContainsChildleaf(true);
+        if (opponentNode.getChildNodes().size() == 0) return 0;
         synchronized (opponentNode) {
             final Collection<Move> moves = opponentNode.getChildMoves();
-            moves.stream().takeWhile(move -> !stop.get()).forEach(possibleMove -> {
+            assert moves.size() > 0;
+            final Map<Move, List<Move>> allLegalsMoves = new HashMap<>();
+            moves.stream().forEach(possibleMove -> {
                 final Player childPlayer = possibleMove.execute().currentPlayer();
-                final List<Move> allLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
-                if (allLegalMoves.isEmpty()) {
+                final List<Move> currentAllLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
+                if (currentAllLegalMoves.isEmpty()) {
                     if (Utils.isDebuggerPresent()) {
                         log.info("prepareChilds:\n{}", DotGenerator.toString(opponentNode.getRoot(), 5, true));
                     }
                     statistic.nbGoodSelection++;
-                    if (!childPlayer.isInCheck()) {
-                        // PAT
-                        createDrawnNode(opponentNode, possibleMove, childPlayer);
-                    } else if (opponentNode.getColorState() != this.colorStrategy) {
-                        // WIN
-                        createWinNode(opponentNode, possibleMove, childPlayer);
-                    } else {
-                        // LOOSE
-                        log.warn("DETECT LOSS MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), possibleMove);
-                        stop.set(true);
-                    }
+                    allLegalsMoves.put(possibleMove, currentAllLegalMoves);
+                }
+            });
+            if (allLegalsMoves.isEmpty()) return 0;
+            // Loose
+            AtomicBoolean stop = new AtomicBoolean(false);
+            allLegalsMoves.entrySet().parallelStream().forEach(entry -> {
+                if (opponentNode.getColorState() == this.colorStrategy) {
+                    log.warn("DETECT LOSS MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), entry.getKey());
+                    stop.set(true);
                 }
             });
             if (stop.get()) {
                 createLooseNode(opponentNode);
+                return 1;
             }
+            final AtomicInteger nbCreatedNodes = new AtomicInteger(0);
+            allLegalsMoves.entrySet().parallelStream().forEach(entry -> {
+                final Player childPlayer = entry.getKey().execute().currentPlayer();
+                if (!childPlayer.isInCheck()) {
+                    // PAT
+                    nbCreatedNodes.incrementAndGet();
+                    createDrawnNode(opponentNode, entry.getKey(), childPlayer);
+                } else if (opponentNode.getColorState() != this.colorStrategy) {
+                    // WIN
+                    nbCreatedNodes.incrementAndGet();
+                    createWinNode(opponentNode, entry.getKey(), childPlayer);
+                }
+            });
+            return nbCreatedNodes.get();
         }
     }
 
-    protected MCTSNode createChild(final MCTSNode opponentNode, final Move possibleMove) {
+    protected MCTSNode createChild(final MCTSNode opponentNode, final Move possibleMove, final MCTSNode.State state) {
         MCTSNode child = opponentNode.findChild(possibleMove);
         if (child == null) {
-            String label = String.format("OPTIMIZE [S:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-            final CacheValues.CacheValue cacheValue = CacheValues.createDummy(label);
-            synchronized (opponentNode.getChildNodes()) {
-                if( opponentNode.findChild(possibleMove)==null) {
+            switch (state) {
+                case LOOSE -> {
+                    final CacheValue cacheValue = CacheValues.LOST_CACHE_VALUE;
                     child = new MCTSNode(possibleMove, new ArrayList<>(), -1, cacheValue);
-                    log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), label);
+                }
+                case WIN -> {
+                    final CacheValue cacheValue = CacheValues.WIN_CACHE_VALUE;
+                    child = new MCTSNode(possibleMove, new ArrayList<>(), 1, cacheValue);
+                }
+                case PAT, REPETITION_X3, REPEAT_50, NOT_ENOUGH_PIECES, NB_MOVES_300 -> {
+                    final CacheValue cacheValue = CacheValues.DRAWN_CACHE_VALUE;
+                    child = new MCTSNode(possibleMove, new ArrayList<>(), 0, cacheValue);
+                }
+            }
+            synchronized (opponentNode.getChildNodes()) {
+                if (opponentNode.findChild(possibleMove) == null) {
+                    log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), child.getCacheValue().value);
                     opponentNode.addChild(child);
                 }
             }
+        } else {
+            throw new RuntimeException(String.format("Node can not change status:%s", child));
         }
         return child;
     }
 
     protected void createDrawnNode(final MCTSNode opponentNode, final Move possibleMove, Player childPlayer) {
-        final MCTSNode child = createChild(opponentNode, possibleMove);
-        if (child.getState() != MCTSNode.State.PAT) {
+        final MCTSNode child = createChild(opponentNode, possibleMove, PAT);
+        if (child.getState() != PAT) {
             log.warn("DETECT DRAWN MOVE: {}", opponentNode.getMovesFromRootAsString());
-            removePropagation(child, childPlayer.getAlliance(), possibleMove);
+            // removePropagation(child, childPlayer.getAlliance(), possibleMove);
             child.resetExpectedReward(DRAWN_VALUE);
             child.createLeaf();
-            child.getCacheValue().setPropagated(false);
+            child.setPropagated(false);
             long key = mctsGame.hashCode(childPlayer.getAlliance());
-            this.deepLearning.addTerminalNodeToPropagate(key, child);
-            child.incNbReturn();
+            this.deepLearning.addDefinedNodeToPropagate(child);
         }
     }
 
     protected void createWinNode(final MCTSNode opponentNode, final Move possibleMove, Player childPlayer) {
-        final MCTSNode child = createChild(opponentNode, possibleMove);
-        if (child.getState() != MCTSNode.State.WIN) {
+        final MCTSNode child = createChild(opponentNode, possibleMove, WIN);
+        if (child.getState() != WIN) {
             log.warn("DETECT WIN MOVE: {}", opponentNode.getMovesFromRootAsString());
             child.createLeaf();
-            child.setState(MCTSNode.State.WIN);
+            child.setState(WIN);
             child.resetExpectedReward(WIN_VALUE);
             long key = mctsGame.hashCode(childPlayer.getAlliance());
-            this.deepLearning.addTerminalNodeToPropagate(key, child);
-            child.incNbReturn();
-            removePropagation(child, childPlayer.getAlliance(), child.getMove());
-            child.getCacheValue().setPropagated(true);
+            this.deepLearning.addDefinedNodeToPropagate(child);
+            // removePropagation(child, childPlayer.getAlliance(), child.getMove());
+            child.setPropagated(false);
         }
     }
 
     protected void createLooseNode(final MCTSNode opponentNode) {
-        if (opponentNode.getState() != MCTSNode.State.LOOSE) {
-            // if (opponentNode.getState() != MCTSNode.State.WIN) {
+        if (opponentNode.getState() != LOOSE) {
             log.info("STOP LOSS NODE:{}", opponentNode);
-            opponentNode.createLeaf();
-            opponentNode.getCacheValue().setPropagated(false);
-            opponentNode.getCacheValue().resetNbPropragate();
-            opponentNode.getCacheValue().setInitialised(true);
-            opponentNode.setState(MCTSNode.State.LOOSE);
-            // opponentNode.setState(MCTSNode.State.WIN);
-            opponentNode.resetExpectedReward(LOOSE_VALUE);
-            // opponentNode.resetExpectedReward(WIN_VALUE);
-            long key = opponentNode.getKey();
-            this.deepLearning.addTerminalNodeToPropagate(key, opponentNode);
-            opponentNode.incNbReturn();
-            removePropagation(opponentNode, opponentNode.getColorState(), opponentNode.getMove());
+            // long key = opponentNode.getKey();
+            this.deepLearning.addDefinedNodeToPropagate(opponentNode);
+            opponentNode.createLeaf(CacheValues.LOST_CACHE_VALUE);
+            opponentNode.setPropagated(true);
+            opponentNode.setState(LOOSE);
+//            MCTSNode node = opponentNode.getParent();
+//            double value = node.getCacheValue().getValue();
+//            while (node.getState() != ROOT) {
+//                value = -value;
+//                node.resetExpectedReward((float) value);
+//            }
+            // removePropagation(opponentNode, opponentNode.getColorState(), opponentNode.getMove());
         }
     }
 
@@ -259,6 +319,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
         MCTSNode child;
 
         final Collection<Move> moves = opponentNode.getChildMoves();
+        List<Move> looseMoves = opponentNode.getChildsAsCollection().stream().
+                filter(node -> node != null && node.getState() == LOOSE).
+                map(node -> node.getMove()).
+                collect(Collectors.toList());
         final List<Move> bestMoves = new ArrayList<>();
         int sumVisits = opponentNode.getVisits();
 
@@ -280,14 +344,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
             for (final Move possibleMove : moves) {
                 int visits = 0;
                 child = opponentNode.findChild(possibleMove);
-                if (log.isDebugEnabled())
-                    log.debug("[{}]  FINDCHILD({}): child={}", nbSubmit, possibleMove, child);
                 if (child == null) {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
                     key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
-                    CacheValues.CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-                    if (log.isDebugEnabled())
-                        log.debug("GET CACHE VALUE[key:{}] possibleMove:{} CACHEVALUE:{}", key, possibleMove, cacheValue);
+                    CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+                    log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
                 } else {
                     exploitation = child.getExpectedReward(true);
@@ -323,9 +384,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 statistic.maxRandomSelectionBestMoves = nbBestMoves;
             if (nbBestMoves < statistic.minRandomSelectionBestMoves)
                 statistic.minRandomSelectionBestMoves = nbBestMoves;
-            bestMove = getRandomMove(bestMoves);
+            bestMove = getRandomMove(bestMoves, looseMoves);
         } else if (nbBestMoves == 0) {
-            bestMove = getRandomMove(moves);
+            bestMove = getRandomMove(moves, looseMoves);
         }
         return bestMove;
     }
@@ -341,44 +402,38 @@ public class MCTSSearchWalker implements Callable<Integer> {
             case BLACK_CHESSMATE:
             case WHITE_CHESSMATE:
                 if (simulatedPlayerColor == colorStrategy) {
-                    if (node.getState() != MCTSNode.State.WIN) {
+                    if (node.getState() != WIN) {
                         String sequence = sequenceMoves(node);
                         if (log.isDebugEnabled())
                             log.debug("#{} [{} - {}] moves:{} CURRENT COLOR WIN V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
-                        node.setState(MCTSNode.State.WIN);
+                        node.setState(WIN);
                         node.resetExpectedReward(WIN_VALUE);
-                        node.getCacheValue().setPropagated(false);
+                        node.setPropagated(false);
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
-                    this.deepLearning.addTerminalNodeToPropagate(key, node);
-                    if (node.getNbReturn() == 1)
-                        log.info("[{}] WIN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
-                    node.incNbReturn();
-                    return new SearchResult(node, WIN_VALUE);
+                    this.deepLearning.addDefinedNodeToPropagate(node);
+                    return new SearchResult("RETURN WIN NODE", 1);
                 } else {
-                    if (node.getState() != MCTSNode.State.LOOSE) {
+                    if (node.getState() != LOOSE) {
                         String sequence = sequenceMoves(node);
                         if (log.isDebugEnabled())
                             log.debug("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         removePropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf();
-                        node.setState(MCTSNode.State.LOOSE);
+                        node.setState(LOOSE);
                         node.resetExpectedReward(LOOSE_VALUE);
-                        node.getCacheValue().setPropagated(false);
+                        node.setPropagated(false);
                     }
                     long key = mctsGame.hashCode(simulatedPlayerColor);
-                    this.deepLearning.addTerminalNodeToPropagate(key, node);
-                    if (node.getNbReturn() == 1)
-                        log.info("[{}] LOOSE MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
-                    node.incNbReturn();
-                    return new SearchResult(node, LOOSE_VALUE);
+                    this.deepLearning.addDefinedNodeToPropagate(node);
+                    return new SearchResult("RETURN LOOSE NODE", 1);
                 }
             case PAT:
-                node.setState(MCTSNode.State.PAT);
+                node.setState(PAT);
                 break;
             case DRAW_3:
                 node.setState(MCTSNode.State.REPETITION_X3);
@@ -401,14 +456,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
             removePropagation(node, simulatedPlayerColor, selectedMove);
             node.resetExpectedReward(DRAWN_VALUE);
             node.createLeaf();
-            node.getCacheValue().setPropagated(false);
+            node.setPropagated(false);
         }
         long key = mctsGame.hashCode(simulatedPlayerColor);
-        this.deepLearning.addTerminalNodeToPropagate(key, node);
-        if (node.getNbReturn() == 1)
-            log.info("[{}] DRAWN MOVES:{}", this.colorStrategy, node.getMovesFromRootAsString());
-        node.incNbReturn();
-        return new SearchResult(node, DRAWN_VALUE);
+        this.deepLearning.addDefinedNodeToPropagate(node);
+        return new SearchResult("RETURN " + node.getState() + " NODE", 1);
     }
 
     private void removePropagation(final MCTSNode node) {
@@ -416,7 +468,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     }
 
     private void removePropagation(final MCTSNode node, final Alliance simulatedPlayerColor, final Move selectedMove) {
-        if (node.getCacheValue().isPropagated()) {
+        if (node.isPropagated()) {
             log.warn("removePropagation({}) ", node);
             MCTSNode parent = node;
             double value = -node.getCacheValue().getValue();
@@ -430,7 +482,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 synchronized (parent) {
                     parent.decVirtualLoss();
                 }
-            } while (parent.getCacheValue().getType() != CacheValues.CacheValue.CacheValueType.ROOT);
+            } while (parent.getState() != MCTSNode.State.ROOT);
         } else {
             log.warn("removeState({}) ", node);
             deepLearning.removeState(mctsGame, simulatedPlayerColor, selectedMove);
@@ -440,14 +492,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     @AllArgsConstructor
     @Getter
+    @ToString
     static public class SearchResult {
-        private final MCTSNode source;
-        private double value;
-
-        public SearchResult negate() {
-            this.value = -value;
-            return this;
-        }
+        private String label;
+        private int nbSearchCalls;
     }
 
     protected String sequenceMoves(MCTSNode node) {
@@ -456,10 +504,22 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return sequenceMoves(node.getParent()) + " -> " + node;
     }
 
-    public Move getRandomMove(final Collection<Move> moves) {
-        int num = (int) (Math.random() * moves.size());
-        for (Move move : moves) if (--num < 0) return move;
-        return null;
+    /**
+     * Return a random move from the given collection of Moves and by removing
+     * @param moves
+     * @param looseMoves
+     * @return
+     */
+    public Move getRandomMove(final Collection<Move> moves, List<Move> looseMoves) {
+        if (looseMoves.size() == 0 || moves.size() <= looseMoves.size()) {
+            int size = moves.size();
+            if (size == 1) return moves.stream().findFirst().get();
+            return moves.stream().skip(rand.nextInt(size - 1)).findFirst().get();
+        }
+        List<Move> possibleMoves = moves.stream().filter(move -> !looseMoves.contains(move)).collect(Collectors.toList());
+        int size = possibleMoves.size();
+        if (size == 1) return possibleMoves.stream().findFirst().get();
+        return possibleMoves.stream().skip(rand.nextInt(size - 1)).findFirst().get();
     }
 
     public Statistic getStatistic() {

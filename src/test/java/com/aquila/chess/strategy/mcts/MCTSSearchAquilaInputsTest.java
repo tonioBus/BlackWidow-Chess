@@ -5,8 +5,7 @@ import com.aquila.chess.Helper;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
-import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
+import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNConstants;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
@@ -28,12 +27,13 @@ import java.util.stream.Collectors;
 import static com.aquila.chess.Game.GameStatus.IN_PROGRESS;
 import static com.chess.engine.classic.Alliance.BLACK;
 import static com.chess.engine.classic.Alliance.WHITE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-public class MCTSSearchTest {
+public class MCTSSearchAquilaInputsTest {
 
-    Lc0NNTest lc0NnTest;
+    AquilaNNTest aquilaNNTest;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 2.5;
@@ -41,22 +41,23 @@ public class MCTSSearchTest {
 
     @BeforeEach
     public void init() {
-        lc0NnTest = new Lc0NNTest();
+        aquilaNNTest = new AquilaNNTest();
         MCTSNode.resetBuildOrder();
     }
 
+    final private AquilaInputsManagerImpl inputsManager = new AquilaInputsManagerImpl();
+
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 5, 100})
-    void testSearch1Step(int batchSize) throws Exception {
+    @ValueSource(ints = {1, 2, 5, 10, 20, 30, 40, 100})
+    void testSimpleSearch(int nbStep) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
-                .nn(lc0NnTest)
+                .nn(aquilaNNTest)
                 .inputsManager(inputsManager)
                 .train(false)
-                .batchSize(batchSize)
+                .batchSize(10)
                 .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -65,8 +66,8 @@ public class MCTSSearchTest {
                 seed,
                 updateCpuct,
                 -1)
-              //  .withNbThread(1)
-                .withNbSearchCalls(1);
+                .withNbThread(1)
+                .withNbSearchCalls(nbStep);
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
         assertEquals(Game.GameStatus.IN_PROGRESS, game.play());
@@ -86,10 +87,9 @@ public class MCTSSearchTest {
     void testInitSearch() {
         int seed = 10;
         final Board board = Board.createStandardBoard();
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
-                .nn(lc0NnTest)
+                .nn(aquilaNNTest)
                 .inputsManager(inputsManager)
                 .batchSize(50)
                 .train(false)
@@ -132,21 +132,19 @@ public class MCTSSearchTest {
      * 1  --- --- --- --- --- --- K-W ---  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * <p>
-     * PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
-    @ValueSource(ints = {30, 50, 100})
+    @ValueSource(ints = {4, 5, 10, 30, 50, 100})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);
         final NNConstants nnConstant = new NNConstants(1);
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnConstant)
                 .inputsManager(inputsManager)
                 .train(false)
-                .batchSize(1)
+                .batchSize(10)
                 .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -155,7 +153,7 @@ public class MCTSSearchTest {
                 10,
                 updateCpuct,
                 -1)
-               // .withNbThread(1)
+                .withNbThread(1)
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
@@ -188,11 +186,10 @@ public class MCTSSearchTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {200})
+    @ValueSource(ints = {50, 200, 400, 800})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMateWith2Rooks(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg8,rh2", WHITE);
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final NNConstants nnConstant = new NNConstants(1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
@@ -208,7 +205,7 @@ public class MCTSSearchTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearchCalls);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus status = game.play();
@@ -218,6 +215,7 @@ public class MCTSSearchTest {
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 5));
         Helper.checkMCTSTree(whiteStrategy);
         assertTrue(lossNodes.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
+
         log.warn("game:{}", game.toPGN());
     }
 
@@ -240,7 +238,6 @@ public class MCTSSearchTest {
     void testAvoidWhiteChessMate1MoveWithPromotion(int nbSearchCalls) throws Exception {
         int seed = (int) System.currentTimeMillis();
         final Board board = Board.createBoard("kg1", "pa2,kg3", Alliance.WHITE);
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final NNConstants nnConstant = new NNConstants(1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
@@ -276,28 +273,28 @@ public class MCTSSearchTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    @ValueSource(ints = {1, 2, 5, 10, 50, 100, 800})
     void testSearchMonoThreads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 1, 10);
+        testSearchThreads(nbMaxSearchCalls, 1, 100);
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 10, 50, 100, 800})
+    @ValueSource(ints = {1, 2, 3, 5, 10, 20, 30, 50, 100, 800})
     void testSearch2Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 2, 50);
+        testSearchThreads(nbMaxSearchCalls, 2, 100);
     }
 
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
     void testSearch4Threads(int nbStep) throws Exception {
-        testSearchThreads(nbStep, 4, 10);
+        testSearchThreads(nbStep, 4, 100);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 10, 50, 100, 800})
     void testSearch8Threads(int nbMaxSearchCalls) throws Exception {
-        testSearchThreads(nbMaxSearchCalls, 8, 10);
+        testSearchThreads(nbMaxSearchCalls, 8, 100);
     }
 
     @ParameterizedTest
@@ -309,10 +306,9 @@ public class MCTSSearchTest {
     private void testSearchThreads(int nbMaxSearchCalls, int nbThreads, int batchSize) throws Exception {
         int seed = 1;
         final Board board = Board.createStandardBoard();
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
-                .nn(lc0NnTest)
+                .nn(aquilaNNTest)
                 .inputsManager(inputsManager)
                 .train(false)
                 .batchSize(batchSize)
@@ -351,18 +347,17 @@ public class MCTSSearchTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @CsvSource({"4,6,2", "1,6,2", "1,12,2", "1,15,1", "1,16,1", "1,20,1", "1,20,2", "1,50,2", "1,800,50", "2,5,6", "2,10,2", "5,10,2", "2,10,5", "2,20,2", "2,20,5", "2,100,20", "2,800,50"})
+    @CsvSource({"1, 4, 4", "4,6,2", "1,6,2", "1,12,2", "1,15,1", "1,16,1", "1,20,1", "1,20,2", "1,50,2", "1,800,50", "2,5,6", "2,10,2", "5,10,2", "2,10,5", "2,20,2", "2,20,5", "2,100,20", "2,800,50"})
     void testEndWithBlackPromotionThreads(final String nbThreadsSz, final String nbMaxSearchCallsSz, final String batchSizeSz) throws Exception {
         int nbMaxSearchCalls = Integer.parseInt(nbMaxSearchCallsSz);
         int batchSize = Integer.parseInt(batchSizeSz);
         int nbThreads = Integer.parseInt(nbThreadsSz);
         int seed = 1;
         final Board board = Board.createBoard("kh1", "pa3,kg3", Alliance.BLACK);
-        final InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final RandomStrategy whiteStrategy = new RandomStrategy(Alliance.WHITE, seed + 1000);
         final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
-                .nn(lc0NnTest)
+                .nn(aquilaNNTest)
                 .inputsManager(inputsManager)
                 .train(false)
                 .batchSize(batchSize)
@@ -380,7 +375,7 @@ public class MCTSSearchTest {
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn, false);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn, false);
-        lc0NnTest.addIndexOffset(0.5, index1, index2);
+        aquilaNNTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getDirectRoot());
         log.warn("visits:{}", blackStrategy.getDirectRoot().getVisits());

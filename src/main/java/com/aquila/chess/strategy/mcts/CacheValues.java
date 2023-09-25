@@ -1,16 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.MCTSStrategyConfig;
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.aquila.chess.utils.Utils;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -19,17 +11,30 @@ public class CacheValues {
 
     private final Map<Long, CacheValue> lruMap;
 
+    public static final CacheValue WIN_CACHE_VALUE = new CacheValue(1, "WIN", new double[0]);
+
+    public static final CacheValue LOST_CACHE_VALUE = new CacheValue(-1, "LOST", new double[0]);
+
+    public static final CacheValue DRAWN_CACHE_VALUE = new CacheValue(0, "DRAWN", new double[0]);
+
     public Collection<CacheValue> getValues() {
         return lruMap.values();
     }
 
     public CacheValues(final int size) {
         lruMap = new LRUMap<>(size);
+        clearCache();
     }
 
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.clear();
+        LOST_CACHE_VALUE.getNodes().clear();
+        DRAWN_CACHE_VALUE.getNodes().clear();
+        WIN_CACHE_VALUE.getNodes().clear();
+        this.lruMap.put(-1L, LOST_CACHE_VALUE);
+        this.lruMap.put(0L, DRAWN_CACHE_VALUE);
+        this.lruMap.put(1L, WIN_CACHE_VALUE);
     }
 
     public synchronized CacheValue get(final long key) {
@@ -56,110 +61,20 @@ public class CacheValues {
         return ret;
     }
 
-    public synchronized CacheValue updateValueAndPolicies(long key, double value, double[] notNormalisedPolicies) {
+    /**
+     * update value and policies on 1 node. The node is define by the key
+     * @param key
+     * @param value
+     * @param notNormalisedPolicies
+     * @return
+     */
+    synchronized CacheValue updateValueAndPolicies(long key, double value, double[] notNormalisedPolicies) {
         CacheValue cacheValue = this.lruMap.get(key);
         if (cacheValue == null) {
             throw new RuntimeException("node for key:" + key + " not found");
         }
-        cacheValue.setTrueValuesAndPolicies(value, notNormalisedPolicies);
+        cacheValue.setInferenceValuesAndPolicies(value, notNormalisedPolicies);
         return cacheValue;
     }
 
-    @Getter
-    static public class CacheValue extends OutputNN implements Serializable {
-
-        private static final float NOT_INITIALIZED_VALUE = 0;
-
-        private static final CacheValue getNotInitialized(final String label) {
-            return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
-        }
-
-        private double[] sourcePolicies = null;
-
-        @Setter
-        private boolean initialised = false;
-
-        @Setter
-        private boolean propagated = false;
-
-        final private String label;
-
-        private MCTSNode node = null;
-
-        private CacheValueType type = CacheValueType.INTERMEDIATE;
-
-        private int nbPropagate = 1;
-
-        private CacheValue(double value, String label, double[] policies) {
-            super(value, policies);
-            this.label = label;
-        }
-
-        public String toString() {
-            return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-        }
-
-        public void resetNbPropragate() {
-            nbPropagate = 0;
-        }
-
-        public void setAsRoot() {
-            this.type = CacheValueType.ROOT;
-        }
-
-        public synchronized void normalize(double[] policies, boolean old) {
-            this.sourcePolicies = policies;
-            int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves(), old);
-            if (log.isDebugEnabled())
-                log.debug("NORMALIZED type:{} move.size:{} dirichlet:{}", this.type, node.getChildMoves().size(), node.isDirichlet());
-            boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
-            isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
-            double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves(), old);
-            this.policies = normalizedPolicies;
-        }
-
-        public synchronized void reNormalize(boolean old) {
-            if (sourcePolicies != null) {
-                log.info("re-normalize node:{}", this.node);
-                normalize(sourcePolicies, old);
-            }
-        }
-
-        public void setAsLeaf() {
-            this.type = CacheValueType.LEAF;
-        }
-
-        public OutputNN setTrueValuesAndPolicies(final double value, final double[] policies) {
-            this.value = value;
-            this.policies = policies;
-            log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
-            this.setInitialised(true);
-            if (node != null) {
-                setTrueValuesAndPolicies();
-            }
-            return this;
-        }
-
-        public void setTrueValuesAndPolicies() {
-            if (initialised && type != CacheValueType.LEAF) {
-                node.syncSum();
-                log.debug("normalise: {} {} {}", policies[0], policies[1], policies[2]);
-                normalize(policies, true);
-            }
-        }
-
-        public void setNode(MCTSNode node) {
-            this.node = node;
-            setTrueValuesAndPolicies();
-        }
-
-        public enum CacheValueType {
-            INTERMEDIATE, ROOT, LEAF
-        }
-
-        public void incPropagate() {
-            this.nbPropagate++;
-        }
-
-    }
 }

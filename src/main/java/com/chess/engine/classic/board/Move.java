@@ -7,8 +7,6 @@ import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.pieces.Rook;
 import lombok.Getter;
 
-import java.util.Collection;
-
 public abstract class Move {
 
     @Getter
@@ -36,10 +34,11 @@ public abstract class Move {
 
         @Override
         public boolean equals(Object other) {
-            return switch (other) {
-                case Move move -> move.destinationCoordinate == -1;
-                default -> super.equals(other);
-            };
+            if (other instanceof Move) {
+                Move move = (Move) other;
+                return move.destinationCoordinate == -1;
+            }
+            return super.equals(other);
         }
 
         @Override

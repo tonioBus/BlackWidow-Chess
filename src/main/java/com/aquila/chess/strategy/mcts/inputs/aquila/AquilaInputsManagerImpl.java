@@ -46,7 +46,7 @@ import java.util.Optional;
  */
 public class AquilaInputsManagerImpl implements InputsManager {
 
-    static final int SIZE_POSITION = 12;
+    public static final int PLANE_COLOR = 44;
 
     public static final int PAWN_INDEX = 0;
     public static final int KNIGHT_INDEX = 1;
@@ -55,7 +55,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
     public static final int QUEEN_INDEX = 4;
     public static final int KING_INDEX = 5;
 
-    public static final int FEATURES_PLANES = 46;
+    public static final int FEATURES_PLANES = 49;
 
     @Override
     public int getNbFeaturesPlanes() {
@@ -125,19 +125,22 @@ public class AquilaInputsManagerImpl implements InputsManager {
                 }
             }
         });
-        int currentIndex = 40;
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
         List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
+        int currentIndex = 40;
         fill(inputs[currentIndex], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 1], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 2], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[currentIndex + 4], color2play.isBlack() ? 1.0 : 0.0);
+        fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
+        fill(inputs[currentIndex + 6], 0.0F); // future use
+        fill(inputs[currentIndex + 7], 0.0F); // future use
+        fill(inputs[currentIndex + 8], 0.0F); // future use
     }
 
     private void fill(double[][] planes, double value) {
@@ -185,16 +188,19 @@ public class AquilaInputsManagerImpl implements InputsManager {
 
     @Override
     public String getHashCodeString(Board board, Move move, Alliance color2play) {
-        StringBuffer sb = new StringBuffer();
         if (move != null && move.getMovedPiece() != null) {
             board = move.execute();
-            sb.append(color2play);
-            sb.append("M:");
-            sb.append(move);
-            // sb.append(board.currentPlayer().getAlliance().toString());
-        } else {
-            sb.append(color2play.toString());
         }
+        StringBuffer sb = new StringBuffer();
+//        if (move != null && move.getMovedPiece() != null) {
+//            board = move.execute();
+//            sb.append(color2play.toString());
+//            sb.append("M:");
+//            sb.append(move);
+//            // sb.append(board.currentPlayer().getAlliance().toString());
+//        } else {
+            sb.append(color2play.toString());
+//        }
         sb.append("\n");
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);

@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
+import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import org.deeplearning4j.nn.api.NeuralNetwork;
@@ -7,10 +8,10 @@ import org.deeplearning4j.nn.api.NeuralNetwork;
 import java.io.IOException;
 import java.util.*;
 
-public class Lc0NNTest implements INN {
+public class AquilaNNTest implements INN {
 
     double step = 0.000001;
-    private double value = 0.0;
+    private double value = 0.1;
 
     private final Map<Integer, Double> offsets = new HashMap<>();
 
@@ -79,7 +80,7 @@ public class Lc0NNTest implements INN {
             for (Map.Entry<Integer, Double> entry : this.offsets.entrySet()) {
                 policies[entry.getKey()] += entry.getValue();
             }
-            ret.add(new OutputNN(nbIn[i][Lc0InputsManagerImpl.PLANE_COLOR][0][0] == 1.0 ? value + 0.2 : value, policies));
+            ret.add(new OutputNN(nbIn[i][AquilaInputsManagerImpl.PLANE_COLOR][0][0] == 1.0 ? value + 0.2 : value, policies));
         }
         return ret;
     }

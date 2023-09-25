@@ -4,9 +4,7 @@
 package com.aquila.chess.utils;
 
 
-import com.aquila.chess.strategy.mcts.CacheValues;
 import com.aquila.chess.strategy.mcts.MCTSNode;
-import com.aquila.chess.strategy.mcts.MCTSStrategy;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import info.leadinglight.jdot.Edge;
@@ -81,13 +79,13 @@ public class DotGenerator {
         String core = String.format("Parent:%s | key:%s | Init:%b | Propa:%b | moves:%d | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
                 node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
                 node.getKey(),
-                node.getCacheValue().isInitialised(),
-                node.getCacheValue().isPropagated(),
+                node.getCacheValue().isInitialized(),
+                node.isPropagated(),
                 node.getChildMoves().size(),
                 color == null ? "no color" : color.toString(), //
                 szMove, //
-                String.format("ret:%d Prop:%d", node.getNbReturn(), node.getPropagate()),
-                node.getValue(), //
+                String.format("Prop:%d", node.getNbPropagationsToExecute()),
+                node.getCacheValue().getValue(), //
                 node.getExpectedReward(false), //
                 node.getVirtualLoss(), //
                 node.getVisits(),
@@ -97,7 +95,7 @@ public class DotGenerator {
         Shape shape = Shape.record;
         switch (node.getState()) {
             case INTERMEDIATE:
-                if (node.getCacheValue().getType() == CacheValues.CacheValue.CacheValueType.ROOT) {
+                if (node.getState() == MCTSNode.State.ROOT) {
                     shape = Shape.box3d;
                 } else {
                     shape = Shape.record;
