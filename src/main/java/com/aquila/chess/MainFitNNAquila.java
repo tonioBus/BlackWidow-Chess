@@ -82,7 +82,7 @@ public class MainFitNNAquila implements Runnable {
     public void run() {
         checkArguments();
         InputsManager inputsManager = new AquilaInputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 15);
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         UpdateLr updateLr = nbGames -> 1.0e-4;

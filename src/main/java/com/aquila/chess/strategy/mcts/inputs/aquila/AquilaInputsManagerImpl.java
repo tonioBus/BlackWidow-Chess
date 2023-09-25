@@ -55,7 +55,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
     public static final int QUEEN_INDEX = 4;
     public static final int KING_INDEX = 5;
 
-    public static final int FEATURES_PLANES = 46;
+    public static final int FEATURES_PLANES = 49;
 
     @Override
     public int getNbFeaturesPlanes() {
@@ -138,6 +138,9 @@ public class AquilaInputsManagerImpl implements InputsManager {
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
+        fill(inputs[currentIndex + 6], 0.0F); // future use
+        fill(inputs[currentIndex + 7], 0.0F); // future use
+        fill(inputs[currentIndex + 8], 0.0F); // future use
     }
 
     private void fill(double[][] planes, double value) {
