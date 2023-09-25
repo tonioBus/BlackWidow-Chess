@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class CacheValue extends OutputNN implements Serializable {
 
     final private String label;
 
-    final private List<MCTSNode> nodes = new ArrayList<>();
+    final private List<MCTSNode> nodes = Collections.synchronizedList(new ArrayList<>());
 
     CacheValue(double value, String label, double[] policies) {
         super(value, policies);

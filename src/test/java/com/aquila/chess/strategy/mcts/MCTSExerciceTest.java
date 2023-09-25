@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 public class MCTSExerciceTest {
 
-    public static int NB_STEP=8;
+    public static int NB_THREAD = 8;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
         return 0.5; // Math.exp(-0.04 * nbStep) / 2;
@@ -101,7 +101,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
@@ -158,7 +158,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
@@ -210,7 +210,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
 
@@ -260,7 +260,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
@@ -310,7 +310,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -377,7 +377,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -386,7 +386,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Move move = null;
@@ -444,7 +444,7 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbSearchCalls);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
@@ -488,9 +488,10 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
-    void testMakeWhiteChessMateIn2() throws Exception {
+    void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -500,8 +501,8 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
-                .withNbSearchCalls(800);
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbStep);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -509,8 +510,8 @@ public class MCTSExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
-                .withNbSearchCalls(800);
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece rootA8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a8"));
         nnBlack.addIndexOffset(1F, "a8-a3", board);
@@ -521,6 +522,7 @@ public class MCTSExerciceTest {
         for (int i = 0; i < 5; i++) {
             status = game.play();
             move = game.getLastMove();
+            log.info(game.toString());
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             switch (move.getAllegiance()) {
                 case WHITE:
@@ -532,7 +534,7 @@ public class MCTSExerciceTest {
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
                     log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    // Helper.checkMCTSTree(blackStrategy);
+                    Helper.checkMCTSTree(blackStrategy);
                     break;
             }
             if (status == WHITE_CHESSMATE) break;
@@ -571,7 +573,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -580,7 +582,7 @@ public class MCTSExerciceTest {
                 2,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Move move;
@@ -643,7 +645,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
@@ -698,7 +700,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -707,7 +709,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         final Game.GameStatus status = game.play();
@@ -749,7 +751,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -758,7 +760,7 @@ public class MCTSExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(NB_STEP)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         nnWhite.addIndexOffset(0.1F, "e8-e1", board);
