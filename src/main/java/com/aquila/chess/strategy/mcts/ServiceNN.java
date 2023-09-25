@@ -102,8 +102,9 @@ class ServiceNN {
         createInputs(nbIn);
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
-        System.out.printf("%d&|", length);
-        updateCacheValuesAndPoliciesWithInference(outputsNN);
+        System.out.printf("%d&", length);
+        int nbPropagatedNodes = updateCacheValuesAndPoliciesWithInference(outputsNN);
+        System.out.printf("%d|", nbPropagatedNodes);
     }
 
     private void propagateValues(boolean submit2NN, int length) {
@@ -183,6 +184,11 @@ class ServiceNN {
         }
     }
 
+    /**
+     *
+     * @param outputsNN
+     * @return propragated nodes
+     */
     private int updateCacheValuesAndPoliciesWithInference(final List<OutputNN> outputsNN) {
         int index = 0;
         for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
