@@ -54,10 +54,6 @@ public class CacheValues {
         return this.lruMap.size();
     }
 
-    public static CacheValue createDummy(String label) {
-        return CacheValue.getNotInitialized(label);
-    }
-
     public synchronized CacheValue create(long key, final String label) {
         if (containsKey(key)) throw new RuntimeException("node already created for key:" + key);
         CacheValue ret = CacheValue.getNotInitialized(String.format("[%d] %s", key, label));

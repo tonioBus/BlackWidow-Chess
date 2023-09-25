@@ -185,7 +185,6 @@ class ServiceNN {
     }
 
     /**
-     *
      * @param outputsNN
      * @return propragated nodes
      */

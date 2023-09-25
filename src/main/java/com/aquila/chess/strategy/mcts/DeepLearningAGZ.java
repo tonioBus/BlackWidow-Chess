@@ -289,41 +289,8 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    private void transform2NewPolicies(final TrainGame trainGame) {
-        log.info("transform training size: {}", trainGame.getOneStepRecordList().size());
-        final GameChecker gameChecker = new GameChecker();
-        trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
-            final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
-            if (!oneStepRecord.move().equals("INIT-MOVE")) {
-                gameChecker.play(oneStepRecord.move());
-            }
-            // log.info("moves:\n{}", currentMoves.stream().map(Move::toString).collect(Collectors.joining(",")));
-//            log.info("Index-moves:\n{}",
-//                    oneStepRecord
-//                            .policies()
-//                            .keySet()
-//                            .stream()
-//                            .map(index -> PolicyUtils.moveFromIndex(index, currentMoves, true))
-//                            .collect(Collectors.joining(",")));
-            Map<Integer, Double> newPolicies = new HashMap<>();
-            oneStepRecord.policies().keySet().stream().forEach(oldIndex -> {
-                String oldMove = PolicyUtils.moveFromIndex(oldIndex, currentMoves);
-                Move currentMove = currentMoves.stream().filter(move -> move.toString().equals(oldMove)).findFirst().get();
-                int newIndex = PolicyUtils.indexFromMove(currentMove);
-                double policy = oneStepRecord.policies().get(oldIndex);
-                if (Double.isNaN(policy)) {
-                    policy = 1;
-                }
-                newPolicies.put(newIndex, policy);
-            });
-            oneStepRecord.policies().clear();
-            oneStepRecord.policies().putAll(newPolicies);
-        });
-    }
-
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
-        transform2NewPolicies(trainGame);
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
@@ -417,7 +384,7 @@ public class DeepLearningAGZ {
     }
 
     public void addDefinedNodeToPropagate(final MCTSNode node) {
-        node.setNbPropagationsToExecute(node.getNbPropagationsToExecute() + 1);
+        node.incNbPropationsToExecute();
         this.serviceNN.addNodeToPropagate(node);
     }
 

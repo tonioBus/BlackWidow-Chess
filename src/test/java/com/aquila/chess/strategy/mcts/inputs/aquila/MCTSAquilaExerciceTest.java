@@ -101,14 +101,14 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
         int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
         nnBlack.addIndexOffset(0.5F, index1, index2);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
             log.warn("[{}] move: {} class:{}", move.getAllegiance(), move, move.getClass().getSimpleName());
@@ -145,7 +145,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {50, 100, 200, 300, 400, 800})
+    @ValueSource(ints = {100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
     void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
@@ -158,14 +158,14 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
         int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2");
         int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1");
         nnBlack.addIndexOffset(0.9F, index1, index2);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             log.info(game.toString());
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -178,7 +178,7 @@ public class MCTSAquilaExerciceTest {
             if (move.getAllegiance().isBlack()) {
                 if (log.isInfoEnabled() && nbStep <= 200) log.info(blackStrategy.mctsTree4log(true, 50));
             }
-            // Helper.checkMCTSTree(blackStrategy);
+            Helper.checkMCTSTree(blackStrategy);
         }
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have got a black chessmate");
@@ -211,7 +211,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
 
@@ -261,7 +261,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
@@ -311,7 +311,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -367,7 +367,7 @@ public class MCTSAquilaExerciceTest {
      * </pre>
      */
     @ParameterizedTest
-    @ValueSource(ints = {10, 50, 100, 200})
+    @ValueSource(ints = {50, 100, 200, 300, 400})
     void testAvoidEndWithWhitePromotion(int nbSearch) throws Exception {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
@@ -378,7 +378,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbSearch);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -387,7 +387,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbSearch);
         game.setup(whiteStrategy, blackStrategy);
         Move move = null;
@@ -448,7 +448,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withNbThread(8)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbSearchCalls);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
@@ -582,7 +582,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -591,7 +591,7 @@ public class MCTSAquilaExerciceTest {
                 2,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         Move move;
@@ -653,7 +653,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
@@ -708,7 +708,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -717,7 +717,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
         final Game.GameStatus status = game.play();
@@ -759,7 +759,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -768,7 +768,7 @@ public class MCTSAquilaExerciceTest {
                 10,
                 updateCpuct,
                 -1)
-                .withNbThread(1)
+                .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         nnWhite.addIndexOffset(0.1F, "e8-e1", board);

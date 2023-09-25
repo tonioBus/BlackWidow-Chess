@@ -144,7 +144,7 @@ public class SaveGameTest {
         TrainGame trainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(sequence.nbStep - 1, trainGame.getOneStepRecordList().size());
+        assertEquals(sequence.nbStep-1, trainGame.getOneStepRecordList().size());
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
