@@ -255,7 +255,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             }
             synchronized (opponentNode.getChildNodes()) {
                 if (opponentNode.findChild(possibleMove) == null) {
-                    log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), child.getCacheValue());
+                    log.warn("CREATE NEW NODE path:{} :{}", child.getMovesFromRootAsString(), child.getCacheValue().value);
                     opponentNode.addChild(child);
                 }
             }

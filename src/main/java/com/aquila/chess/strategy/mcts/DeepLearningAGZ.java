@@ -68,12 +68,10 @@ public class DeepLearningAGZ {
 
     static final int FIT_CHUNK = 20;
 
-    static final int BATCH_SIZE = 128;
-
-    static final int CACHE_VALUES_SIZE = 80000;
+    static final int CACHE_VALUES_SIZE = 40000;
 
     @Getter
-    private int batchSize = BATCH_SIZE;
+    private int batchSize;
 
     @Getter
     private final int nbFeaturesPlanes;
@@ -90,14 +88,6 @@ public class DeepLearningAGZ {
     @Setter
     @Getter
     private FixMCTSTreeStrategy fixMCTSTreeStrategy;
-
-//    public DeepLearningAGZ(final INN nn) {
-//        this(nn, false, BATCH_SIZE);
-//    }
-//
-//    public DeepLearningAGZ(final INN nn, boolean train) {
-//        this(nn, train, BATCH_SIZE);
-//    }
 
     @Builder
     public DeepLearningAGZ(final INN nn, boolean train, int batchSize, final InputsManager inputsManager) {
@@ -128,7 +118,8 @@ public class DeepLearningAGZ {
         final DeepLearningAGZ retDeepLearningBlack;
         if (!nnBlackFile.isFile()) {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
-            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes(), 20);
+            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes(),
+                    ((NNDeep4j)deepLearningBlack.nn).numberResidualBlocks);
             retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
             if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
         } else {

@@ -29,6 +29,9 @@ public class CacheValues {
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.clear();
+        LOST_CACHE_VALUE.getNodes().clear();
+        DRAWN_CACHE_VALUE.getNodes().clear();
+        WIN_CACHE_VALUE.getNodes().clear();
         this.lruMap.put(-1L, LOST_CACHE_VALUE);
         this.lruMap.put(0L, DRAWN_CACHE_VALUE);
         this.lruMap.put(1L, WIN_CACHE_VALUE);

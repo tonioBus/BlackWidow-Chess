@@ -8,7 +8,6 @@ import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -36,8 +35,8 @@ public class MainTrainingAquila {
         MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
         MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 15);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 15);
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -90,7 +89,6 @@ public class MainTrainingAquila {
             do {
                 gameStatus = game.play();
                 sequence.play();
-                Move move = game.getLastMove();
                 log.warn("game:\n{}", game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");
