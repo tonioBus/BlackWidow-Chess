@@ -49,14 +49,15 @@ public class CacheValue extends OutputNN implements Serializable {
     public synchronized void normalizePolicies(double[] policies) {
         this.sourcePolicies = policies;
         if (nodes.size() == 0) {
-            log.debug("Can not normalize policies, not connected to any nodes: {}", this.label);
+            // log.warn("Can not normalize policies, not connected to any nodes: {}", this.label);
             return;
         }
-        int[] indexes = PolicyUtils.getIndexesFilteredPolicies(nodes.get(0).getChildMoves());
-        log.debug("NORMALIZED move.size:{} dirichlet:{}", nodes.get(0).getChildMoves().size(), nodes.get(0).isDirichlet());
-        boolean isDirichlet = nodes.get(0).getState() == MCTSNode.State.ROOT;
-        isDirichlet = MCTSStrategyConfig.isDirichlet(nodes.get(0).getMove()) && isDirichlet;
-        double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, nodes.get(0).getChildMoves());
+        final MCTSNode node = nodes.get(0);
+        int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
+        boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
+        isDirichlet = MCTSStrategyConfig.isDirichlet(node.getMove()) && isDirichlet;
+        if(isDirichlet) log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichlet(), node);
+        double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
         this.policies = normalizedPolicies;
     }
 

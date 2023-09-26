@@ -289,8 +289,21 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
+    private void checkGame(final TrainGame trainGame) {
+        log.info("Check training size: {}", trainGame.getOneStepRecordList().size());
+        final GameChecker gameChecker = new GameChecker();
+        trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
+            final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
+            if (!oneStepRecord.move().equals("INIT-MOVE")) {
+                gameChecker.play(oneStepRecord.move());
+            }
+        });
+        log.info("Check done.");
+    }
+
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
+        checkGame(trainGame);
         this.nn.train(true);
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());

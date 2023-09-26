@@ -70,7 +70,7 @@ public class NNDeep4j implements INN {
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
-        log.info("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
+        log.debug("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
     }
 
     public void train(boolean train) {

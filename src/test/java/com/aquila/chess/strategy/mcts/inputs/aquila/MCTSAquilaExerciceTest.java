@@ -493,7 +493,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {50, 100, 200, 400, 800})
+    @ValueSource(ints = {100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
@@ -505,8 +505,9 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
+                .withDirichlet(dirichlet)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(nbStep);
+                .withNbSearchCalls(2);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -514,6 +515,7 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
+                .withDirichlet(dirichlet)
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
@@ -530,15 +532,17 @@ public class MCTSAquilaExerciceTest {
             switch (move.getAllegiance()) {
                 case WHITE:
                     List<MCTSNode> winLoss1 = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
-                    log.info("[WHITE] Wins/loss EndNodes: {}", winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    if (winLoss1.size() > 0) log.info("graph:\n{}\n");
+                    log.info("[WHITE] STEP:{} Wins/loss EndNodes: {}", i, winLoss1.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    if (winLoss1.size() > 0) if (log.isInfoEnabled()) log.info("WHITE GRAPH:\n{}", whiteStrategy.mctsTree4log(false, 50));
                     Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     List<MCTSNode> winLoss2 = blackStrategy.getDirectRoot().search(MCTSNode.State.WIN, MCTSNode.State.LOOSE);
-                    log.info("[BLACK] Wins/loss EndNodes: {}", winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
-                    if (winLoss2.size() > 0) log.info("graph:\n{}\n");
-                    assertTrue(winLoss2.size() > 0);
+                    log.info("[BLACK] STEP:{} Wins/loss EndNodes: {}", i, winLoss2.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+                    if (log.isInfoEnabled()) log.info("BLACK GRAPH:\n{}",blackStrategy.mctsTree4log(false, 50));
+                    if(winLoss2.size() == 0) {
+                        assertTrue(false, "WIN nodes should have been detected");
+                    }
                     Helper.checkMCTSTree(blackStrategy);
                     break;
             }

@@ -307,7 +307,11 @@ public class MCTSNode implements Serializable {
     }
 
     public void incNbPropationsToExecute() {
-        this.nbPropagationsToExecute++;
+        if( isLeaf()) {
+            this.nbPropagationsToExecute++;
+        } else {
+            this.nbPropagationsToExecute=1;
+        }
     }
 
 
@@ -405,12 +409,13 @@ public class MCTSNode implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("MCTSNode[%d] -> Move:%s leaf:%b visit:%d expectedReward:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
+        return String.format("MCTSNode[%d] -> Move:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
                 this.move == null ? "Starting" : this.move, //
                 this.leaf,
                 this.visits, //
                 this.getExpectedReward(false), //
+                this.getCacheValue() == null ? -1 : this.getCacheValue().value,
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //
                 this.nbPropagationsToExecute,

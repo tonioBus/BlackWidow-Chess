@@ -278,7 +278,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
             child.createLeaf(this.deepLearning.getCacheValues().getDrawnCacheValue());
             child.resetExpectedReward(DRAWN_VALUE);
             child.setPropagated(false);
-            long key = mctsGame.hashCode(childPlayer.getAlliance());
             this.deepLearning.addDefinedNodeToPropagate(child);
         }
     }
@@ -290,9 +289,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
             child.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
             child.setState(WIN);
             child.resetExpectedReward(WIN_VALUE);
-            long key = mctsGame.hashCode(childPlayer.getAlliance());
             this.deepLearning.addDefinedNodeToPropagate(child);
-            // removePropagation(child, childPlayer.getAlliance(), child.getMove());
+            removePropagation(child, childPlayer.getAlliance(), child.getMove());
             child.setPropagated(false);
         }
     }

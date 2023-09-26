@@ -69,7 +69,7 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(10)
+                .withNbThread(28)
                 .withNbSearchCalls(10);
         // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
@@ -79,7 +79,7 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(10)
+                .withNbThread(28)
                 .withNbSearchCalls(10);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
