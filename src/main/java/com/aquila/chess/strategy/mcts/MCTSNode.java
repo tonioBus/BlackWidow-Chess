@@ -100,10 +100,12 @@ public class MCTSNode implements Serializable {
         nbBuild = 0;
     }
 
+    // synchronized
     public void incVirtualLoss() {
         this.virtualLoss++;
     }
 
+    // synchronized
     public void decVirtualLoss() {
         this.virtualLoss--;
     }

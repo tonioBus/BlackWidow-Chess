@@ -191,7 +191,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         if (opponentNode.isContainsChildleaf()) return 0;
         opponentNode.setContainsChildleaf(true);
         if (opponentNode.getChildNodes().size() == 0) return 0;
-        if(opponentNode.allChildNodes().stream().filter(node -> node.isLeaf()).count() == opponentNode.getChildNodes().size()) {
+        if (opponentNode.allChildNodes().stream().filter(node -> node.isLeaf()).count() == opponentNode.getChildNodes().size()) {
             log.warn("TERMINAL NODE: {}", opponentNode);
             return -1;
         }
@@ -477,14 +477,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
             double value = -node.getCacheValue().getValue();
             do {
                 parent = parent.getParent();
-                synchronized (parent) {
-                    parent.incVirtualLoss();
-                }
+                parent.incVirtualLoss();
                 parent.unPropagate(value, MCTSNode.PropragateSrc.UN_PROPAGATE, node.getBuildOrder());
                 value = -value;
-                synchronized (parent) {
-                    parent.decVirtualLoss();
-                }
+                parent.decVirtualLoss();
             } while (parent.getState() != MCTSNode.State.ROOT);
         } else {
             log.warn("removeState({}) ", node);
