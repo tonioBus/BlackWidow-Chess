@@ -18,6 +18,11 @@ public class MainTrainingAquila {
     static private final String NN_OPPONENT = "../AQUILA_NN/NN.partner";
     static public final int NB_STEP = 800;
 
+    /**
+     * A big number (256) can create GPU memory allocation error
+     */
+    static public final int BATCH_SIZE = 128;
+
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
         if (nbStep <= 30) return 2.5;
@@ -40,13 +45,13 @@ public class MainTrainingAquila {
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(256)
+                .batchSize(BATCH_SIZE)
                 .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(256)
+                .batchSize(BATCH_SIZE)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
