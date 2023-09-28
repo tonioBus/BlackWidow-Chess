@@ -244,7 +244,7 @@ public class MCTSSearchAquilaInputsTest {
                 .nn(nnConstant)
                 .inputsManager(inputsManager)
                 .train(false)
-                .batchSize(1)
+                .batchSize(4)
                 .build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,

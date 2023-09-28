@@ -13,7 +13,10 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -110,9 +113,15 @@ public class MCTSSearchWalker implements Callable<Integer> {
             int nbCreatedLeafNodes = detectAndCreateLeaf(opponentNode);
             if (nbCreatedLeafNodes < 0) {
                 log.debug("DETECTED {} LOOSE LEAF NODES", nbCreatedLeafNodes);
-                return new SearchResult("DETECTED LEAF NODES", -(nbCreatedLeafNodes-1));
+                return new SearchResult("DETECTED LEAF NODES", -(nbCreatedLeafNodes - 1));
             }
-            selectedMove = selection(opponentNode, isRootNode, depth);
+            List<Move> looseMoves = opponentNode.getChildsAsCollection().stream().
+                    filter(node -> node != null && node.getState() == LOOSE).
+                    map(node -> node.getMove()).
+                    collect(Collectors.toList());
+            if (looseMoves.size() == opponentNode.getChildNodes().size())
+                return new SearchResult("DETECTED LEAF NODES", 1);
+            selectedMove = selection(opponentNode, isRootNode, depth, looseMoves);
             log.debug("SELECTION: {}", selectedMove);
             if (selectedMove == null) return new SearchResult("NO SELECTION POSSIBLE", 0);
             selectedNode = opponentNode.findChild(selectedMove);
@@ -169,11 +178,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
             return new SearchResult("LEAF NODE", 1);
         } else {
             // recursive calls
-            if (selectedNode.isLeaf()) {
-                log.error("[{}] AAAARGHHHH ! Comment c'est possible bordel de merde", this.colorStrategy);
-                selectedNode.decVirtualLoss();
-                return new SearchResult("BORDEL", 1);
-            }
             SearchResult searchResult = search(selectedNode, depth + 1, false);
             // retro-propagate done in ServiceNN
             selectedNode.decVirtualLoss();
@@ -291,7 +295,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected void createWinNode(final MCTSNode opponentNode, final Move possibleMove, Player childPlayer) {
         final MCTSNode child = createChild(opponentNode, possibleMove, WIN);
         if (child.getState() != WIN) {
-            log.warn("[{}] DETECT WIN MOVE: {},{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(),possibleMove);
+            log.warn("[{}] DETECT WIN MOVE: {},{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
             child.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
             child.setState(WIN);
             child.resetExpectedReward(WIN_VALUE);
@@ -319,7 +323,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         }
     }
 
-    protected Move selection(final MCTSNode opponentNode, final boolean isRootNode, int depth) {
+    protected Move selection(final MCTSNode opponentNode, final boolean isRootNode, int depth, List<Move> looseMoves) {
         double maxUcb = Double.NEGATIVE_INFINITY;
         double ucb;
         double policy;
@@ -328,10 +332,11 @@ public class MCTSSearchWalker implements Callable<Integer> {
         MCTSNode child;
 
         final Collection<Move> moves = opponentNode.getChildMoves();
-        List<Move> looseMoves = opponentNode.getChildsAsCollection().stream().
-                filter(node -> node != null && node.getState() == LOOSE).
-                map(node -> node.getMove()).
-                collect(Collectors.toList());
+        if (log.isDebugEnabled()) {
+            log.debug("MOVES:{}", moves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+            log.debug("graph:-----------------------------------\n{}\n-----------------------------------",
+                    DotGenerator.toString(opponentNode.getRoot(), 10, true));
+        }
         final List<Move> bestMoves = new ArrayList<>();
         int sumVisits = opponentNode.getVisits();
 
@@ -360,14 +365,17 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
                 } else {
-                    exploitation = child.getExpectedReward(true);
+                    if (child.getState() == LOOSE) continue;
+                    exploitation = child.getExpectedReward(false);
                     visits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 if (sumVisits > 0) {
                     policy = policies[PolicyUtils.indexFromMove(possibleMove)];
-                    if (log.isDebugEnabled()) log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
-                    if (log.isDebugEnabled()) log.debug("policy:{}", policy);
+                    if (log.isDebugEnabled()) {
+                        log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
+                        log.debug("policy:{}", policy);
+                    }
                     exploration = exploration(opponentNode, cpuct, sumVisits, visits, policy);
                 }
                 ucb = exploitation + exploration;
@@ -393,6 +401,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 statistic.maxRandomSelectionBestMoves = nbBestMoves;
             if (nbBestMoves < statistic.minRandomSelectionBestMoves)
                 statistic.minRandomSelectionBestMoves = nbBestMoves;
+            //////////////////////////////////////////////////////////////
             bestMove = getRandomMove(bestMoves, looseMoves);
         } else if (nbBestMoves == 0) {
             bestMove = getRandomMove(moves, looseMoves);
@@ -511,6 +520,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     /**
      * Return a random move from the given collection of Moves and by removing
+     *
      * @param moves
      * @param looseMoves
      * @return
