@@ -114,7 +114,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
+        log.info("[{}] -------------------------------------------------------", this.getAlliance());
         log.info("[{}] {} nextPlay() -> {}", this.getAlliance(), this, move);
+        log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.nbStep++;
 
         if (isTraining()) {
@@ -272,6 +274,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             ret = getRandomNodes(bestNodes);
         } else if (nbBests == 0) {
             log.error("[{}] NO BEST NODES, opponentNode:{}", getAlliance(), opponentNode);
+            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
+            log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
+            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             throw new RuntimeException("NO BEST NODES");
         } else {
             ret = bestNodes.get(0);

@@ -79,7 +79,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Thread.currentThread().setName(String.format("W:%d S:%d", numThread, nbSubmit));
+        Thread.currentThread().setName(String.format("Worker:%d Submit:%d", numThread, nbSubmit));
         cpuct = updateCpuct.update(mctsGame.getMoves().size());
         SearchResult searchResult = search(currentRoot, 0, true);
         if (searchResult == null) {
@@ -109,8 +109,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
             log.debug("detectAndCreateLeaf({})", opponentNode);
             int nbCreatedLeafNodes = detectAndCreateLeaf(opponentNode);
             if (nbCreatedLeafNodes < 0) {
-                log.debug("DETECTED {} LEAF NODES", nbCreatedLeafNodes);
-                return new SearchResult("DETECTED LEAF NODES", nbCreatedLeafNodes);
+                log.debug("DETECTED {} LOOSE LEAF NODES", nbCreatedLeafNodes);
+                return new SearchResult("DETECTED LEAF NODES", -(nbCreatedLeafNodes-1));
             }
             selectedMove = selection(opponentNode, isRootNode, depth);
             log.debug("SELECTION: {}", selectedMove);
@@ -214,14 +214,14 @@ public class MCTSSearchWalker implements Callable<Integer> {
             // Loose
             AtomicBoolean stop = new AtomicBoolean(false);
             allLegalsMoves.entrySet().parallelStream().forEach(entry -> {
-                if (opponentNode.getColorState() == this.colorStrategy) {
-                    log.warn("DETECT LOSS MOVE: {} last:{}", opponentNode.getMovesFromRootAsString(), entry.getKey());
+                if (opponentNode.getColorState() == this.colorStrategy && opponentNode.getState() != ROOT) {
+                    log.warn("[{}] DETECT LOSS MOVE: {} last:{}", this.colorStrategy, opponentNode, entry.getKey());
                     stop.set(true);
                 }
             });
             if (stop.get()) {
                 int nbRemovedChild = opponentNode.getNumberOfAllNodes();
-                log.info("Removed child:{}", nbRemovedChild);
+                log.info("[{}] CLEAN UP child:{}", this.colorStrategy, nbRemovedChild);
                 createLooseNode(opponentNode);
                 return -nbRemovedChild;
             }

@@ -255,12 +255,12 @@ public class Game {
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
-        sb.append(String.format("current legal move:%s\n", this
+        List<Move> legalMoves = this
                 .getNextPlayer()
-                .getLegalMoves(Move.MoveStatus.DONE)
-                .stream()
-                .map(move -> move.toString())
-                .collect(Collectors.joining(","))));
+                .getLegalMoves(Move.MoveStatus.DONE);
+        sb.append(String.format("current legal move:[%d] %s\n",
+                legalMoves.size(),
+                legalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(","))));
         sb.append(this.board);
         return sb.toString();
     }
