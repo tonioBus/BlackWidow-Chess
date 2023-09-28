@@ -33,7 +33,7 @@ public class MainFitNNAquila implements Runnable {
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
     @CommandLine.Option(names = {"-td", "--trainDir"})
-    private String[] trainDirs;
+    private String[] trainDirs = null;
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
@@ -70,12 +70,14 @@ public class MainFitNNAquila implements Runnable {
             log.error("no train directory specified (-td)");
             System.exit(-1);
         }
-        Arrays.stream(trainDirs).forEach(trainDir -> {
-            if (!Files.isReadable(Path.of(trainDir))) {
-                log.error("Can not access directory: {}", trainDir);
-                System.exit(-1);
-            }
-        });
+        if (trainDirs != null && !trainDirs[0].equals("null")) {
+            Arrays.stream(trainDirs).forEach(trainDir -> {
+                if (!Files.isReadable(Path.of(trainDir))) {
+                    log.error("Can not access directory: {}", trainDir);
+                    System.exit(-1);
+                }
+            });
+        }
     }
 
     @Override
@@ -94,24 +96,27 @@ public class MainFitNNAquila implements Runnable {
                 .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
-        Arrays.stream(trainDirs).forEach(trainDir -> {
-            log.info("TRAIN DIR: {}", trainDir);
-            try {
-                train(trainDir, deepLearningWhite);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch(RuntimeException e) {
-                log.error("RuntimeException, we will close without saving", e);
-                System.exit(-1);
-            }
-        });
+        if (trainDirs != null && !trainDirs[0].equals("null")) {
+            Arrays.stream(trainDirs).forEach(trainDir -> {
+                log.info("TRAIN DIR: {}", trainDir);
+                try {
+                    train(trainDir, deepLearningWhite);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (RuntimeException e) {
+                    log.error("RuntimeException, we will close without saving", e);
+                    System.exit(-1);
+                }
+            });
+        }
 //        train("train-aquila", deepLearningWhite);
 //        train("train-aquila-linux", deepLearningWhite);
 //        train("train-aquila-rog", deepLearningWhite);
 
         try {
+            ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
             deepLearningWhite.save();
         } catch (IOException e) {
             log.error("Error when saving NN", e);
