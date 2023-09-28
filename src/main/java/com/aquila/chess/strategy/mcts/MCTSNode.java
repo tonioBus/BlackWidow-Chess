@@ -411,8 +411,9 @@ public class MCTSNode implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("MCTSNode[%d] -> Move:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
+        return String.format("MCTSNode[%d] -> Move:%s Color:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
+                this.move == null ? "N / A" : this.move.getAllegiance(),
                 this.move == null ? "Starting" : this.move, //
                 this.leaf,
                 this.visits, //
@@ -457,6 +458,10 @@ public class MCTSNode implements Serializable {
                 move == null ? true : move.equals(mctsNode.move);
     }
 
+    /**
+     *
+     * @return the number of sub nodes including the current node
+     */
     public int getNumberOfAllNodes() {
         int subNode = 1;
         for (final MCTSNode node : this.getChildsAsCollection()) {
