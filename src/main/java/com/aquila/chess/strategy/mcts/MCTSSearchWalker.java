@@ -366,7 +366,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     exploitation = cacheValue.getValue();
                 } else {
                     if (child.getState() == LOOSE) continue;
-                    exploitation = child.getExpectedReward(false);
+                    exploitation = child.getExpectedReward(true);
                     visits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
