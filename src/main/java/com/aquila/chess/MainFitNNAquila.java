@@ -32,8 +32,9 @@ public class MainFitNNAquila implements Runnable {
     static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
+    // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
-    private String[] trainDirs;
+    private String[] trainDirs = {"train-aquila", "train-aquila-linux", "train-aquila-grospc"};
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
@@ -102,7 +103,7 @@ public class MainFitNNAquila implements Runnable {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
-            } catch(RuntimeException e) {
+            } catch (RuntimeException e) {
                 log.error("RuntimeException, we will close without saving", e);
                 System.exit(-1);
             }
