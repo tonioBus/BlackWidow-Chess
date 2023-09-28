@@ -489,7 +489,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 parent.decVirtualLoss();
             } while (parent.getState() != MCTSNode.State.ROOT);
         } else {
-            log.warn("removeState({}) ", node);
+            log.warn("[{}] removeState({}) ", this.colorStrategy, node);
             deepLearning.removeState(mctsGame, simulatedPlayerColor, selectedMove);
             deepLearning.getServiceNN().removeNodeToPropagate(node);
         }
