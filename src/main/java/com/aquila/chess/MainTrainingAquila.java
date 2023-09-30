@@ -21,7 +21,8 @@ public class MainTrainingAquila {
     /**
      * A big number (256) can create GPU memory allocation error
      */
-    static public final int BATCH_SIZE = 128;
+    // static public final int BATCH_SIZE = 128;
+    static public final int BATCH_SIZE = 256;
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
