@@ -372,7 +372,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
-                inputs
+                inputs,
                 move.toString(),
                 alliance,
                 policies);
