@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.check.GameChecker;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
@@ -21,10 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -119,7 +117,7 @@ public class DeepLearningAGZ {
         if (!nnBlackFile.isFile()) {
             Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
             NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes(),
-                    ((NNDeep4j)deepLearningBlack.nn).numberResidualBlocks);
+                    ((NNDeep4j) deepLearningBlack.nn).numberResidualBlocks);
             retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
             if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
         } else {
@@ -289,26 +287,48 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    private void checkGame(final TrainGame trainGame) {
+    private LinkedList<OneStepRecord> checkGame(final TrainGame trainGame) {
         log.info("Check training size: {}", trainGame.getOneStepRecordList().size());
         final GameChecker gameChecker = new GameChecker();
-        trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
-            final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
-            if (!oneStepRecord.move().equals("INIT-MOVE")) {
-                gameChecker.play(oneStepRecord.move());
-            }
-        });
-        log.info("Check done.");
+        LinkedList<OneStepRecord> ret = new LinkedList<>();
+        try {
+            trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
+                final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
+                String moveSz = oneStepRecord.move();
+                InputsFullNN inputsNN = gameChecker.play(moveSz);
+                OneStepRecord newOneStepRecord = new OneStepRecord(
+                        inputsNN,
+                        oneStepRecord.move(),
+                        oneStepRecord.color2play(),
+                        oneStepRecord.policies());
+                ret.add(newOneStepRecord);
+            });
+        } catch (RuntimeException e) {
+            log.error("Bad saved game", e);
+            log.error("!! Error during loading of game: only using {} steps", ret.size());
+            return ret;
+        }
+        log.info("Check done: {}", ret.size());
+        return ret;
     }
 
+    /**
+     * Train the NN by sending batches of FIT_CHUNK size
+     *
+     * @param trainGame
+     * @throws IOException
+     */
     public void train(final TrainGame trainGame) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
-        checkGame(trainGame);
-        this.nn.train(true);
+        LinkedList<OneStepRecord> correctStepRecord = checkGame(trainGame);
+        int nbCorrectStep = correctStepRecord.size();
         final int nbStep = trainGame.getOneStepRecordList().size();
-        log.info("NETWORK TO FIT[{}]: {}", nbStep, trainGame.getValue());
-        int nbChunk = nbStep / FIT_CHUNK;
-        int restChunk = nbStep % FIT_CHUNK;
+        log.info("Current Check:{} <-> {}:Correct Step", nbCorrectStep, nbStep);
+        trainGame.setOneStepRecordList(correctStepRecord);
+        this.nn.train(true);
+        log.info("NETWORK TO FIT[{}]: {}", nbCorrectStep, trainGame.getValue());
+        int nbChunk = nbCorrectStep / FIT_CHUNK;
+        int restChunk = nbCorrectStep % FIT_CHUNK;
         for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
             trainChunk(indexChunk, FIT_CHUNK, trainGame);
         }
@@ -324,19 +344,17 @@ public class DeepLearningAGZ {
         final AtomicInteger atomicInteger = new AtomicInteger();
         final double value = trainGame.getValue();
         List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
-        for (int chunkNumber = 0; chunkNumber < chunkSize; chunkNumber++) {
-            atomicInteger.set(chunkNumber);
-            int gameRound = indexChunk * chunkSize + chunkNumber;
+
+        for (int stepInChunk = 0; stepInChunk < chunkSize; stepInChunk++) {
+            atomicInteger.set(stepInChunk);
+            int gameRound = indexChunk * chunkSize + stepInChunk;
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
-            Map<Integer, Double> policies = oneStepRecord.policies();
+            Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             normalize(policies);
-            // actual reward for current state (inputs), so color complement color2play
-            // if color2play is WHITE, the current node is BLACK, so -reward
             Alliance playedColor = oneStepRecord.color2play();
             double actualRewards = getActualRewards(value, playedColor);
-            valuesForNN[chunkNumber][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards); // CHOICES
-            // valuesForNN[chunkNumber][0] = oneStepRecord.getExpectedReward(); // CHOICES
+            valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
             if (policies != null) {
                 policies.forEach((indexFromMove, previousPolicies) -> {
                     policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;

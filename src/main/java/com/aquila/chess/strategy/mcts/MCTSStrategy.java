@@ -103,7 +103,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (isTraining() && this.partnerStrategy.getDirectRoot() != null && this.mctsGame != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
-                    moveOpponent,
+                    this.getMctsGame().getLastMove(),
                     this.alliance.complementary(),
                     this.partnerStrategy.getDirectRoot()
             );
@@ -122,13 +122,22 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (isTraining()) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
-                    move,
+                    moveOpponent,
                     this.alliance,
                     this.directRoot
             );
             trainGame.add(lastOneStepRecord);
         }
-        this.mctsGame.play(this.directRoot, move);
+        Game.GameStatus gameStatus = this.mctsGame.play(this.directRoot, move);
+        if (gameStatus != Game.GameStatus.IN_PROGRESS) {
+            OneStepRecord lastOneStepRecord = createStepTraining(
+                    this.mctsGame,
+                    move,
+                    this.alliance,
+                    null
+            );
+            trainGame.add(lastOneStepRecord);
+        }
         return move;
     }
 
@@ -138,13 +147,14 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     /**
      * Modify the directRoot
+     *
      * @param game
      * @param opponentMove
      * @return
      */
     protected void createRootNode(final Game game, final Move opponentMove) {
         assert opponentMove != null;
-        assert opponentMove.getAllegiance() != this.alliance;
+        assert opponentMove.isInitMove() || opponentMove.getAllegiance() != this.alliance;
         log.info("opponentMove:{}", opponentMove);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
@@ -341,12 +351,15 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+        final Map<Integer, Double> probabilities = new HashMap<>();
+        if (stepNode == null) {
+            return probabilities;
+        }
         if (!stepNode.isSync()) {
             String msg = String.format("calculatePolicies: root is not sync: %s", stepNode);
             log.error(msg);
             throw new RuntimeException(msg);
         }
-        final Map<Integer, Double> probabilities = new HashMap<>();
         stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
             int index = PolicyUtils.indexFromMove(child.getMove());
             double probability = (double) child.getVisits() / (double) stepNode.getVisits();
@@ -356,10 +369,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
-        InputsFullNN inputs = mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
+        final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
-                inputs,
+                inputs
                 move.toString(),
                 alliance,
                 policies);

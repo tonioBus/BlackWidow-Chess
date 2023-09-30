@@ -147,7 +147,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         isEnding = true;
                         if (log.isInfoEnabled()) {
                             log.info("[{}] END OF SEARCH DETECTED nbSearchCalls:{} submit:{} childs:{} visits:{}", nbStep, nbSearchCalls, nbSubmit, currentRoot.getNumberOfAllNodes(), currentRoot.getVisits());
-                            if(currentRoot.getNumberOfAllNodes() < 200) log.info("-------------------------------------\n{}\n-------------------------------------\n",
+                            if(currentRoot.getNumberOfAllNodes() < 100) log.info("-------------------------------------\n{}\n-------------------------------------\n",
                                     DotGenerator.toString(currentRoot, 10) );
                         }
                     }

@@ -69,8 +69,8 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(28)
-                .withNbSearchCalls(10);
+                .withNbThread(1)
+                .withNbSearchCalls(1);
         // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -79,8 +79,8 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(28)
-                .withNbSearchCalls(10);
+                .withNbThread(6)
+                .withNbSearchCalls(400);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
@@ -94,16 +94,22 @@ public class TrainTest {
         log.info("#########################################################################");
         log.info("END OF game :\n{}\n{}", gameStatus, game);
         log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(1, 1);
+        ResultGame resultGame = new ResultGame(0, 1);
         final String filename = whiteStrategy.saveBatch("train-test", resultGame);
         int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
         TrainGame trainGame = TrainGame.load("train-test", num);
         deepLearningWhite.train(trainGame);
     }
 
+    @Test
+    void testLoad() throws IOException, ClassNotFoundException {
+        TrainGame trainGame = TrainGame.load("train-test-load", 1);
+        deepLearningWhite.train(trainGame);
+    }
+
     @AfterAll
     static void afterAll() throws IOException {
         File directory = new File("train-test");
-        FileUtils.cleanDirectory(directory);
+        // FileUtils.cleanDirectory(directory);
     }
 }

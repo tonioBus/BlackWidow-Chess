@@ -9,6 +9,8 @@ import lombok.Getter;
 
 public abstract class Move {
 
+    public final static String INIT_MOVE = "INIT-MOVE";
+
     @Getter
     protected final Board board;
     protected final int destinationCoordinate;
@@ -48,7 +50,7 @@ public abstract class Move {
 
         @Override
         public String toString() {
-            return "INIT-MOVE";
+            return INIT_MOVE;
         }
 
         @Override

@@ -32,6 +32,8 @@ public class MainFitNNAquila implements Runnable {
     static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
+    UpdateLr updateLr = nbGames -> 1.0e-4;
+
     // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
     private String[] trainDirs = {"train-aquila", "train-aquila-linux", "train-aquila-grospc"};
@@ -88,7 +90,6 @@ public class MainFitNNAquila implements Runnable {
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
-        UpdateLr updateLr = nbGames -> 1.0e-4;
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()

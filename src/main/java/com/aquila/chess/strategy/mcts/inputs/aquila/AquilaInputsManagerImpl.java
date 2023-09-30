@@ -65,7 +65,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
     @Override
     public InputsFullNN createInputs(Board board, Move move, Alliance color2play) {
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        if (move != null)
+        if (move != null && !move.isInitMove())
             // if we move, the color2play will be the complementary of the player that just moved
             this.createInputs(inputs, move.execute(), move.getAllegiance().complementary());
         else

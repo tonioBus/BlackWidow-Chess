@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.check;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -31,26 +32,30 @@ public class GameChecker {
         return game.getNextPlayer().getLegalMoves();
     }
 
-    public void play(String givenMove) {
+    public InputsFullNN play(String givenMove) {
         final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
-        Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove)).findFirst();
-        if(currentMoveOpt.isEmpty()) {
-            log.error("no legal move found for: {}", givenMove);
-            log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-            log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
-            throw new RuntimeException("no legal move found for: " + givenMove);
-        }
-        Move currentMove = currentMoveOpt.get();
-        switch (game.getColor2play()) {
-            case WHITE -> {
-                whitePlayer.setNextMove(currentMove);
+        if (!givenMove.equals(Move.INIT_MOVE)) {
+            Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove)).findFirst();
+            if (currentMoveOpt.isEmpty()) {
+                log.error("no legal move found for: {}", givenMove);
+                log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
+                throw new RuntimeException("no legal move found for: " + givenMove);
             }
-            case BLACK -> {
-                blackPlayer.setNextMove(currentMove);
+            Move currentMove = currentMoveOpt.get();
+            switch (game.getColor2play()) {
+                case WHITE -> {
+                    whitePlayer.setNextMove(currentMove);
+                }
+                case BLACK -> {
+                    blackPlayer.setNextMove(currentMove);
+                }
             }
         }
         try {
-            game.play();
+            if (!givenMove.equals(Move.INIT_MOVE)) game.play();
+            InputsFullNN inputsNN = game.getInputsManager().createInputs(game.getBoard(), null, game.getColor2play());
+            return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

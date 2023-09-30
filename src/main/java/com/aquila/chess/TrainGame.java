@@ -3,6 +3,7 @@ package com.aquila.chess;
 import com.aquila.chess.strategy.mcts.ResultGame;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,8 +17,10 @@ public class TrainGame implements Serializable {
 
     @Getter
     Double value = null;
+
+    @Setter
     @Getter
-    final LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
+    LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
     private static void createTrainDir(String trainDir) {
         Path path = Paths.get(trainDir);
@@ -61,9 +64,7 @@ public class TrainGame implements Serializable {
     }
 
     public void add(final OneStepRecord oneStepRecord) {
-
         this.oneStepRecordList.add(oneStepRecord);
-
     }
 
     public void clear() {
