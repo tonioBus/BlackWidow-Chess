@@ -21,13 +21,21 @@ public class MCTSStrategyConfig {
 
     boolean dirichlet = true;
 
+    @Builder.Default
     int nbThreads = DEFAULT_THREAD;
 
+    @Builder.Default
     int nbStep = 800;
 
+    @Builder.Default
     long millisPerStep = -1;
 
-    int sizeBatch = 50;
+    /**
+     * A big number (256) can create GPU memory allocation error
+     */
+    // static public final int BATCH_SIZE = 128;
+    @Builder.Default
+    int sizeBatch = 256;
 
     int seed = 1;
 

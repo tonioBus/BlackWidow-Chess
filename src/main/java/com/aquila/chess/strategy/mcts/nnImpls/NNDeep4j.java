@@ -173,6 +173,7 @@ public class NNDeep4j implements INN {
 
 
     private INDArray[] output(double[][][][] nbIn) {
+        // this can cause java.lang.OutOfMemoryError
         INDArray inputsArray = Nd4j.create(nbIn);
         INDArray[] ret = network.output(inputsArray);
         return ret;

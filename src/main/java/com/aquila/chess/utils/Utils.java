@@ -95,6 +95,9 @@ public class Utils {
             }
         }
         if (isDirichlet) {
+            if (log.isWarnEnabled()) {
+                logPolicies("ORIGINAL ", policies, indexes, moves);
+            }
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
@@ -112,29 +115,32 @@ public class Utils {
                 }
             }
             if (log.isWarnEnabled()) {
-                double maxPolicy = 0.0;
-                double minPolicy = 1.0;
-                int maxPolicyIndex = -1;
-                int minPolicyIndex = -1;
-                for (int i = 0; i < policies.length; i++) {
-                    if (policies[i] > maxPolicy) {
-                        maxPolicy = policies[i];
-                        maxPolicyIndex = i;
-                    }
-                    if (policies[i] > 0.0 && policies[i] < minPolicy) {
-                        minPolicy = policies[i];
-                        minPolicyIndex = i;
-                    }
-                }
-                log.warn("dirichlet: MAX policy: {} index:{} move:{}", maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves));
-                log.warn("dirichlet: MIN policy: {} index:{} move:{}", minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves));
-                log.warn("dirichlet: indexes: {} <-> {} : policies>0",
-                        indexes.length,
-                        Arrays.stream(policies).filter(policy -> policy > 0).count());
-
+                logPolicies("DIRICHLET", policies, indexes, moves);
             }
         }
         return policies;
+    }
+
+    public static void logPolicies(String label, final double[] policies, int[] indexes, Collection<Move> moves) {
+        double maxPolicy = 0.0;
+        double minPolicy = 1.0;
+        int maxPolicyIndex = -1;
+        int minPolicyIndex = -1;
+        for (int i = 0; i < policies.length; i++) {
+            if (policies[i] > maxPolicy) {
+                maxPolicy = policies[i];
+                maxPolicyIndex = i;
+            }
+            if (policies[i] > 0.0 && policies[i] < minPolicy) {
+                minPolicy = policies[i];
+                minPolicyIndex = i;
+            }
+        }
+        log.warn("{}: MAX policy: {} index:{} move:{} | MIN policy: {} index:{} move:{}", label,
+                maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves), minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves));
+        log.warn("{}: indexes: {} <-> {} : policies>0", label,
+                indexes.length,
+                Arrays.stream(policies).filter(policy -> policy > 0).count());
     }
 
     /**
@@ -156,6 +162,7 @@ public class Utils {
 
         return jdwpPresent;
     }
+
     public static int nbMaxBits(long number) {
         return (int) (Math.log(Long.highestOneBit(number)) / Math.log(2.0));
     }

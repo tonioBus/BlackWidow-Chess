@@ -138,6 +138,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(lastOneStepRecord);
         }
+        this.directRoot.setState(MCTSNode.State.INTERMEDIATE);
         return move;
     }
 

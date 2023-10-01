@@ -16,13 +16,6 @@ public class MainTrainingAquila {
     static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
 
     static private final String NN_OPPONENT = "../AQUILA_NN/NN.partner";
-    static public final int NB_STEP = 800;
-
-    /**
-     * A big number (256) can create GPU memory allocation error
-     */
-    // static public final int BATCH_SIZE = 128;
-    static public final int BATCH_SIZE = 256;
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
@@ -46,13 +39,13 @@ public class MainTrainingAquila {
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(BATCH_SIZE)
+                .batchSize(MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.getSizeBatch())
                 .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(BATCH_SIZE)
+                .batchSize(MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.getSizeBatch())
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
@@ -76,7 +69,7 @@ public class MainTrainingAquila {
                     seed1,
                     updateCpuct,
                     -1)
-                    .withNbSearchCalls(NB_STEP)
+                    .withNbSearchCalls(MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.getNbStep())
                     // .withNbThread(NB_THREADS)
                     .withDirichlet(dirichlet);
             final MCTSStrategy blackStrategy = new MCTSStrategy(
@@ -86,7 +79,7 @@ public class MainTrainingAquila {
                     seed2,
                     updateCpuct,
                     -1)
-                    .withNbSearchCalls(NB_STEP)
+                    .withNbSearchCalls(MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.getNbStep())
                     // .withNbThread(NB_THREADS)
                     .withDirichlet(dirichlet);
             whiteStrategy.setPartnerStrategy(blackStrategy);
