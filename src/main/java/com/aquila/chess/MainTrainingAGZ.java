@@ -1,5 +1,7 @@
 package com.aquila.chess;
 
+import com.aquila.chess.config.MCTSConfig;
+import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
@@ -32,21 +34,19 @@ public class MainTrainingAGZ {
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
-        MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(true);
-        MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(true);
         final InputsManager inputsManager = new Lc0InputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(256)
+                .batchSize(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getBatch())
                 .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(256)
+                .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
@@ -70,9 +70,7 @@ public class MainTrainingAGZ {
                     seed1,
                     updateCpuct,
                     -1)
-                    .withNbSearchCalls(NB_STEP)
-                    // .withNbThread(NB_THREADS)
-                    .withDirichlet(dirichlet);
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -80,9 +78,7 @@ public class MainTrainingAGZ {
                     seed2,
                     updateCpuct,
                     -1)
-                    .withNbSearchCalls(NB_STEP)
-                    // .withNbThread(NB_THREADS)
-                    .withDirichlet(dirichlet);
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps());
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;

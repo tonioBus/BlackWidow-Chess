@@ -2,7 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
-import com.aquila.chess.MCTSStrategyConfig;
+import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
@@ -69,8 +69,6 @@ public class MCTSExerciceTest {
                 .build();
 
         nnBlack.clearIndexOffset();
-        MCTSStrategyConfig.DEFAULT_WHITE_INSTANCE.setDirichlet(false);
-        MCTSStrategyConfig.DEFAULT_BLACK_INSTANCE.setDirichlet(false);
     }
 
     /**
