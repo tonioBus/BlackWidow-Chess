@@ -6,9 +6,11 @@
     <entry key="white.threads">-1</entry>
     <entry key="white.steps">800</entry>
     <entry key="white.millisPerStep">-1</entry>
+    <entry key="white.batch">256</entry>
     <!-- BLACK -->
     <entry key="black.dirichlet">true</entry>
     <entry key="black.threads">-1</entry>
     <entry key="black.steps">800</entry>
     <entry key="black.millisPerStep">-1</entry>
+    <entry key="black.batch">256</entry>
 </properties>
