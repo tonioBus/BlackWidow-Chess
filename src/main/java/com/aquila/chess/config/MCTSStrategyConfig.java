@@ -28,11 +28,11 @@ public class MCTSStrategyConfig {
     public MCTSStrategyConfig(String color, Properties properties) {
         this.properties = properties;
         this.dirichlet = get(color + ".dirichlet", Boolean.class, dirichlet);
-        this.steps = get(color + ".nbStep", Integer.class, steps);
+        this.steps = get(color + ".steps", Integer.class, steps);
         this.threads = get(color + ".threads", Integer.class, threads);
         if (this.threads < 1) threads = Runtime.getRuntime().availableProcessors() - 4;
         this.batch = get(color + ".batch", Integer.class, batch);
-        this.millisPerStep = get(color + ".batch", Long.class, millisPerStep);
+        this.millisPerStep = get(color + ".millisPerStep", Long.class, millisPerStep);
     }
 
     private <T> T get(String property, Class<T> clazz, T defaultValue) {
@@ -40,16 +40,15 @@ public class MCTSStrategyConfig {
             return get(property, clazz);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
+            log.error("Error getting property:"+property, e);
             return defaultValue;
         }
     }
 
     private <T> T get(String property, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        T ret = clazz.getConstructor().newInstance();
         String value = properties.getProperty(property);
         Method method = clazz.getDeclaredMethod("valueOf", String.class);
-        method.invoke(ret, value);
-        return ret;
+        return clazz.cast(method.invoke(null, value));
     }
 
 }
