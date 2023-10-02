@@ -86,9 +86,10 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 300, 400, 800})
     @DisplayName("detect black promotion")
-    void testSimulationDetectPossibleBlackPromotion() throws Exception {
+    void testSimulationDetectPossibleBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
@@ -100,12 +101,10 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5F, index1, index2);
+        nnBlack.addIndexOffset(1.0F, "a3-a2", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(1.0F, "a2-a1", Piece.PieceType.PAWN);
         for (int i = 0; i < 5; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -160,9 +159,9 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2");
-        int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1");
-        nnBlack.addIndexOffset(0.9F, index1, index2);
+        nnBlack.addIndexOffset(0.9F, "a3-a2", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(0.9F, "a2-a1", Piece.PieceType.PAWN);
+
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -196,7 +195,8 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 300, 400, 800})
     void testOneShotBlackChessMate() throws Exception {
         final Board board = Board.createBoard("kh1", "pa2,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
@@ -246,7 +246,8 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 300, 400, 800})
     void testEndWithWhitePromotion() throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
@@ -261,8 +262,7 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
-        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", piece);
+        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", Piece.PieceType.PAWN);
         boolean good = false;
         Move move = null;
         for (int i = 0; i < 3; i++) {
@@ -480,8 +480,8 @@ public class MCTSExerciceTest {
      * 5  --- --- --- --- --- --- --- ---  5
      * 4  --- --- --- --- --- --- --- ---  4
      * 3  --- --- --- --- --- --- --- ---  3
-     * 2  --- --- --- --- K-W --- K-B R-B  2
-     * 1  --- --- --- --- --- --- --- ---  1
+     * 2  --- --- --- --- --- --- K-B R-B  2
+     * 1  --- --- --- --- K-W --- --- ---  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
      * @formatter:on
@@ -490,7 +490,7 @@ public class MCTSExerciceTest {
     @ValueSource(ints = {100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
-        final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
+        final Board board = Board.createBoard("ke1", "ra8,kg2,rh2", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -511,10 +511,9 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        Piece rootA8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a8"));
         nnBlack.addIndexOffset(1F, "a8-a3", board);
         nnBlack.addIndexOffset(0.5F, "g2-g3", board);
-        nnBlack.addIndexOffset(0.1F, "a3-a1", rootA8);
+        nnBlack.addIndexOffset(0.1F, "a3-a1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 5; i++) {
@@ -560,7 +559,8 @@ public class MCTSExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 400, 800})
     void testMakeBlackChessMate() throws Exception {
         final Board board = Board.createBoard("ra8,kg2,rh2", "ke1", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();

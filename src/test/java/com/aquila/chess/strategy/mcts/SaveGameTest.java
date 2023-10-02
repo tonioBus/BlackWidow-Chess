@@ -89,7 +89,6 @@ public class SaveGameTest {
         // 0) Initial,  1) First move, etc ...
         assertEquals(nbStep - 1, trainGame.getOneStepRecordList().size());
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
-            log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
             log.info("color2play:{}", oneStepRecord.color2play());
@@ -146,7 +145,6 @@ public class SaveGameTest {
         // 0) Initial,  1) First move, etc ...
         assertEquals(sequence.nbStep-1, trainGame.getOneStepRecordList().size());
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
-            log.info("inputs.size:{}", oneStepRecord.inputs().inputs().length);
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
             log.info("color2play:{}", oneStepRecord.color2play());

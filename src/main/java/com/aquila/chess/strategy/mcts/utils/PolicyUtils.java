@@ -30,7 +30,7 @@ public class PolicyUtils {
                 srcCoordinate2D.getY(),
                 destCoordinate2D.getX(),
                 destCoordinate2D.getY(),
-                move.getMovedPiece()
+                move.getMovedPiece().getPieceType()
         );
     }
 
@@ -41,18 +41,15 @@ public class PolicyUtils {
      * @param end   the end in algebric notation
      * @return the index of the given move
      */
-    public static int indexFromMove(final Piece piece, String start, String end) {
+    public static int indexFromMove(final Piece.PieceType pieceType, String start, String end) {
         Coordinate2D srcCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(start));
         Coordinate2D destCoordinate2D = new Coordinate2D(BoardUtils.INSTANCE.getCoordinateAtPosition(end));
-        if (piece == null) {
-            throw new RuntimeException(String.format("Piece not found in %s", start));
-        }
         return indexFromMove(
                 srcCoordinate2D.getX(),
                 srcCoordinate2D.getY(),
                 destCoordinate2D.getX(),
                 destCoordinate2D.getY(),
-                piece
+                pieceType
         );
     }
 
@@ -78,7 +75,7 @@ public class PolicyUtils {
      * UnderPromotion:
      * </pre>
      */
-    public static int indexFromMove(int startX, int startY, int endX, int endY, final Piece piece) {
+    public static int indexFromMove(int startX, int startY, int endX, int endY, final Piece.PieceType pieceType) {
         int ret = 0;
         int deltaX = endX - startX;
         int nbStepX = Math.abs(deltaX);
@@ -87,7 +84,7 @@ public class PolicyUtils {
         int nbStepY = Math.abs(deltaY);
         int nbStep = Math.max(nbStepX, nbStepY);
         deltaY = deltaY < 0 ? 100 : deltaY > 0 ? 300 : 200;
-        if (piece.getPieceType() == Piece.PieceType.KNIGHT) {
+        if (pieceType == Piece.PieceType.KNIGHT) {
             switch (deltaX + deltaY) {
                 case 302: // NE
                     if (nbStepY > nbStepX) ret = indexFromKnightMove(startX, startY, 0);

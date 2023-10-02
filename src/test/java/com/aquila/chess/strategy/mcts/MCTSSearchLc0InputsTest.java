@@ -376,9 +376,8 @@ public class MCTSSearchLc0InputsTest {
                 .withNbThread(nbThreads)
                 .withNbSearchCalls(nbMaxSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
+        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, Piece.PieceType.PAWN);
+        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, Piece.PieceType.PAWN);
         lc0NnTest.addIndexOffset(0.5, index1, index2);
         game.play();
         log.info("parent:{}", blackStrategy.getDirectRoot());

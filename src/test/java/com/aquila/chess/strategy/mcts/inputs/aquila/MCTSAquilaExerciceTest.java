@@ -102,10 +102,7 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(0, 2, 0, 1, pawn);
-        int index2 = PolicyUtils.indexFromMove(0, 1, 0, 0, pawn);
-        nnBlack.addIndexOffset(0.5F, index1, index2);
+        nnBlack.addIndexOffset(1.0F, "a3-a2;a2-a1", Piece.PieceType.PAWN);
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
             Move move = game.getLastMove();
@@ -159,10 +156,7 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        int index1 = PolicyUtils.indexFromMove(pawn, "a3", "a2");
-        int index2 = PolicyUtils.indexFromMove(pawn, "a2", "a1");
-        nnBlack.addIndexOffset(0.9F, index1, index2);
+        nnBlack.addIndexOffset(1.0F,"a3-a2;a2-a1", Piece.PieceType.PAWN);
         for (int i = 0; i < 3; i++) {
             log.info(game.toString());
             Game.GameStatus status = game.play();
@@ -262,9 +256,7 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(800);
         game.setup(whiteStrategy, blackStrategy);
-        Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a6"));
-        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", piece);
-        boolean good = false;
+        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", Piece.PieceType.PAWN);
         Move move = null;
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
@@ -517,10 +509,9 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        Piece rootA8 = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a8"));
         nnBlack.addIndexOffset(1F, "a8-a3", board);
         nnBlack.addIndexOffset(1F, "g2-g3", board);
-        nnBlack.addIndexOffset(1F, "a3-a1", rootA8);
+        nnBlack.addIndexOffset(1F, "a3-a1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 10; i++) {

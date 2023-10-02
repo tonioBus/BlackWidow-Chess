@@ -125,17 +125,17 @@ public class NNConstants implements INN {
             String startSz = splittedMove[0];
             String endSz = splittedMove[1];
             Piece piece = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition(startSz));
-            int index = PolicyUtils.indexFromMove(piece, startSz, endSz);
+            int index = PolicyUtils.indexFromMove(piece.getPieceType(), startSz, endSz);
             this.offsets.put(index, offset);
         });
     }
 
-    public void addIndexOffset(double offset, final String movesSz, final Piece piece) {
+    public void addIndexOffset(double offset, final String movesSz, final Piece.PieceType pieceType) {
         Stream.of(movesSz.toLowerCase().split(";")).forEach(moveSz -> {
             String[] splittedMove = moveSz.split("-");
             String startSz = splittedMove[0];
             String endSz = splittedMove[1];
-            int index = PolicyUtils.indexFromMove(piece, startSz, endSz);
+            int index = PolicyUtils.indexFromMove(pieceType, startSz, endSz);
             this.offsets.put(index, offset);
         });
     }
