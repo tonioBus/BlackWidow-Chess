@@ -110,6 +110,6 @@ public class TrainTest {
     @AfterAll
     static void afterAll() throws IOException {
         File directory = new File("train-test");
-        // FileUtils.cleanDirectory(directory);
+        FileUtils.cleanDirectory(directory);
     }
 }

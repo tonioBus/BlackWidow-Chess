@@ -12,5 +12,5 @@
     <entry key="black.threads">-1</entry>
     <entry key="black.steps">800</entry>
     <entry key="black.millisPerStep">-1</entry>
-    <entry key="white.batch">256</entry>
+    <entry key="black.batch">256</entry>
 </properties>

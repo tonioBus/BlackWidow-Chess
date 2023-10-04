@@ -394,7 +394,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             bestMove = bestMoves.get(0);
             statistic.nbGoodSelection++;
         } else if (nbBestMoves > 1) {
-            // System.out.printf("|%d", nbBestMoves);
+
             statistic.nbRandomSelection++;
             statistic.nbRandomSelectionBestMoves += nbBestMoves;
             if (nbBestMoves > statistic.maxRandomSelectionBestMoves)
@@ -404,6 +404,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             //////////////////////////////////////////////////////////////
             bestMove = getRandomMove(bestMoves, looseMoves);
         } else if (nbBestMoves == 0) {
+            statistic.nbRandomSelection++;
             bestMove = getRandomMove(moves, looseMoves);
         }
         return bestMove;
