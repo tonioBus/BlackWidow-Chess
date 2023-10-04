@@ -483,7 +483,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 400, 800})
+    @ValueSource(ints = {10, 100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
@@ -509,8 +509,8 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnBlack.addIndexOffset(1F, "a8-a3", board);
-        nnBlack.addIndexOffset(1F, "g2-g3", board);
+        nnBlack.addIndexOffset(1F, "a8-a3", Piece.PieceType.ROOK);
+        nnBlack.addIndexOffset(1F, "g2-g3", Piece.PieceType.KING);
         nnBlack.addIndexOffset(1F, "a3-a1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         Move move;
