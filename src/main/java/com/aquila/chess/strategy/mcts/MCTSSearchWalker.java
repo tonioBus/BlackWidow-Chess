@@ -356,7 +356,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 statistic);
         synchronized (moves) {
             for (final Move possibleMove : moves) {
-                int visits = 0;
+                int childVisits = 0;
                 child = opponentNode.findChild(possibleMove);
                 if (child == null) {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
@@ -367,7 +367,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 } else {
                     if (child.getState() == LOOSE) continue;
                     exploitation = child.getExpectedReward(true);
-                    visits = child.getVisits();
+                    childVisits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 if (sumVisits > 0) {
@@ -376,7 +376,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
                         log.debug("policy:{}", policy);
                     }
-                    exploration = exploration(opponentNode, cpuct, sumVisits, visits, policy);
+                    exploration = exploration(opponentNode, cpuct, childVisits, policy);
                 }
                 ucb = exploitation + exploration;
                 if (ucb > maxUcb) {
@@ -410,10 +410,22 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return bestMove;
     }
 
-    static public double exploration(final MCTSNode opponentNode, double cpuct, int sumVisits, int visits, double policy) {
-        double cpuctBase = 19652.0;
-        double currentCpuct = cpuct + Math.log((opponentNode.getNonNullChildsAsCollection().stream().mapToDouble(child1 -> child1.getVisits()).sum() + 1 + cpuctBase) / cpuctBase);
-        return policy * currentCpuct * Math.sqrt(sumVisits) / (1 + visits);
+    /**
+     * From https://colab.research.google.com/github/es2mac/SwiftDigger/blob/master/TetrisField.ipynb
+     * @param opponentNode
+     * @param cpuct
+     * @param visits
+     * @param policy
+     * @return
+     */
+    static public double exploration(final MCTSNode opponentNode, double puctConstant, int childVisits, double policy) {
+        return policy * puctConstant * Math.sqrt((puctConstant * Math.log(opponentNode.getVisits())) / childVisits);
+//        double cBase = 19652.0;
+//        double cInitial = 1.25;
+//        double totalN = opponentNode.getNonNullChildsAsCollection().stream().mapToDouble(child1 -> child1.getVisits()).sum();
+//        double adjustedTotalN = Double.max(1, totalN - 1);
+//        double c = cInitial + Math.log((1 + totalN + cBase) / cBase);
+//        return puctConstant * c * policy * Math.sqrt(adjustedTotalN) / (1 + visits);
     }
 
     public SearchResult returnEndOfSimulatedGame(final MCTSNode node, int depth, final Alliance simulatedPlayerColor, final Move selectedMove, final Game.GameStatus gameStatus) {

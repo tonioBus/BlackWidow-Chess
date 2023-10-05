@@ -21,8 +21,8 @@ public class MainTrainingAquila {
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         // return 2.5;
-        if (nbStep <= 30) return 2.5;
-        else return 0.0025;
+        if (nbStep <= 30) return 2.0;
+        else return 0.000002;
         // return 2.0 * Math.exp(-0.01 * nbStep);
     };
 

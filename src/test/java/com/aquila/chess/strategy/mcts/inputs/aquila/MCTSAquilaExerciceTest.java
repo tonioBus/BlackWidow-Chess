@@ -38,7 +38,7 @@ public class MCTSAquilaExerciceTest {
     public static int NB_THREAD = 8;
 
     final UpdateCpuct updateCpuct = (nbStep) -> {
-        return 2.5; // Math.exp(-0.04 * nbStep) / 2;
+        return 2; // Math.exp(-0.04 * nbStep) / 2;
     };
 
     private static final Dirichlet dirichlet = game -> false;
