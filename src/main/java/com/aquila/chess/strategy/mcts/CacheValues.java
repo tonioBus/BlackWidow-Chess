@@ -28,6 +28,9 @@ public class CacheValues {
     public CacheValues(final int size) {
         lruMap = new LRUMap<>(size);
         clearCache();
+//        winCacheValue.setInitialized(true);
+//        lostCacheValue.setInitialized(true);
+//        drawnCacheValue.setInitialized(true);
     }
 
     public synchronized void clearCache() {

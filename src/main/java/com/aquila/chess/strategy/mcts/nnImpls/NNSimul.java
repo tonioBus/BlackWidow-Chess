@@ -8,6 +8,7 @@ import org.deeplearning4j.nn.api.NeuralNetwork;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -29,6 +30,7 @@ public class NNSimul extends NNConstants {
                     policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
                     if (offsets.containsKey(policyIndex)) {
                         double offset = offsets.get(policyIndex);
+                        if(log.isDebugEnabled()) log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
                         policies[policyIndex] += offset;
                     }
                 }
@@ -36,7 +38,16 @@ public class NNSimul extends NNConstants {
                 value = mediumValue;
                 for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
                     policies[policyIndex] = mediumPolicies;
+                    if (offsets.containsKey(policyIndex)) {
+                        double offset = offsets.get(policyIndex);
+                        if(log.isDebugEnabled()) log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
+                        policies[policyIndex] += offset;
+                    }
                 }
+            }
+            if(log.isDebugEnabled()) {
+                double sumPolicies = Arrays.stream(policies).sum();
+                log.debug("[{}] -> value:{} sumPolicies:{}", i, value, sumPolicies);
             }
             ret.add(new OutputNN(value, policies));
         }

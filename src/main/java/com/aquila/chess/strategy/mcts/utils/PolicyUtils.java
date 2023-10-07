@@ -44,6 +44,16 @@ public class PolicyUtils {
     }
 
     /**
+     * TODO
+     * @param policyIndex
+     * @return
+     */
+    public static String moveFromIndex(int policyIndex) {
+        return "TODO";
+    }
+
+
+    /**
      * return policy index from a move
      *
      * @param start the start in algrebic notation
@@ -162,7 +172,6 @@ public class PolicyUtils {
                 + y * NUM_TILES_PER_ROW
                 + orientation * NUM_TILES_PER_ROW * NUM_TILES_PER_ROW
                 + nbStep * NUM_TILES_PER_ROW * NUM_TILES_PER_ROW * NUM_TILES_PER_ROW;
-        //nbStep * orientation + x * NUM_TILES_PER_ROW + y * NUM_TILES_PER_ROW * NUM_TILES_PER_ROW;
     }
 
     /**
@@ -300,4 +309,5 @@ public class PolicyUtils {
         MRG32k3a.setPackageSeed(seeds);
         stream = new MRG32k3a();
     }
+
 }

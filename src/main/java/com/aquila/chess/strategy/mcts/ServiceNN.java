@@ -105,6 +105,12 @@ class ServiceNN {
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
         System.out.printf("%d&", length);
+        outputsNN.stream().forEach(outputNN -> {
+            double sumPolicies = Arrays.stream(outputNN.policies).sum();
+            if (sumPolicies == 0) {
+                log.error("POLICIES SET TO NULL ");
+            }
+        });
         int nbPropagatedNodes = updateCacheValuesAndPoliciesWithInference(outputsNN);
         System.out.printf("%d|", nbPropagatedNodes);
     }
@@ -206,16 +212,17 @@ class ServiceNN {
                     if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
                             propagationNode.getState() != MCTSNode.State.ROOT ||
                             propagationNode.getState() != MCTSNode.State.INTERMEDIATE) {
-                        log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(),oldCacheValue);
-                        log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), cacheValue);
+                        log.warn("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), oldCacheValue);
+                        log.warn("newCacheValue[{}]:{}", cacheValue.hashCode(), cacheValue);
+                        log.warn("NO PROPAGATION -> Keeping oldCacheValue");
                     }
                     log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
                 } else {
                     addNodeToPropagate(cacheValue.getNodes());
                     log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                 }
-                index++;
             }
+            index++;
         }
         return index;
     }

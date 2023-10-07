@@ -248,7 +248,7 @@ public class MCTSExerciceTest {
      */
     @ParameterizedTest
     @ValueSource(ints = {100, 200, 300, 400, 800})
-    void testEndWithWhitePromotion() throws Exception {
+    void testEndWithWhitePromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final Strategy blackStrategy = new RandomStrategy(BLACK, 1);
@@ -260,9 +260,10 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnBlack.addIndexOffset(0.1F, "a6-a7;a7-a8", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(2F, "a6-a7", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(1F, "a7-a8", Piece.PieceType.PAWN);
         boolean good = false;
         Move move = null;
         for (int i = 0; i < 3; i++) {

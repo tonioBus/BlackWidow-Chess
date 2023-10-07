@@ -287,8 +287,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
             log.warn("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
             child.createLeaf(this.deepLearning.getCacheValues().getDrawnCacheValue());
             child.resetExpectedReward(DRAWN_VALUE);
-            child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
+            // removePropagation(child, childPlayer.getAlliance(), child.getMove());
+            child.setPropagated(false);
         }
     }
 
@@ -309,9 +310,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
         if (opponentNode.getState() != LOOSE) {
             log.info("[{}] STOP LOSS NODE {} LOOSE-NODE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), opponentNode);
             // long key = opponentNode.getKey();
-            this.deepLearning.addDefinedNodeToPropagate(opponentNode);
+            // this.deepLearning.addDefinedNodeToPropagate(opponentNode);
             opponentNode.createLeaf(this.deepLearning.getCacheValues().getLostCacheValue());
-            opponentNode.setPropagated(true);
+            opponentNode.setPropagated(false);
             opponentNode.setState(LOOSE);
 //            MCTSNode node = opponentNode.getParent();
 //            double value = node.getCacheValue().getValue();
@@ -370,14 +371,14 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     childVisits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
-                if (sumVisits > 0) {
-                    policy = policies[PolicyUtils.indexFromMove(possibleMove)];
-                    if (log.isDebugEnabled()) {
-                        log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
-                        log.debug("policy:{}", policy);
-                    }
-                    exploration = exploration(opponentNode, cpuct, childVisits, policy);
+                // if (sumVisits > 0) {
+                policy = policies[PolicyUtils.indexFromMove(possibleMove)];
+                if (log.isDebugEnabled()) {
+                    log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
+                    log.debug("policy:{}", policy);
                 }
+                exploration = exploration(opponentNode, cpuct, childVisits, policy);
+                // }
                 ucb = exploitation + exploration;
                 if (ucb > maxUcb) {
                     maxUcb = ucb;
@@ -419,7 +420,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
      * @return
      */
     static public double exploration(final MCTSNode opponentNode, double puctConstant, int childVisits, double policy) {
-        return policy * puctConstant * Math.sqrt((puctConstant * Math.log(opponentNode.getVisits())) / childVisits);
+        return policy * puctConstant * Math.sqrt((puctConstant * Math.log(opponentNode.getVisits())) / (1 + childVisits));
 //        double cBase = 19652.0;
 //        double cInitial = 1.25;
 //        double totalN = opponentNode.getNonNullChildsAsCollection().stream().mapToDouble(child1 -> child1.getVisits()).sum();

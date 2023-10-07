@@ -78,7 +78,7 @@ public class CacheValue extends OutputNN implements Serializable {
     public OutputNN setInferenceValuesAndPolicies(final double value, final double[] policies) {
         this.value = value;
         this.policies = policies;
-        log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
+        if(log.isDebugEnabled()) log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
         this.setInitialized(true);
         if (nodes != null) {
             setInferenceValuesAndPolicies();
