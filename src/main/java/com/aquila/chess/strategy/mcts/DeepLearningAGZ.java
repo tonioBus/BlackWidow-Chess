@@ -68,6 +68,7 @@ public class DeepLearningAGZ {
 
     static final int CACHE_VALUES_SIZE = 40000;
 
+    @Setter
     @Getter
     private int batchSize;
 

@@ -2,7 +2,6 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +56,7 @@ public class CacheValue extends OutputNN implements Serializable {
         boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
         isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
         if(isDirichlet) log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichlet(), node);
-        double[] normalizedPolicies = Utils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
+        double[] normalizedPolicies = PolicyUtils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
         this.policies = normalizedPolicies;
     }
 

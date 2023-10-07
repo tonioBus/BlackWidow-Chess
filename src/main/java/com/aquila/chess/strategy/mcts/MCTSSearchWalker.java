@@ -231,7 +231,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             if (stop.get()) {
                 statistic.nbGoodSelection++;
                 int nbRemovedChild = opponentNode.getNumberOfAllNodes();
-                log.info("[{}] CLEAN UP child:{}", this.colorStrategy, nbRemovedChild);
+                log.debug("[{}] CLEAN UP child:{}", this.colorStrategy, nbRemovedChild);
                 createLooseNode(opponentNode);
                 return -nbRemovedChild;
             }

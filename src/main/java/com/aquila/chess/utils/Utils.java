@@ -3,11 +3,7 @@
  */
 package com.aquila.chess.utils;
 
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import umontreal.ssj.randvarmulti.DirichletGen;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
@@ -21,8 +17,6 @@ import java.util.*;
  */
 @Slf4j
 public class Utils {
-
-    static private final RandomStream stream;
 
     @Deprecated
     public static double getRandom(double min, double max, Random rand) {
@@ -50,97 +44,6 @@ public class Utils {
             arr[i] = arr[j];
             arr[j] = temp;
         }
-    }
-
-    public static double[] normalise(double[] policies) {
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-        for (double policy : policies) {
-            if (policy < min)
-                min = policy;
-            if (policy > max)
-                max = policy;
-        }
-        double maxMin = max - min;
-        if (maxMin > 0) {
-            for (int i = 0; i < policies.length; i++) {
-                policies[i] = (policies[i] - min) / maxMin;
-            }
-        }
-        return policies;
-    }
-
-    /**
-     * @param policies
-     * @param indexes
-     * @param isDirichlet
-     * @return
-     */
-    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
-        double sum = 0;
-        for (int i = 0; i < policies.length; i++) {
-            if (ArrayUtils.contains(indexes, i)) {
-                sum += policies[i];
-            }
-        }
-        if (indexes.length > 0 && sum == 0) {
-            log.warn("toDistribution(): sum of policies(nb:{})==0", policies.length);
-            return policies;
-        }
-        for (int i = 0; i < policies.length; i++) {
-            if (sum > 0 && ArrayUtils.contains(indexes, i)) {
-                policies[i] = policies[i] / sum;
-            } else {
-                policies[i] = 0;
-            }
-        }
-        if (isDirichlet) {
-            if (log.isWarnEnabled()) {
-                logPolicies("ORIGINAL ", policies, indexes, moves);
-            }
-            double[] alpha = new double[indexes.length];
-            Arrays.fill(alpha, 0.3);
-            DirichletGen dirichletGen = new DirichletGen(stream, alpha);
-            double epsilon = 0.25;
-            int index = 0;
-            double[] d = new double[alpha.length];
-            dirichletGen.nextPoint(d);
-            double p;
-            for (int i = 0; i < policies.length; i++) {
-                if (ArrayUtils.contains(indexes, i)) {
-                    p = policies[i];
-                    double newP = (1 - epsilon) * p + epsilon * d[index];
-                    policies[i] = (float) newP;
-                    index++;
-                }
-            }
-            if (log.isWarnEnabled()) {
-                logPolicies("DIRICHLET", policies, indexes, moves);
-            }
-        }
-        return policies;
-    }
-
-    public static void logPolicies(String label, final double[] policies, int[] indexes, Collection<Move> moves) {
-        double maxPolicy = 0.0;
-        double minPolicy = 1.0;
-        int maxPolicyIndex = -1;
-        int minPolicyIndex = -1;
-        for (int i = 0; i < policies.length; i++) {
-            if (policies[i] > maxPolicy) {
-                maxPolicy = policies[i];
-                maxPolicyIndex = i;
-            }
-            if (policies[i] > 0.0 && policies[i] < minPolicy) {
-                minPolicy = policies[i];
-                minPolicyIndex = i;
-            }
-        }
-        log.warn("{}: MAX policy: {} index:{} move:{} | MIN policy: {} index:{} move:{}", label,
-                maxPolicy, maxPolicyIndex, PolicyUtils.moveFromIndex(maxPolicyIndex, moves), minPolicy, minPolicyIndex, PolicyUtils.moveFromIndex(minPolicyIndex, moves));
-        log.warn("{}: indexes: {} <-> {} : policies>0", label,
-                indexes.length,
-                Arrays.stream(policies).filter(policy -> policy > 0).count());
     }
 
     /**
@@ -172,21 +75,5 @@ public class Utils {
         return UUID.nameUUIDFromBytes(md.digest(text.getBytes())).toString();
     }
 
-
-    static {
-        Random rand = new Random();
-        long seed = System.currentTimeMillis();
-        rand.setSeed(seed);
-        log.info("Dirichlet SEED:{}", seed);
-        long[] seeds = new long[]{
-                rand.nextLong(4294967087L),
-                rand.nextLong(4294967087L),
-                rand.nextLong(4294967087L),
-                rand.nextLong(4294944443L),
-                rand.nextLong(4294944443l),
-                rand.nextLong(4294944443l)};
-        MRG32k3a.setPackageSeed(seeds);
-        stream = new MRG32k3a();
-    }
 }
 

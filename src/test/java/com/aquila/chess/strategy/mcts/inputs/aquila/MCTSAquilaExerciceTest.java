@@ -58,13 +58,13 @@ public class MCTSAquilaExerciceTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(16)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(16)
                 .train(false)
                 .build();
 
@@ -86,12 +86,14 @@ public class MCTSAquilaExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @Test
+    @ValueSource(ints={20, 100, 200, 400, 800})
+    @ParameterizedTest
     @DisplayName("detect black promotion")
-    void testSimulationDetectPossibleBlackPromotion() throws Exception {
+    void testSimulationDetectPossibleBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
+        deepLearningBlack.setBatchSize(5);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -100,7 +102,7 @@ public class MCTSAquilaExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
         nnBlack.addIndexOffset(1.0F, "a3-a2;a2-a1", Piece.PieceType.PAWN);
         for (int i = 0; i < 3; i++) {

@@ -6,6 +6,7 @@ import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -24,6 +25,7 @@ class ServiceNN {
 
     private final DeepLearningAGZ deepLearningAGZ;
 
+    @Setter
     private int batchSize;
 
     private int nbFeaturesPlanes;
