@@ -34,7 +34,7 @@ public class MCTSNode implements Serializable {
     private double virtualLoss = 0.0;
 
     @Getter
-    public final boolean dirichlet;
+    public boolean dirichlet;
 
     @Getter
     private CacheValue cacheValue;
@@ -223,6 +223,9 @@ public class MCTSNode implements Serializable {
             this.parent.clearChildrens();
             this.parent = null;
         }
+        if(this.isSync()) {
+            log.warn();
+        }
     }
 
     private void clearChildrens() {
@@ -309,10 +312,10 @@ public class MCTSNode implements Serializable {
     }
 
     public void incNbPropationsToExecute() {
-        if( isLeaf()) {
+        if (isLeaf()) {
             this.nbPropagationsToExecute++;
         } else {
-            this.nbPropagationsToExecute=1;
+            this.nbPropagationsToExecute = 1;
         }
     }
 
