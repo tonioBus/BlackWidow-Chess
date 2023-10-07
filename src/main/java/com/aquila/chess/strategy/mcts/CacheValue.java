@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CacheValue extends OutputNN implements Serializable {
 
-    private static final float NOT_INITIALIZED_VALUE = -1;
+    public static final float NOT_INITIALIZED_VALUE = -0.5F;
 
     static final CacheValue getNotInitialized(final String label) {
         return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);

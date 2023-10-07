@@ -317,7 +317,7 @@ public class MCTSNode implements Serializable {
     }
 
 
-    static public enum PropragateSrc {
+    public enum PropragateSrc {
         SERVICE_NN("SE"), MCTS("MC"), SAVE_BATCH("SA"), CALL("CA"), UN_PROPAGATE("UP");
 
         @Getter
@@ -418,7 +418,7 @@ public class MCTSNode implements Serializable {
                 this.leaf,
                 this.visits, //
                 this.getExpectedReward(false), //
-                this.getCacheValue() == null ? -1 : this.getCacheValue().value,
+                this.getCacheValue() == null ? CacheValue.NOT_INITIALIZED_VALUE : this.getCacheValue().value,
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //
                 this.nbPropagationsToExecute,

@@ -206,8 +206,8 @@ class ServiceNN {
                     if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
                             propagationNode.getState() != MCTSNode.State.ROOT ||
                             propagationNode.getState() != MCTSNode.State.INTERMEDIATE) {
-                        log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), ToStringBuilder.reflectionToString(oldCacheValue, ToStringStyle.JSON_STYLE));
-                        log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), ToStringBuilder.reflectionToString(cacheValue, ToStringStyle.JSON_STYLE));
+                        log.error("oldCacheValue[{}]:{}", oldCacheValue.hashCode(),oldCacheValue);
+                        log.error("newCacheValue[{}]:{}", cacheValue.hashCode(), cacheValue);
                     }
                     log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
                 } else {
