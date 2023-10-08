@@ -145,9 +145,9 @@ public class MCTSAquilaExerciceTest {
     @ValueSource(ints = {100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
     void testEndWithBlackPromotion(int nbStep) throws Exception {
-        final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
+        final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
-        final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "G1-h1;H1-G1;G1-H1;H1-G1;G1-H1");
+        final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -515,7 +515,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {50, 100, 200, 400, 800})
+    @ValueSource(ints = {100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);

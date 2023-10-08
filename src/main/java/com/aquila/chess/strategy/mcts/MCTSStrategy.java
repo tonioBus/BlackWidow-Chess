@@ -202,7 +202,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long endTime = System.currentTimeMillis();
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
-        final MCTSNode bestNode = findBestReward(directRoot, true);
+        final MCTSNode bestNode = findBestReward(directRoot, false);
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
         log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}",

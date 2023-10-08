@@ -287,6 +287,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             log.warn("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
             child.createLeaf(this.deepLearning.getCacheValues().getDrawnCacheValue());
             child.resetExpectedReward(DRAWN_VALUE);
+            undoPropagation(child, childPlayer.getAlliance(), child.getMove());
             child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
         }
@@ -299,9 +300,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
             child.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
             child.setState(WIN);
             child.resetExpectedReward(WIN_VALUE);
-            this.deepLearning.addDefinedNodeToPropagate(child);
             undoPropagation(child, childPlayer.getAlliance(), child.getMove());
             child.setPropagated(false);
+            this.deepLearning.addDefinedNodeToPropagate(child);
         }
     }
 

@@ -47,6 +47,10 @@ class ServiceNN {
         addNodeToPropagate(List.of(nodes));
     }
 
+    /**
+     * this will propagate only node not propagated (node.propagated)
+     * @param nodes
+     */
     private synchronized void addNodeToPropagate(Collection<MCTSNode> nodes) {
         nodes.stream().filter(node -> node.getState() != MCTSNode.State.ROOT && !node.isPropagated()).forEach(node -> {
             node.incNbPropationsToExecute();

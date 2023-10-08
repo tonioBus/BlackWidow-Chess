@@ -415,6 +415,10 @@ public class DeepLearningAGZ {
         return nn.getFilename();
     }
 
+    /**
+     * this will propagate only node not propagated (node.propagated)
+     * @param node
+     */
     public void addDefinedNodeToPropagate(final MCTSNode node) {
         node.incNbPropationsToExecute();
         this.serviceNN.addNodeToPropagate(node);
