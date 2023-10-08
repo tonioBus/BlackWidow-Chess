@@ -109,7 +109,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(lastOneStepRecord);
         }
-        // this.root = null;
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
@@ -128,7 +127,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(lastOneStepRecord);
         }
-        Game.GameStatus gameStatus = this.mctsGame.play(this.directRoot, move);
+        Game.GameStatus gameStatus = this.mctsGame.play(move);
         if (gameStatus != Game.GameStatus.IN_PROGRESS) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
@@ -221,30 +220,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         }
         return bestNode.getMove();
-//
-//        final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
-//        Move ret;
-//        if (optionalMove.isEmpty()) {
-//            log.warn(
-//                    "##########################################################################################################");
-//            log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
-//            log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
-//            log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
-//            // log.warn(DotGenerator.toString(directRoot, 10));
-//            // log.warn("[{}] Game:\n{}", this.getAlliance(), mctsGame.toPGN());
-//            Collections.shuffle(currentMoves, rand);
-//            ret = currentMoves.get(0);
-//            long key = deepLearning.addState(mctsGame, "ALARM:" + directRoot.getMove().toString(), ret, statistic);
-//            MCTSNode childNode = MCTSNode.createNode(ret, this.mctsGame.getBoard(), key, deepLearning.getCacheValues().get(key));
-//            directRoot.addChild(childNode);
-//            log.warn("[{}] choosing randomly: {}", this.getAlliance(), ret);
-//            log.warn(
-//                    "##########################################################################################################");
-//        } else {
-//            ret = optionalMove.get();
-//        }
-//        this.directRoot = directRoot.findChild(ret);
-//        return ret;
     }
 
     public static double rewardWithLogVisit(final MCTSNode mctsNode) {

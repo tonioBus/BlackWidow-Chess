@@ -158,7 +158,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         // evaluate
         selectedNode.incVirtualLoss();
         log.debug("SIMULATE PLAY: {}", selectedMove);
-        Game.GameStatus gameStatus = mctsGame.play(opponentNode, selectedMove);
+        Game.GameStatus gameStatus = mctsGame.play(selectedMove);
         getStatistic().nbPlay++;
         if (gameStatus != Game.GameStatus.IN_PROGRESS) {
             deepLearning.removeState(mctsGame, color2play, selectedMove);

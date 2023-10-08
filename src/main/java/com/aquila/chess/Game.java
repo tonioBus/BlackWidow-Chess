@@ -174,7 +174,7 @@ public class Game {
         assert (nextStrategy != null);
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
-        if (move.isAttack() == false &&
+        if (!move.isAttack() &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;
         else
@@ -257,6 +257,7 @@ public class Game {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
+        sb.append(String.format("Repetition: :%d\n", MovesUtils.nbMovesRepeat(this.getMoves())));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         List<Move> legalMoves = this
                 .getNextPlayer()

@@ -68,8 +68,8 @@ public class MCTSGame {
         return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
     }
 
-    public Game.GameStatus play(final MCTSNode opponentNode, final Move move) {
-        if (move.isAttack() == false &&
+    public Game.GameStatus play(final Move move) {
+        if (!move.isAttack() &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;
         else
