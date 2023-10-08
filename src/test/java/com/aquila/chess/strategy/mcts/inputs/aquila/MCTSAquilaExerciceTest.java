@@ -805,7 +805,7 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnWhite.addIndexOffset(0.1F, "e8-e1", board);
+        nnWhite.addIndexOffset(1F, "e8-e1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);

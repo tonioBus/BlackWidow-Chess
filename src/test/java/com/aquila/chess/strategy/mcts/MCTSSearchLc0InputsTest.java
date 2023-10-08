@@ -158,8 +158,8 @@ public class MCTSSearchLc0InputsTest {
                 .withNbSearchCalls(nbSearchCalls);
         final RandomStrategy blackStrategy = new RandomStrategy(BLACK, 10);
         game.setup(whiteStrategy, blackStrategy);
-        nnConstant.addIndexOffset(0.1F, "e8-e1", board);
-        nnConstant.addIndexOffset(0.1F, "g1-h1", board);
+        nnConstant.addIndexOffset(2F, "e8-e1", board);
+        nnConstant.addIndexOffset(1F, "g1-h1", board);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);
@@ -259,8 +259,8 @@ public class MCTSSearchLc0InputsTest {
                 .withNbSearchCalls(nbSearchCalls);
         final FixStrategy blackStrategy = new FixStrategy(Alliance.BLACK);
         game.setup(whiteStrategy, blackStrategy);
-        nnConstant.addIndexOffset(0.1F, "a2-a1", board);
-        nnConstant.addIndexOffset(0.1F, "g1-f1", board);
+        nnConstant.addIndexOffset(2F, "a2-a1", board);
+        nnConstant.addIndexOffset(1F, "g1-f1", board);
         Game.GameStatus status = game.play();
         Move move = game.getLastMove();
         assertEquals(IN_PROGRESS, status);

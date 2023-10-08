@@ -103,7 +103,7 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnBlack.addIndexOffset(1.0F, "a3-a2", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(2.0F, "a3-a2", Piece.PieceType.PAWN);
         nnBlack.addIndexOffset(1.0F, "a2-a1", Piece.PieceType.PAWN);
         for (int i = 0; i < 5; i++) {
             Game.GameStatus status = game.play();
@@ -512,9 +512,9 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnBlack.addIndexOffset(1F, "a8-a3", board);
-        nnBlack.addIndexOffset(0.5F, "g2-g3", board);
-        nnBlack.addIndexOffset(0.1F, "a3-a1", Piece.PieceType.ROOK);
+        nnBlack.addIndexOffset(3F, "a8-a3", Piece.PieceType.ROOK);
+        nnBlack.addIndexOffset(2F, "g2-g3", Piece.PieceType.KING);
+        nnBlack.addIndexOffset(1F, "a3-a1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         Move move;
         for (int i = 0; i < 5; i++) {
@@ -721,7 +721,8 @@ public class MCTSExerciceTest {
 
     /**
      * @throws Exception
-     * @formatter:off [a] [b] [c] [d] [e] [f] [g] [h]
+     * @formatter:off
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- R-B --- --- ---  8
      * 7  --- --- --- --- --- --- --- ---  7
      * 6  --- --- --- --- --- --- --- ---  6
@@ -762,7 +763,7 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        nnWhite.addIndexOffset(0.1F, "e8-e1", board);
+        nnWhite.addIndexOffset(1F, "e8-e1", Piece.PieceType.ROOK);
         Game.GameStatus status = null;
         status = game.play();
         assertEquals(IN_PROGRESS, status);
