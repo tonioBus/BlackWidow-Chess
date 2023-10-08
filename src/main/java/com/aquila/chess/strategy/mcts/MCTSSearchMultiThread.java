@@ -90,11 +90,12 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         long start = System.currentTimeMillis();
         statistic.clear();
         currentRoot.syncSum();
+        currentRoot.dirichletDone = false;
         final CacheValue rootValue = currentRoot.getCacheValue();
         if (rootValue != null) {
             log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot);
             MCTSNode.resetBuildOrder();
-            rootValue.reNormalizePolicies();
+            rootValue.normalizePolicies();
         }
         int nbSubmit = 0;
         int nbSearchCalls = 0;
@@ -147,8 +148,9 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         isEnding = true;
                         if (log.isInfoEnabled()) {
                             log.info("[{}] END OF SEARCH DETECTED nbSearchCalls:{} submit:{} childs:{} visits:{}", nbStep, nbSearchCalls, nbSubmit, currentRoot.getNumberOfAllNodes(), currentRoot.getVisits());
-                            if(currentRoot.getNumberOfAllNodes() < 100) log.info("-------------------------------------\n{}\n-------------------------------------\n",
-                                    DotGenerator.toString(currentRoot, 10) );
+                            if (currentRoot.getNumberOfAllNodes() < 100)
+                                log.info("-------------------------------------\n{}\n-------------------------------------\n",
+                                        DotGenerator.toString(currentRoot, 10));
                         }
                     }
                 }

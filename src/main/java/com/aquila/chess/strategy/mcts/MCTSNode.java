@@ -34,7 +34,7 @@ public class MCTSNode implements Serializable {
     private double virtualLoss = 0.0;
 
     @Getter
-    public boolean dirichlet;
+    public boolean dirichletDone;
 
     @Getter
     private CacheValue cacheValue;
@@ -156,7 +156,7 @@ public class MCTSNode implements Serializable {
         log.debug("CREATE NODE MOVE:{} key:{}", move, key);
         this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
-        this.dirichlet = false;
+        this.dirichletDone = false;
         this.creator = Thread.currentThread();
         this.key = key;
         this.cacheValue = cacheValue;
@@ -224,7 +224,8 @@ public class MCTSNode implements Serializable {
             this.parent = null;
         }
         if(this.isSync()) {
-            log.warn();
+            log.warn("nodes already sync :{}", this);
+            this.getCacheValue().normalizePolicies();
         }
     }
 
@@ -416,11 +417,11 @@ public class MCTSNode implements Serializable {
     public String toString() {
         return String.format("MCTSNode[%d] -> Move:%s Color:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
-                this.move == null ? "N / A" : this.move.getAllegiance(),
                 this.move == null ? "Starting" : this.move, //
+                this.move == null ? "N / A" : this.move.getAllegiance(),
                 this.leaf,
                 this.visits, //
-                this.getExpectedReward(false), //
+                this.getExpectedReward(true), //
                 this.getCacheValue() == null ? CacheValue.NOT_INITIALIZED_VALUE : this.getCacheValue().value,
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //

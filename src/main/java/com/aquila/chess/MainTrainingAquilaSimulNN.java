@@ -30,7 +30,7 @@ public class MainTrainingAquilaSimulNN {
     };
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
-        if (nbStep <= 30) return 2.5;
+        if (nbStep <= 30) return 2.0;
         else return 0.0025;
     };
 
@@ -48,13 +48,13 @@ public class MainTrainingAquilaSimulNN {
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(512)
+                .batchSize(256)
                 .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(512)
+                .batchSize(256)
                 .train(false)
                 .build();
         while (true) {

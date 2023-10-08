@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts.inputs.aquila;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Coordinate;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -63,13 +64,13 @@ public class AquilaInputsManagerImpl implements InputsManager {
     }
 
     @Override
-    public InputsFullNN createInputs(Board board, Move move, Alliance color2play) {
+    public InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && !move.isInitMove())
             // if we move, the color2play will be the complementary of the player that just moved
-            this.createInputs(inputs, move.execute(), move.getAllegiance().complementary());
+            this.createInputs(inputs, move.execute(), moves, move.getAllegiance().complementary());
         else
-            this.createInputs(inputs, board, color2play);
+            this.createInputs(inputs, board, moves, color2play);
         return new AquilaInputsFullNN(inputs);
     }
 
@@ -78,7 +79,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [12][NB_COL][NB_COL]
      */
-    private void createInputs(double[][][] inputs, Board board, Alliance color2play) {
+    private void createInputs(double[][][] inputs, Board board, final List<Move> allGamesMoves, Alliance color2play) {
         board.getAllPieces().parallelStream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
@@ -90,14 +91,14 @@ public class AquilaInputsManagerImpl implements InputsManager {
             // Position 0 (6+6 planes)
             inputs[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
             // Moves 12 (6+6 planes)
-            Collection<Move> moves = currentPiece.calculateLegalMoves(board);
-            moves.stream().forEach(move -> {
+            Collection<Move> legalMoves = currentPiece.calculateLegalMoves(board);
+            legalMoves.stream().forEach(move -> {
                 // movesCoordinate calculated from the point of view of the player
                 Coordinate movesCoordinate = Coordinate.destinationCoordinate(move);
                 inputs[12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
             });
             // Attacks 24 (6+6 planes)
-            moves.stream().filter(move -> move.isAttack()).forEach(move -> {
+            legalMoves.stream().filter(move -> move.isAttack()).forEach(move -> {
                 Piece attackingPiece = move.getAttackedPiece();
                 Coordinate attackCoordinate = new Coordinate(attackingPiece);
                 inputs[24 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
@@ -105,7 +106,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
             // King liberty 36 (1+1 planes)
             if (currentPiece.getPieceType() == Piece.PieceType.KING) {
                 int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
-                moves.stream().forEach(move -> {
+                legalMoves.stream().forEach(move -> {
                     Move.MoveStatus status = player.makeMove(move).getMoveStatus();
                     if (status == Move.MoveStatus.DONE) {
                         Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
@@ -138,8 +139,9 @@ public class AquilaInputsManagerImpl implements InputsManager {
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
-        fill(inputs[currentIndex + 6], 0.0F); // future use
-        fill(inputs[currentIndex + 7], 0.0F); // future use
+        int nbRepeat = MovesUtils.nbMovesRepeat(allGamesMoves);
+        fill(inputs[currentIndex + 6], nbRepeat >= 1 ? 1.0F : 0.0F); // 1 REPEAT
+        fill(inputs[currentIndex + 7], nbRepeat >= 2 ? 1.0F : 0.0F); // 2 REPEAT
         fill(inputs[currentIndex + 8], 0.0F); // future use
     }
 
@@ -182,25 +184,19 @@ public class AquilaInputsManagerImpl implements InputsManager {
     }
 
     @Override
-    public long hashCode(Board board, Move move, Alliance color2play) {
-        return hash(getHashCodeString(board, move, color2play));
+    public long hashCode(Board board, Move move, List<Move> moves, Alliance color2play) {
+        return hash(getHashCodeString(board, move, moves, color2play));
     }
 
     @Override
-    public String getHashCodeString(Board board, Move move, Alliance color2play) {
+    public String getHashCodeString(Board board, Move move, List<Move> moves, Alliance color2play) {
         if (move != null && move.getMovedPiece() != null) {
             board = move.execute();
         }
         StringBuffer sb = new StringBuffer();
-//        if (move != null && move.getMovedPiece() != null) {
-//            board = move.execute();
-//            sb.append(color2play.toString());
-//            sb.append("M:");
-//            sb.append(move);
-//            // sb.append(board.currentPlayer().getAlliance().toString());
-//        } else {
-            sb.append(color2play.toString());
-//        }
+        sb.append(color2play.toString());
+        sb.append("\n");
+        sb.append(MovesUtils.nbMovesRepeat(moves));
         sb.append("\n");
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);

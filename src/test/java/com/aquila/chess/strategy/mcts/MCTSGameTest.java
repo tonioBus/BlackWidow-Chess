@@ -100,7 +100,7 @@ public class MCTSGameTest {
                     sb.append("OLD BOARD:\n");
                     sb.append(hashcodes.get(hashcode));
                     sb.append("\nNEW BOARD;\n");
-                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getColor2play()));
+                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getColor2play()));
                     assertNotEquals(hashcode, hashcode, sb.toString());
                 }
             }
@@ -136,10 +136,10 @@ public class MCTSGameTest {
                 StringBuffer sb = new StringBuffer();
                 sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));
                 sb.append("OLD BOARD:\n");
-                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getColor2play()));
+                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getMoves(), game.getColor2play()));
                 sb.append("\nNEW BOARD;\n");
-                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getColor2play()));
-               // assertNotEquals(hashcode, hashcode, sb.toString());
+                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getColor2play()));
+                // assertNotEquals(hashcode, hashcode, sb.toString());
                 log.info(sb.toString());
 
             }

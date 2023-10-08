@@ -9,7 +9,9 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -19,6 +21,7 @@ public class GameChecker {
     private final Game game;
     private final FixStrategy whitePlayer;
     private final FixStrategy blackPlayer;
+    private final List<Move> moves = new ArrayList<>();
 
     public GameChecker() {
         board = Board.createStandardBoard();
@@ -43,6 +46,7 @@ public class GameChecker {
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();
+            moves.add(currentMove);
             switch (game.getColor2play()) {
                 case WHITE -> {
                     whitePlayer.setNextMove(currentMove);
@@ -54,7 +58,7 @@ public class GameChecker {
         }
         try {
             if (!givenMove.equals(Move.INIT_MOVE)) game.play();
-            InputsFullNN inputsNN = game.getInputsManager().createInputs(game.getBoard(), null, game.getColor2play());
+            InputsFullNN inputsNN = game.getInputsManager().createInputs(game.getBoard(), null, moves, game.getColor2play());
             return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);

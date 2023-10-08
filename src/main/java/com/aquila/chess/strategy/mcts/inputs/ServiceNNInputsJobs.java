@@ -16,7 +16,7 @@ public record ServiceNNInputsJobs(Move move,
                                final MCTSGame mctsGame,
                                final boolean isDirichlet,
                                final boolean isRootNode) {
-        this(move, color2play, mctsGame, isDirichlet, isRootNode, mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, color2play));
+        this(move, color2play, mctsGame, isDirichlet, isRootNode, mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, mctsGame.getMoves(), color2play));
     }
 
 }

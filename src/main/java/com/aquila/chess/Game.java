@@ -3,6 +3,7 @@ package com.aquila.chess;
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
+import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -213,6 +214,7 @@ public class Game {
         if (board.blackPlayer().isInCheckMate()) return GameStatus.BLACK_CHESSMATE;
         if (getNextPlayer().isInStaleMate()) return GameStatus.PAT;
         if (moves.size() >= 300) return GameStatus.DRAW_300;
+        if (MovesUtils.is3MovesRepeat(moves)) return Game.GameStatus.DRAW_3;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return GameStatus.DRAW_50;
         if (!isThereEnoughMaterials(this.board)) return GameStatus.DRAW_NOT_ENOUGH_PIECES;
         return GameStatus.IN_PROGRESS;
@@ -245,6 +247,7 @@ public class Game {
             return false;
         return true;
     }
+
     @Override
     public String toString() {
         StringBuffer sb = new StringBuffer();

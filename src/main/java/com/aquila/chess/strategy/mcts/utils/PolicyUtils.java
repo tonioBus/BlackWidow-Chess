@@ -227,7 +227,7 @@ public class PolicyUtils {
      * @param isDirichlet
      * @return
      */
-    public static double[] toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
+    public static void toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
         double sum = 0;
         for (int i = 0; i < policies.length; i++) {
             if (ArrayUtils.contains(indexes, i)) {
@@ -236,7 +236,7 @@ public class PolicyUtils {
         }
         if (indexes.length > 0 && sum == 0) {
             log.warn("toDistribution(): sum of policies(nb:{})==0", policies.length);
-            return policies;
+            return;
         }
         for (int i = 0; i < policies.length; i++) {
             if (sum > 0 && ArrayUtils.contains(indexes, i)) {
@@ -269,7 +269,6 @@ public class PolicyUtils {
                 logPolicies("DIRICHLET", policies, indexes, moves);
             }
         }
-        return policies;
     }
 
     public static void logPolicies(String label, final double[] policies, int[] indexes, Collection<Move> moves) {

@@ -6,6 +6,8 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 
+import java.util.List;
+
 public interface InputsManager {
 
     int getNbFeaturesPlanes();
@@ -18,17 +20,15 @@ public interface InputsManager {
      * @param color2play the color that will play, used only if move is not defined
      * @return
      */
-    InputsFullNN createInputs(Board board,
-                                 Move move,
-                                 Alliance color2play);
+    InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
+
+    String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
+
+    long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
 
     void startMCTSStep(Game game);
 
     InputsManager clone();
-
-    long hashCode(Board board, Move move, Alliance color2play);
-
-    String getHashCodeString(Board board, Move move, Alliance color2play);
 
     void processPlay(final Board board, final Move move);
 

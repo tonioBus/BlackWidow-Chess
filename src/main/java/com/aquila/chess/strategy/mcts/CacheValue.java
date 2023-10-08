@@ -2,7 +2,6 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CacheValue extends OutputNN implements Serializable {
 
-    public static final float NOT_INITIALIZED_VALUE = -0.5F;
+    public static final float NOT_INITIALIZED_VALUE = -1.0F;
 
     static final CacheValue getNotInitialized(final String label) {
         return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
@@ -46,25 +45,30 @@ public class CacheValue extends OutputNN implements Serializable {
         return sb.toString();
     }
 
-    public synchronized void normalizePolicies(double[] policies) {
-        this.sourcePolicies = policies;
+    public synchronized void normalizePolicies() {
         if (nodes.size() == 0) {
             // log.warn("Can not normalize policies, not connected to any nodes: {}", this.label);
             return;
         }
-        final MCTSNode node = nodes.get(0);
-        int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
-        boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
-        isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
-        if(isDirichlet) log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichlet(), node);
-        double[] normalizedPolicies = PolicyUtils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
-        this.policies = normalizedPolicies;
-    }
-
-    public synchronized void reNormalizePolicies() {
-        if (sourcePolicies != null) {
-            log.info("re-normalize node:{}", this.nodes);
-            normalizePolicies(sourcePolicies);
+        if (!this.isInitialized()) return;
+        synchronized (nodes) {
+            nodes.stream().filter(node -> !node.isDirichletDone()).forEach(node -> {
+                int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
+                boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
+                isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
+                if (isDirichlet) {
+                    if (this.sourcePolicies == null) {
+                        this.sourcePolicies = new double[policies.length];
+                        System.arraycopy(policies, 0, sourcePolicies, 0, policies.length);
+                    } else {
+                        this.policies = new double[policies.length];
+                        System.arraycopy(sourcePolicies, 0, policies, 0, sourcePolicies.length);
+                    }
+                    log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
+                }
+                PolicyUtils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
+                node.dirichletDone = true;
+            });
         }
     }
 
@@ -78,7 +82,8 @@ public class CacheValue extends OutputNN implements Serializable {
     public OutputNN setInferenceValuesAndPolicies(final double value, final double[] policies) {
         this.value = value;
         this.policies = policies;
-        if(log.isDebugEnabled()) log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
+        if (log.isDebugEnabled())
+            log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
         this.setInitialized(true);
         if (nodes != null) {
             setInferenceValuesAndPolicies();
@@ -89,17 +94,22 @@ public class CacheValue extends OutputNN implements Serializable {
     public void setInferenceValuesAndPolicies() {
         if (initialized) {
             nodes.forEach(MCTSNode::syncSum);
-            normalizePolicies(policies);
+            normalizePolicies();
         }
     }
 
     public void addNode(final MCTSNode node) {
-//        nodes.forEach(previousNode -> {
-//            assert previousNode.getChildNodes().keySet().equals(node.getChildNodes().keySet());
-//        });
         try {
+            if (log.isDebugEnabled() && nodes.size() > 0 && !node.isLeaf()) {
+                log.debug("############# adding node:{}", node.getMovesFromRootAsString());
+                log.debug("nodes already inserted:");
+                nodes.forEach(node1 -> {
+                    log.debug(" - {}", node1);
+                    log.debug(" - {}", node1.getMovesFromRootAsString());
+                });
+            }
             this.nodes.add(node);
-        } catch(ArrayIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
             log.error("Error when adding a node: {}", node);
             throw e;
         }

@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -50,12 +51,12 @@ public class MCTSGame {
      * @return the game hashcode
      */
     public long hashCode(final Alliance alliance) {
-        return inputsManager.hashCode(getLastBoard(), null, alliance);
+        return inputsManager.hashCode(getLastBoard(), null, moves, alliance);
     }
 
     public synchronized long hashCode(@NonNull final Move move) {
         final Alliance color2play = move.getAllegiance();
-        return inputsManager.hashCode(getLastBoard(), move, color2play);
+        return inputsManager.hashCode(getLastBoard(), move, moves, color2play);
     }
 
     public Move getLastMove() {
@@ -94,6 +95,7 @@ public class MCTSGame {
         if (board.blackPlayer().isInCheckMate()) return Game.GameStatus.BLACK_CHESSMATE;
         if (board.currentPlayer().isInStaleMate()) return Game.GameStatus.PAT;
         if (moves.size() >= 300) return Game.GameStatus.DRAW_300;
+        if (MovesUtils.is3MovesRepeat(moves)) return Game.GameStatus.DRAW_3;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return Game.GameStatus.DRAW_50;
         if (!isThereEnoughMaterials(board)) return Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
         return Game.GameStatus.IN_PROGRESS;
@@ -132,6 +134,6 @@ public class MCTSGame {
     }
 
     public long hashCode(final Alliance pieceAllegiance, final Move selectedMove) {
-        return this.inputsManager.hashCode(this.getLastBoard(), selectedMove, pieceAllegiance);
+        return this.inputsManager.hashCode(this.getLastBoard(), selectedMove, moves, pieceAllegiance);
     }
 }

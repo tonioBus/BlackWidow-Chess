@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts.inputs.lc0;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -58,7 +59,6 @@ public class Lc0InputsManagerImpl implements InputsManager {
     }
 
     /**
-     *
      * @param board
      * @param lc0InputsManager
      * @param move
@@ -67,11 +67,22 @@ public class Lc0InputsManagerImpl implements InputsManager {
      */
     @Override
     public Lc0InputsFullNN createInputs(final Board board,
-                                              final Move move,
-                                              final Alliance color2play) {
+                                        final Move move,
+                                        final List<Move> moves,
+                                        final Alliance color2play) {
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         this.createInputs(inputs, board, move, color2play);
         return new Lc0InputsFullNN(inputs);
+    }
+
+    @Override
+    public long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
+        String hashCodeString = getHashCodeString(board, move, moves, color2play);
+        long ret = hash(hashCodeString);
+        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
+        if (log.isDebugEnabled())
+            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
+        return ret;
     }
 
     @Override
@@ -106,16 +117,6 @@ public class Lc0InputsManagerImpl implements InputsManager {
         Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
         lc0InputsManagerImpl.lc0Last8Inputs.addAll(this.getLc0Last8Inputs());
         return lc0InputsManagerImpl;
-    }
-
-    @Override
-    public long hashCode(final Board board, final Move move, final Alliance color2play) {
-        String hashCodeString = getHashCodeString(board, move, color2play);
-        long ret = hash(hashCodeString);
-        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
-        if (log.isDebugEnabled())
-            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
-        return ret;
     }
 
     @Override
@@ -188,9 +189,9 @@ public class Lc0InputsManagerImpl implements InputsManager {
      * @param color2play
      */
     private void createInputs(final double[][][] inputs,
-                                     final Board board,
-                                     final Move move,
-                                     final Alliance color2play) {
+                              final Board board,
+                              final Move move,
+                              final Alliance color2play) {
         int destinationOffset = 0;
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
@@ -300,27 +301,30 @@ public class Lc0InputsManagerImpl implements InputsManager {
         }
     }
 
-    public String getHashCodeString(Board board, final Move move, final Alliance color2play) {
+    public String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
+        Board currentBoard = board;
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null && !move.isInitMove()) {
             try {
-                board = move.execute();
+                currentBoard = move.execute();
                 moves8inputs.add(move);
             } catch (Exception e) {
                 log.error("[{}] move:{}", move.getAllegiance(), move);
                 log.error("\n{}\n{}\n",
                         "##########################################",
-                        board.toString()
+                        currentBoard.toString()
                 );
                 throw e;
             }
         }
-        sb.append(board.toString());
+        sb.append(currentBoard.toString());
         sb.append("\nM:");
         sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
         sb.append(color2play);
+        sb.append("\nR:");
+        sb.append(MovesUtils.nbMovesRepeat(moves));
         return sb.toString();
     }
 

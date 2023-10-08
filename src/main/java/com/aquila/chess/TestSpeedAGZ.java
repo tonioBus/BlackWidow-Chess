@@ -8,10 +8,13 @@ import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
+import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+
+import java.util.ArrayList;
 
 @Slf4j
 public class TestSpeedAGZ {
@@ -22,7 +25,6 @@ public class TestSpeedAGZ {
         final Board board = Board.createStandardBoard();
         final Lc0InputsManagerImpl inputManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputManager).board(board).build();
-        MCTSGame mctsGame = new MCTSGame(game);
 
         INN nnWhite = new NNDeep4j(NN_TEST, false, inputManager.getNbFeaturesPlanes(), 20);
         ComputationGraph computationGraph = (ComputationGraph) nnWhite.getNetwork();
@@ -31,7 +33,7 @@ public class TestSpeedAGZ {
         start = System.currentTimeMillis();
         int length = 150;
         final var nbIn = new double[length][inputManager.getNbFeaturesPlanes()][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        Lc0InputsFullNN inputsFullNN =inputManager.createInputs(board, null, Alliance.WHITE);
+        Lc0InputsFullNN inputsFullNN =inputManager.createInputs(board, null, new ArrayList<Move>(), Alliance.WHITE);
         for (int i=0; i<length; i++) {
             System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
         }
