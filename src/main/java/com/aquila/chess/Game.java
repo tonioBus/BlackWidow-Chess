@@ -257,7 +257,7 @@ public class Game {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
-        sb.append(String.format("Repetition: :%d\n", MovesUtils.nbMovesRepeat(this.getMoves())));
+        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", MovesUtils.nbMovesRepeat(this.getMoves()), this.nbMoveNoAttackAndNoPawn));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         List<Move> legalMoves = this
                 .getNextPlayer()

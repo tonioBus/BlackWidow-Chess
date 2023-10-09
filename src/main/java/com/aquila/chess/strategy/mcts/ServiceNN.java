@@ -221,6 +221,7 @@ class ServiceNN {
                         log.warn("NO PROPAGATION -> Keeping oldCacheValue");
                     }
                     log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
+                    addNodeToPropagate(oldCacheValue.getNodes());
                 } else {
                     addNodeToPropagate(cacheValue.getNodes());
                     log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
