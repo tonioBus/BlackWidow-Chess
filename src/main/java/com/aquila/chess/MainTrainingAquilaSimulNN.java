@@ -7,7 +7,6 @@ import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -60,6 +59,7 @@ public class MainTrainingAquilaSimulNN {
         while (true) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+            final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed = System.nanoTime();
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -69,6 +69,7 @@ public class MainTrainingAquilaSimulNN {
                     seed,
                     updateCpuct,
                     -1)
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
             // .withNbThread(1);
@@ -78,7 +79,8 @@ public class MainTrainingAquilaSimulNN {
                     deepLearningBlack,
                     seed,
                     updateCpuct,
-                    -1)
+                    -1 )
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
             // .withNbThread(1);
@@ -96,8 +98,7 @@ public class MainTrainingAquilaSimulNN {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            whiteStrategy.saveBatch(trainDir, resultGame);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus);
         }
     }
 

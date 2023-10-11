@@ -11,7 +11,6 @@ import com.aquila.chess.strategy.mcts.nnImpls.NNConstants;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;

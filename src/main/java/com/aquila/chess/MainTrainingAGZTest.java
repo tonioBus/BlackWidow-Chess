@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquila.chess.config.MCTSConfig;
-import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
@@ -77,6 +76,7 @@ public class MainTrainingAGZTest {
         while (true) {
             final Board board = Board.createBoard("kh1,pg6", "pa4,kg3", Alliance.BLACK);
             final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+            final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
             log.info("SEED WHITE:{}", seed1);
@@ -91,6 +91,7 @@ public class MainTrainingAGZTest {
                     seed1,
                     updateCpuct,
                     -1)
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getThreads())
                     .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isDirichlet());
@@ -101,6 +102,7 @@ public class MainTrainingAGZTest {
                     seed2,
                     updateCpuct,
                     -1)
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
                     .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
@@ -119,8 +121,7 @@ public class MainTrainingAGZTest {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            final String filename = whiteStrategy.saveBatch(trainDir, resultGame);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus);
             Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
             if (status == Status.SWITCHING) {
                 final Path reference = Paths.get(NN_REFERENCE);

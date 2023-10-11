@@ -2,13 +2,11 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
-import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.board.Board;

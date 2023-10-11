@@ -50,7 +50,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSNode directRoot = null;
 
     @Getter
-    final private TrainGame trainGame = new TrainGame();
+    private TrainGame trainGame;
 
     @Setter
     private MCTSStrategy partnerStrategy = null;
@@ -77,6 +77,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.originalGame = originalGame;
     }
 
+    public MCTSStrategy withTrainGame(final TrainGame trainGame) {
+        this.trainGame = trainGame;
+        return this;
+    }
+
     public MCTSStrategy withNbSearchCalls(long nbSearchCalls) {
         this.nbSearchCalls = nbSearchCalls;
         return this;
@@ -100,15 +105,15 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-        if (isTraining() && this.partnerStrategy.getDirectRoot() != null && this.mctsGame != null) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
-                    this.mctsGame,
-                    this.getMctsGame().getLastMove(),
-                    this.alliance.complementary(),
-                    this.partnerStrategy.getDirectRoot()
-            );
-            trainGame.add(lastOneStepRecord);
-        }
+//        if (this.partnerStrategy.getDirectRoot() != null && this.mctsGame != null) {
+//            OneStepRecord lastOneStepRecord = createStepTraining(
+//                    this.mctsGame,
+//                    this.getMctsGame().getLastMove(),
+//                    this.alliance.complementary(),
+//                    this.partnerStrategy.getDirectRoot()
+//            );
+//            trainGame.add(lastOneStepRecord);
+//        }
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
@@ -118,7 +123,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.nbStep++;
 
-        if (isTraining()) {
+        if (trainGame != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
@@ -127,15 +132,16 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(lastOneStepRecord);
         }
+        // }
         Game.GameStatus gameStatus = this.mctsGame.play(move);
-        if (gameStatus != Game.GameStatus.IN_PROGRESS) {
-            OneStepRecord lastOneStepRecord = createStepTraining(
+        if (trainGame != null && gameStatus != Game.GameStatus.IN_PROGRESS) {
+            OneStepRecord finalOneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,
                     this.alliance,
                     null
             );
-            trainGame.add(lastOneStepRecord);
+            trainGame.add(finalOneStepRecord);
         }
         this.directRoot.setState(MCTSNode.State.INTERMEDIATE);
         return move;
@@ -317,15 +323,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return getName();
     }
 
-    public ResultGame getResultGame(final Game.GameStatus gameStatus) {
-        return switch (gameStatus) {
-            case PAT, DRAW_3, DRAW_50, DRAW_300, DRAW_NOT_ENOUGH_PIECES -> new ResultGame(1, 1);
-            case WHITE_CHESSMATE -> new ResultGame(0, 1);
-            case BLACK_CHESSMATE -> new ResultGame(1, 0);
-            default -> null;
-        };
-    }
-
     private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
         final Map<Integer, Double> probabilities = new HashMap<>();
         if (stepNode == null) {
@@ -344,7 +341,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move, final Alliance alliance, final MCTSNode directParent) {
+    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move,
+                                                    final Alliance alliance, final MCTSNode directParent) {
         final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
@@ -357,30 +355,31 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return lastOneStepRecord;
     }
 
-    public String saveBatch(String trainDir, ResultGame resultGame) throws IOException {
-        final int numGames = maxGame(trainDir + "/") + 1;
-        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
-        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
-        final String filename = trainGame.save(trainDir, numGames, resultGame);
-        log.info("SAVE DONE in {}", filename);
-        clearTrainGame();
-        return filename;
-    }
+//    @Deprecated
+//    public String saveBatch(String trainDir, ResultGame resultGame) throws IOException {
+//        final int numGames = maxGame(trainDir + "/") + 1;
+//        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
+//        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
+//        final String filename = trainGame.save(trainDir, numGames, resultGame);
+//        log.info("SAVE DONE in {}", filename);
+//        clearTrainGame();
+//        return filename;
+//    }
 
-    private int maxGame(String path) {
-        File dataDirectory = new File(path);
-        int max = 0;
-        if (dataDirectory.canRead()) {
-            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
-                int currentNumber = Integer.valueOf(file.getName()).intValue();
-                if (currentNumber > max) max = currentNumber;
-            }
-        }
-        return max;
-    }
+//    private int maxGame(String path) {
+//        File dataDirectory = new File(path);
+//        int max = 0;
+//        if (dataDirectory.canRead()) {
+//            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
+//                int currentNumber = Integer.valueOf(file.getName()).intValue();
+//                if (currentNumber > max) max = currentNumber;
+//            }
+//        }
+//        return max;
+//    }
 
-    public void clearTrainGame() {
-        this.trainGame.clear();
-    }
+//    public void clearTrainGame() {
+//        this.trainGame.clear();
+//    }
 
 }

@@ -64,8 +64,17 @@ public class SaveGameTest {
         final Game game = Game.builder().board(board).build();
         Sequence sequence = gameManager.createSequence();
         long seed = 314;
-        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
-        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
+        TrainGame trainGame = new TrainGame();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(50)
+                .withDirichlet(dirichlet);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
@@ -81,14 +90,13 @@ public class SaveGameTest {
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(1, 1);
-        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        final String filename = trainGame.saveBatch("train-test", gameStatus);
         int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame trainGame = TrainGame.load("train-test", num);
+        TrainGame loadTrainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(nbStep - 1, trainGame.getOneStepRecordList().size());
-        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
+        assertEquals(game.getMoves().size(), loadTrainGame.getOneStepRecordList().size() + 1);
+        loadTrainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
             log.info("color2play:{}", oneStepRecord.color2play());
@@ -104,6 +112,7 @@ public class SaveGameTest {
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         InputsManager inputsManager = new AquilaInputsManagerImpl();
+        final TrainGame trainGame = new TrainGame();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -121,8 +130,16 @@ public class SaveGameTest {
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         Sequence sequence = gameManager.createSequence();
         long seed = 314;
-        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
-        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
@@ -137,14 +154,13 @@ public class SaveGameTest {
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(1, 1);
-        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        final String filename = trainGame.saveBatch("train-test", gameStatus);
         int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame trainGame = TrainGame.load("train-test", num);
+        TrainGame loadTrainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(sequence.nbStep-1, trainGame.getOneStepRecordList().size());
-        trainGame.getOneStepRecordList().forEach(oneStepRecord -> {
+        assertEquals(game.getMoves().size() - 1, loadTrainGame.getOneStepRecordList().size());
+        loadTrainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
             log.info("color2play:{}", oneStepRecord.color2play());
@@ -160,6 +176,7 @@ public class SaveGameTest {
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final TrainGame trainGame = new TrainGame();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -176,9 +193,17 @@ public class SaveGameTest {
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         Sequence sequence = gameManager.createSequence();
         long seed = 314;
-        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(game, Alliance.WHITE, deepLearningWhite, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
         // .withNbThread(1);
-        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1).withNbThread(1).withNbSearchCalls(NB_STEP).withDirichlet(dirichlet);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
+                .withNbSearchCalls(NB_STEP)
+                .withDirichlet(dirichlet);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
@@ -197,17 +222,18 @@ public class SaveGameTest {
             log.info("game step[{}] :\n{}", i, game);
             whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
         }
-        assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
+        assertEquals(game.getMoves().size(), whiteStrategy.getTrainGame().getOneStepRecordList().size() + 1);
+        // assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(1, 1);
-        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
+        final String filename = trainGame.saveBatch("train-test", gameStatus);
         int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame trainGame = TrainGame.load("train-test", num);
+        TrainGame loadTrainGame = TrainGame.load("train-test", num);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
-        assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), trainGame.getOneStepRecordList().size());
+        assertEquals(game.getMoves().size(), loadTrainGame.getOneStepRecordList().size() + 1);
+        // assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), loadTrainGame.getOneStepRecordList().size());
     }
 
     @Test

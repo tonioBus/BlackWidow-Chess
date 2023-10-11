@@ -4,6 +4,8 @@ import com.aquila.chess.strategy.mcts.ResultGame;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -11,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedList;
 
+@Slf4j
 public class TrainGame implements Serializable {
 
     static final long serialVersionUID = -2638786203240540104L;
@@ -61,6 +64,38 @@ public class TrainGame implements Serializable {
         objectOutputStream.flush();
         objectOutputStream.close();
         return filename;
+    }
+
+    public ResultGame getResultGame(final Game.GameStatus gameStatus) {
+        return switch (gameStatus) {
+            case IN_PROGRESS, PAT, DRAW_3, DRAW_50, DRAW_300, DRAW_NOT_ENOUGH_PIECES -> new ResultGame(1, 1);
+            case WHITE_CHESSMATE -> new ResultGame(0, 1);
+            case BLACK_CHESSMATE -> new ResultGame(1, 0);
+            default -> null;
+        };
+    }
+
+    public String saveBatch(String trainDir, Game.GameStatus gameStatus) throws IOException {
+        ResultGame resultGame = getResultGame(gameStatus);
+        final int numGames = maxGame(trainDir + "/") + 1;
+        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
+        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, getOneStepRecordList().size());
+        final String filename = save(trainDir, numGames, resultGame);
+        log.info("SAVE DONE in {}", filename);
+        clear();
+        return filename;
+    }
+
+    private int maxGame(String path) {
+        File dataDirectory = new File(path);
+        int max = 0;
+        if (dataDirectory.canRead()) {
+            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
+                int currentNumber = Integer.valueOf(file.getName()).intValue();
+                if (currentNumber > max) max = currentNumber;
+            }
+        }
+        return max;
     }
 
     public void add(final OneStepRecord oneStepRecord) {

@@ -4,8 +4,6 @@ import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
-import com.aquila.chess.strategy.mcts.nnImpls.agz.DL4JAlphaGoZeroBuilder;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

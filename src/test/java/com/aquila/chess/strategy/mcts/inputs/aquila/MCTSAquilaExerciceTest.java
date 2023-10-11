@@ -2,7 +2,6 @@ package com.aquila.chess.strategy.mcts.inputs.aquila;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
-import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
@@ -12,7 +11,6 @@ import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.DotGenerator;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;

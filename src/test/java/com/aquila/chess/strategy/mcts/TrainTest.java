@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @Slf4j
 public class TrainTest {
 
@@ -61,7 +63,8 @@ public class TrainTest {
     void testTrain() throws Exception {
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
-        long seed = 314;
+        final TrainGame trainGame = new TrainGame();
+        long seed = 1;
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
                 Alliance.WHITE,
@@ -69,6 +72,7 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
+                .withTrainGame(trainGame)
                 .withNbThread(1)
                 .withNbSearchCalls(10);
         // .withNbThread(1);
@@ -79,26 +83,27 @@ public class TrainTest {
                 seed,
                 updateCpuct,
                 -1)
-                .withNbThread(6)
+                .withTrainGame(trainGame)
+                .withNbThread(1)
                 .withNbSearchCalls(100);
         whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        int i = 0;
         do {
             gameStatus = game.play();
             if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
-            Move move = game.getLastMove();
+            final Move move = game.getLastMove();
             log.info("[{}]: move:{}", move.getAllegiance(), move);
         } while (true);
         log.info("#########################################################################");
         log.info("END OF game :\n{}\n{}", gameStatus, game);
         log.info("#########################################################################");
-        ResultGame resultGame = new ResultGame(0, 1);
-        final String filename = whiteStrategy.saveBatch("train-test", resultGame);
-        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame trainGame = TrainGame.load("train-test", num);
-        deepLearningWhite.train(trainGame);
+        // 1 + nbStep ==> INIT_MOVE + nb steps
+        assertEquals(game.getMoves().size(), trainGame.getOneStepRecordList().size());
+        final String filename = trainGame.saveBatch("train-test", gameStatus);
+        final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
+        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        deepLearningWhite.train(loadTrainGame);
     }
 
     @Test

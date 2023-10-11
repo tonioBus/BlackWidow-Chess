@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquila.chess.config.MCTSConfig;
-import com.aquila.chess.config.MCTSStrategyConfig;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
@@ -56,6 +55,7 @@ public class MainTrainingAGZ {
                     .inputsManager(inputsManager)
                     .board(board)
                     .build();
+            final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
             log.info("SEED WHITE:{}", seed1);
@@ -70,6 +70,7 @@ public class MainTrainingAGZ {
                     seed1,
                     updateCpuct,
                     -1)
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
@@ -78,6 +79,7 @@ public class MainTrainingAGZ {
                     seed2,
                     updateCpuct,
                     -1)
+                    .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps());
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
@@ -90,8 +92,7 @@ public class MainTrainingAGZ {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            ResultGame resultGame = whiteStrategy.getResultGame(gameStatus);
-            final String filename = whiteStrategy.saveBatch(trainDir, resultGame);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus);
             gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
         }
     }
