@@ -223,7 +223,7 @@ public class MCTSNode implements Serializable {
             this.parent.clearChildrens();
             this.parent = null;
         }
-        if(this.isSync()) {
+        if (this.isSync()) {
             log.warn("nodes already sync :{}", this);
             this.getCacheValue().normalizePolicies();
         }
@@ -488,6 +488,9 @@ public class MCTSNode implements Serializable {
         this.childNodes.clear();
         this.visits = 0;
         this.setLeaf(true);
+        if (this.cacheValue != null) {
+            log.warn("node:{}\n\t already builded with cacheValue:{}", this, this.cacheValue);
+        }
         this.cacheValue = cacheValue;
         this.cacheValue.addNode(this);
         this.sum = cacheValue.getValue();

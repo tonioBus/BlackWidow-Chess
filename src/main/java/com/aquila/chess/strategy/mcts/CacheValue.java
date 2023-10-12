@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,11 @@ public class CacheValue extends OutputNN implements Serializable {
         sb.append("initialized=" + this.initialized);
         sb.append(" label=" + this.label);
         sb.append(" value=" + this.value);
-        sb.append(" nodes=" + nodes.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+        try {
+            sb.append(" nodes=" + nodes.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+        } catch(ConcurrentModificationException e) {
+            sb.append(" nodes not available (sync)");
+        }
         return sb.toString();
     }
 
