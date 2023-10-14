@@ -28,17 +28,12 @@ public class CacheValues {
     public CacheValues(final int size) {
         lruMap = new LRUMap<>(size);
         clearCache();
-//        winCacheValue.setInitialized(true);
-//        lostCacheValue.setInitialized(true);
-//        drawnCacheValue.setInitialized(true);
     }
 
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
+        this.lruMap.values().parallelStream().forEach(cacheValue -> cacheValue.clearNodes());
         this.lruMap.clear();
-        lostCacheValue.getNodes().clear();
-        drawnCacheValue.getNodes().clear();
-        winCacheValue.getNodes().clear();
         this.lruMap.put(-1L, lostCacheValue);
         this.lruMap.put(0L, drawnCacheValue);
         this.lruMap.put(1L, winCacheValue);
@@ -60,6 +55,10 @@ public class CacheValues {
     public synchronized CacheValue create(long key, final String label) {
         if (containsKey(key)) throw new RuntimeException("node already created for key:" + key);
         CacheValue ret = CacheValue.getNotInitialized(String.format("[%d] %s", key, label));
+        // to avoid this the
+        this.lruMap.get(-1);
+        this.lruMap.get(0);
+        this.lruMap.get(1);
         this.lruMap.put(key, ret);
         return ret;
     }
@@ -80,4 +79,7 @@ public class CacheValues {
         return cacheValue;
     }
 
+    public void clearNodes() {
+        lruMap.values().parallelStream().filter(cacheValue -> !cacheValue.isLeaf()).forEach(cacheValue -> cacheValue.clearNodes());
+    }
 }

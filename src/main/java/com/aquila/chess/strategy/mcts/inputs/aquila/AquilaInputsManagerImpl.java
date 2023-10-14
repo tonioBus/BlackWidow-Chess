@@ -5,6 +5,7 @@ import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Coordinate;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -185,7 +186,7 @@ public class AquilaInputsManagerImpl implements InputsManager {
 
     @Override
     public long hashCode(Board board, Move move, List<Move> moves, Alliance color2play) {
-        return hash(getHashCodeString(board, move, moves, color2play));
+        return Utils.hash(getHashCodeString(board, move, moves, color2play));
     }
 
     @Override
@@ -205,15 +206,6 @@ public class AquilaInputsManagerImpl implements InputsManager {
             }
         }
         return sb.toString();
-    }
-
-    private long hash(String str) {
-        long hash = 5381;
-        byte[] data = str.getBytes();
-        for (byte b : data) {
-            hash = ((hash << 5) + hash) + b;
-        }
-        return hash;
     }
 
     @Override

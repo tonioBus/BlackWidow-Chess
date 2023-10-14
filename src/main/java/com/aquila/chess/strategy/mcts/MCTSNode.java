@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -93,8 +94,13 @@ public class MCTSNode implements Serializable {
     @Getter
     private int nbPropagationsToExecute = 0;
 
+    static public class ChildNode {
+        MCTSNode node;
+        double policy;
+    }
+
     @Getter
-    private final transient Map<Move, MCTSNode> childNodes = new HashMap<>();
+    private final transient Map<Move, ChildNode> childNodes = new HashMap<>();
 
     public static void resetBuildOrder() {
         nbBuild = 0;
@@ -127,17 +133,21 @@ public class MCTSNode implements Serializable {
         }
     }
 
-    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long key, final CacheValue cacheValue) {
+    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long boardKey, final CacheValue cacheValue) {
         assert move != null;
         synchronized (cacheValue) {
             MCTSNode rootNode;
-            Optional<MCTSNode> optRootNode = cacheValue.getNodes().stream().filter(node -> node.getState() == ROOT).findFirst();
+            Optional<MCTSNode> optRootNode = cacheValue.getNodes().values().stream().filter(node -> node.getState() == ROOT).findFirst();
             if (optRootNode.isPresent()) {
                 rootNode = optRootNode.get();
             } else {
-                final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-                // rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
-                rootNode = new MCTSNode(move, childMoves, key, cacheValue);
+                if (cacheValue.getNodes().size() == 0) {
+                    final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                    // rootNode = new MCTSNode(rootBoard.currentPlayer().getAlliance().complementary(), move, childMoves, key, cacheValue);
+                    rootNode = new MCTSNode(move, childMoves, boardKey, cacheValue);
+                } else {
+                    rootNode = cacheValue.getNodes().values().stream().findFirst().get();
+                }
                 rootNode.setAsRoot();
                 rootNode.parent = null;
             }
@@ -146,6 +156,7 @@ public class MCTSNode implements Serializable {
     }
 
     /**
+     * To call only if cacheValue does not already contains child
      * @param move
      * @param childMoves
      * @param key
@@ -170,6 +181,15 @@ public class MCTSNode implements Serializable {
         this.syncSum();
         this.cacheValue.addNode(this);
         log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
+    }
+
+
+    /**
+     * a MCTSNode hash is the hash calculated from the path from the root to this node
+     * @return
+     */
+    public long hash() {
+        return Utils.hash(this.getMovesFromRootAsString());
     }
 
     /**
@@ -372,17 +392,17 @@ public class MCTSNode implements Serializable {
     }
 
     public List<MCTSNode> getNonNullChildsAsCollection() {
-        return this.childNodes.values().stream().filter(node -> node != null).collect(Collectors.toList());
+        return this.childNodes.values().stream().map(childNode -> childNode.node).filter(node -> node != null).collect(Collectors.toList());
     }
 
     public Collection<MCTSNode> getChildsAsCollection() {
-        return this.childNodes.values();
+        return this.childNodes.values().stream().map(childNode -> childNode.node).collect(Collectors.toCollection());
     }
 
     public MCTSNode findChild(final Move move) {
         if (move == null)
             return null;
-        return this.childNodes.get(move);
+        return this.childNodes.get(move).node;
     }
 
     /**
@@ -489,7 +509,8 @@ public class MCTSNode implements Serializable {
         this.visits = 0;
         this.setLeaf(true);
         if (this.cacheValue != null) {
-            log.warn("node:{}\n\t already builded with cacheValue:{}", this, this.cacheValue);
+            log.warn("node:{}\n\t already built with cacheValue:{}", this, this.cacheValue);
+            this.cacheValue.clearNodes();
         }
         this.cacheValue = cacheValue;
         this.cacheValue.addNode(this);

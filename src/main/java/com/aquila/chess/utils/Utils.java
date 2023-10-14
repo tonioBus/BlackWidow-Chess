@@ -18,6 +18,15 @@ import java.util.*;
 @Slf4j
 public class Utils {
 
+    public static long hash(String str) {
+        long hash = 5381;
+        byte[] data = str.getBytes();
+        for (byte b : data) {
+            hash = ((hash << 5) + hash) + b;
+        }
+        return hash;
+    }
+
     @Deprecated
     public static double getRandom(double min, double max, Random rand) {
         double zeroOne = rand.nextDouble();

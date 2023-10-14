@@ -88,7 +88,6 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
     public long search()
             throws InterruptedException {
         long start = System.currentTimeMillis();
-        statistic.clear();
         currentRoot.syncSum();
         currentRoot.dirichletDone = false;
         final CacheValue rootValue = currentRoot.getCacheValue();

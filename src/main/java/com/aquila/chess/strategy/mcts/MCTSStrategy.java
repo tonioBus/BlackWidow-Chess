@@ -14,9 +14,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -168,7 +166,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             CacheValue cacheValue = deepLearning.getCacheValues().get(key);
             if (cacheValue.getNodes().size() > 0) {
-                cacheValue.getNodes().stream().forEach(node -> {
+                cacheValue.getNodes().values().stream().forEach(node -> {
                     assert (node.getMove().getAllegiance() == alliance.complementary());
                 });
             }
@@ -189,6 +187,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                             final List<Move> currentMoves)
             throws InterruptedException {
         statistic.clear();
+        this.deepLearning.getCacheValues().clearNodes();
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
                 this.nbStep,
                 this.nbThreads,

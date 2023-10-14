@@ -7,13 +7,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-@Getter
 @Slf4j
 public class CacheValue extends OutputNN implements Serializable {
 
@@ -26,11 +25,13 @@ public class CacheValue extends OutputNN implements Serializable {
     private double[] sourcePolicies = null;
 
     @Setter
+    @Getter
     private boolean initialized = false;
 
     final private String label;
 
-    final private List<MCTSNode> nodes = Collections.synchronizedList(new ArrayList<>());
+    @Getter
+    final private Map<Long, MCTSNode> nodes = Collections.synchronizedMap(new HashMap<>());
 
     CacheValue(double value, String label, double[] policies) {
         super(value, policies);
@@ -38,13 +39,15 @@ public class CacheValue extends OutputNN implements Serializable {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         sb.append("initialized=" + this.initialized);
-        sb.append(" label=" + this.label);
-        sb.append(" value=" + this.value);
+        sb.append("label=" + this.label);
+        sb.append("value=" + this.value);
         try {
-            sb.append(" nodes=" + nodes.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
-        } catch(ConcurrentModificationException e) {
+            nodes.entrySet().forEach(entry -> {
+                sb.append(String.format("- %d -> %s", entry.getKey(), entry.getValue().getMovesFromRootAsString()));
+            });
+        } catch (ConcurrentModificationException e) {
             sb.append(" nodes not available (sync)");
         }
         return sb.toString();
@@ -57,7 +60,7 @@ public class CacheValue extends OutputNN implements Serializable {
         }
         if (!this.isInitialized()) return;
         synchronized (nodes) {
-            nodes.stream().filter(node -> !node.isDirichletDone()).forEach(node -> {
+            nodes.values().stream().filter(node -> !node.isDirichletDone()).forEach(node -> {
                 int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
                 boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
                 isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
@@ -88,7 +91,7 @@ public class CacheValue extends OutputNN implements Serializable {
         this.value = value;
         this.policies = policies;
         if (log.isDebugEnabled())
-            log.debug("setTrueValuesAndPolicies({},{} {} {} ..)", value, policies[0], policies[1], policies[2]);
+            log.debug("setTrueValuesAndPolicies({} : {} {} {} ..)", value, policies[0], policies[1], policies[2]);
         this.setInitialized(true);
         if (nodes != null) {
             setInferenceValuesAndPolicies();
@@ -98,22 +101,32 @@ public class CacheValue extends OutputNN implements Serializable {
 
     public void setInferenceValuesAndPolicies() {
         if (initialized) {
-            nodes.forEach(MCTSNode::syncSum);
+            nodes.values().forEach(MCTSNode::syncSum);
             normalizePolicies();
         }
     }
 
     public void addNode(final MCTSNode node) {
+        assert node != null;
+        long keyNode = node.hash();
         try {
             if (log.isDebugEnabled() && nodes.size() > 0 && !node.isLeaf()) {
-                log.debug("############# adding node:{}", node.getMovesFromRootAsString());
-                log.debug("nodes already inserted:");
-                nodes.forEach(node1 -> {
-                    log.debug(" - {}", node1);
-                    log.debug(" - {}", node1.getMovesFromRootAsString());
+                log.error("############# adding node: {} -> {}", keyNode, node.getMovesFromRootAsString());
+                log.error("nodes already inserted:");
+                nodes.entrySet().forEach(entry -> {
+                    log.error("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
                 });
             }
-            this.nodes.add(node);
+            if (this.nodes.containsKey(keyNode)) {
+                MCTSNode oldNode = this.nodes.get(keyNode);
+                if (oldNode == null) {
+                    log.error("oldNode null:{}", keyNode);
+                    nodes.entrySet().forEach(entry -> {
+                        log.error("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
+                    });
+                }
+                oldNode.incNbPropationsToExecute();
+            } else this.nodes.put(keyNode, node);
         } catch (ArrayIndexOutOfBoundsException e) {
             log.error("Error when adding a node: {}", node);
             throw e;
@@ -121,4 +134,33 @@ public class CacheValue extends OutputNN implements Serializable {
         setInferenceValuesAndPolicies();
     }
 
+    public void clearNodes() {
+        this.nodes.clear();
+    }
+
+
+    /**
+     *
+     * @return true if a connected nodes is
+     */
+    //FIXME
+    public boolean isLeaf() {
+        if (nodes.size() > 1) {
+            log.debug("Cache value detected with more than 1 connected nodes:\n{}", this);
+        }
+        AtomicBoolean ret = new AtomicBoolean(false);
+        nodes.entrySet().forEach(entry -> {
+            MCTSNode node = entry.getValue();
+            if (node.isLeaf()) {
+                log.debug("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
+                ret.set(true);
+            }
+            if (ret.get() && !node.isLeaf()) {
+                log.error("CacheValue seems a leaf but not all connected MCTSNode(s) are leaf");
+                log.error(this.toString());
+                assert false;
+            }
+        });
+        return ret.get();
+    }
 }
