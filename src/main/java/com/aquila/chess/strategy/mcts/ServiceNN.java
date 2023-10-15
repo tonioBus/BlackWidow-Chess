@@ -8,20 +8,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-class ServiceNN {
+public class ServiceNN {
 
     @Getter
-    private final Map<Long, ServiceNNInputsJobs> batchJobs2Commit = new LinkedHashMap<>();
+    private final Map<Long, ServiceNNInputsJobs> batchJobs2Commit = Collections.synchronizedMap(new LinkedHashMap<>());
 
     @Getter
-    private final Map<Long, MCTSNode> nodesToPropagate = new LinkedHashMap<>();
+    private final Map<Long, MCTSNode> nodesToPropagate = Collections.synchronizedMap(new LinkedHashMap<>());
 
     private final DeepLearningAGZ deepLearningAGZ;
 
@@ -49,9 +47,10 @@ class ServiceNN {
 
     /**
      * this will propagate only node not propagated (node.propagated)
+     *
      * @param nodes
      */
-    private synchronized void addNodeToPropagate(Collection<MCTSNode> nodes) {
+    private void addNodeToPropagate(Collection<MCTSNode> nodes) {
         nodes.stream().filter(node -> node.getState() != MCTSNode.State.ROOT && !node.isPropagated()).forEach(node -> {
             node.incNbPropationsToExecute();
             log.debug("ADD NODE TO PROPAGATE:{}", node);
@@ -64,7 +63,7 @@ class ServiceNN {
      *
      * @param node
      */
-    public synchronized void removeNodeToPropagate(final MCTSNode node) {
+    public void removeNodeToPropagate(final MCTSNode node) {
         long key = node.getKey();
         synchronized (this.nodesToPropagate) {
             this.nodesToPropagate.remove(key);
@@ -72,7 +71,7 @@ class ServiceNN {
         this.removeJob(key);
     }
 
-    public synchronized void removeJob(long key) {
+    public void removeJob(long key) {
         batchJobs2Commit.remove(key);
     }
 
@@ -80,7 +79,7 @@ class ServiceNN {
         return batchJobs2Commit.containsKey(key);
     }
 
-    public synchronized void clearAll() {
+    public void clearAll() {
         this.batchJobs2Commit.clear();
         this.getNodesToPropagate().clear();
     }
@@ -92,6 +91,7 @@ class ServiceNN {
      */
     public synchronized void executeJobs(boolean force) {
         boolean submit2NN = force || batchJobs2Commit.size() >= batchSize;
+        log.info("SERVICENN.executeJobs() batchJobs2Commit:{}", batchJobs2Commit.size());
         log.debug("BEGIN executeJobs({})", submit2NN);
         initValueAndPolicies(submit2NN);
         log.debug("END executeJobs({})", submit2NN);
@@ -103,7 +103,7 @@ class ServiceNN {
      * @param length
      */
     private void inferNN(int length) {
-        log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
+        log.info("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
         final var nbIn = new double[length][nbFeaturesPlanes][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");
@@ -115,8 +115,7 @@ class ServiceNN {
                 log.error("POLICIES SET TO NULL ");
             }
         });
-        int nbPropagatedNodes = updateCacheValuesAndPoliciesWithInference(outputsNN);
-        System.out.printf("%d|", nbPropagatedNodes);
+        updateCacheValuesAndPoliciesWithInference(outputsNN);
     }
 
     private void propagateValues(boolean submit2NN, int length) {
@@ -148,7 +147,7 @@ class ServiceNN {
                     for (MCTSNode node2propagate : propagationListUntilRoot) {
                         value2propagate = -value2propagate;
                         for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
-                            nbPropagate += node2propagate.propagate(value2propagate);
+                            nbPropagate += node2propagate.propagateOneTime(value2propagate);
                         }
                     }
                 }
@@ -267,6 +266,7 @@ class ServiceNN {
                 gameCopy,
                 isDirichlet,
                 isRootNode));
+        log.info("SERVICENN.submit() batchJobs2Commit:{}", batchJobs2Commit.size());
     }
 
 

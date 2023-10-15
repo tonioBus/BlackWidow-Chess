@@ -51,16 +51,14 @@ public class Helper {
         addNodes2NotTest(root, notTestedNodes);
         checkMCTSTreeVisits(root, ret, notTestedNodes);
         if (ret.size() > 0) {
-            log.error(DotGenerator.toString(mctsStrategy.getDirectRoot(), 5));
+            log.error(DotGenerator.toString(mctsStrategy.getDirectRoot(), 5, true));
             // assertEquals(0, ret.size(), "\n" + ret.stream().collect(Collectors.joining("\n", "\n", "\n")));
         }
     }
 
     static private void checkMCTSTreePoliciesAndValues(final MCTSNode node, final List<String> ret) {
         if (node.getState() != MCTSNode.State.INTERMEDIATE) return;
-        double[] policies = node.getCacheValue().getPolicies();
-        double sumPolicies = 0.0F;
-        for (int i = 0; i < policies.length; i++) sumPolicies += policies[i];
+        double sumPolicies = node.getCacheValue().sumPolicies();
         if (node.getNonNullChildsAsCollection().size() > 0 && sumPolicies < 0.9 || sumPolicies > 1.1) {
             ret.add(String.format("Helper.checkMCTSTreePoliciesAndValues: Node:%s sum of policies should be ~= 1. (sum:%f)", node, sumPolicies));
         }

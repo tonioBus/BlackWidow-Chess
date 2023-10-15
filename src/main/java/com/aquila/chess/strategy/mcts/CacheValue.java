@@ -12,9 +12,10 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.DoubleStream;
 
 @Slf4j
-public class CacheValue extends OutputNN implements Serializable {
+public class CacheValue implements Serializable {
 
     public static final float NOT_INITIALIZED_VALUE = -1.0F;
 
@@ -22,7 +23,11 @@ public class CacheValue extends OutputNN implements Serializable {
         return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
     }
 
-    private double[] sourcePolicies = null;
+    @Getter
+    @Setter
+    private double value;
+
+    private double[] policies;
 
     @Setter
     @Getter
@@ -34,7 +39,8 @@ public class CacheValue extends OutputNN implements Serializable {
     final private Map<Long, MCTSNode> nodes = Collections.synchronizedMap(new HashMap<>());
 
     CacheValue(double value, String label, double[] policies) {
-        super(value, policies);
+        this.value = value;
+        this.policies = policies;
         this.label = label;
     }
 
@@ -55,28 +61,21 @@ public class CacheValue extends OutputNN implements Serializable {
 
     public synchronized void normalizePolicies() {
         if (nodes.size() == 0) {
-            // log.warn("Can not normalize policies, not connected to any nodes: {}", this.label);
+            log.warn("Can not normalize policies, not connected to any nodes: {}", this.label);
             return;
         }
         if (!this.isInitialized()) return;
         synchronized (nodes) {
-            nodes.values().stream().filter(node -> !node.isDirichletDone()).forEach(node -> {
-                int[] indexes = PolicyUtils.getIndexesFilteredPolicies(node.getChildMoves());
-                boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
-                isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
-                if (isDirichlet) {
-                    if (this.sourcePolicies == null) {
-                        this.sourcePolicies = new double[policies.length];
-                        System.arraycopy(policies, 0, sourcePolicies, 0, policies.length);
-                    } else {
-                        this.policies = new double[policies.length];
-                        System.arraycopy(sourcePolicies, 0, policies, 0, sourcePolicies.length);
-                    }
-                    log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
-                }
-                PolicyUtils.toDistribution(policies, indexes, isDirichlet, node.getChildMoves());
-                node.dirichletDone = true;
-            });
+            nodes.values()
+                    .stream()
+                    .filter(node -> !node.isDirichletDone())
+                    .forEach(node -> {
+                        boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
+                        isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
+                        log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
+                        node.updatePolicies(policies, isDirichlet);
+                        node.dirichletDone = true;
+                    });
         }
     }
 
@@ -87,7 +86,7 @@ public class CacheValue extends OutputNN implements Serializable {
      * @param policies
      * @return
      */
-    public OutputNN setInferenceValuesAndPolicies(final double value, final double[] policies) {
+    public void setInferenceValuesAndPolicies(final double value, final double[] policies) {
         this.value = value;
         this.policies = policies;
         if (log.isDebugEnabled())
@@ -96,7 +95,6 @@ public class CacheValue extends OutputNN implements Serializable {
         if (nodes != null) {
             setInferenceValuesAndPolicies();
         }
-        return this;
     }
 
     public void setInferenceValuesAndPolicies() {
@@ -140,7 +138,6 @@ public class CacheValue extends OutputNN implements Serializable {
 
 
     /**
-     *
      * @return true if a connected nodes is
      */
     //FIXME
@@ -162,5 +159,9 @@ public class CacheValue extends OutputNN implements Serializable {
             }
         });
         return ret.get();
+    }
+
+    public double sumPolicies() {
+        return DoubleStream.of(policies).sum();
     }
 }

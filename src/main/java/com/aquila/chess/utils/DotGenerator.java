@@ -76,14 +76,16 @@ public class DotGenerator {
                 node.getMovesFromRootAsString();
                 // String.valueOf(node.getMove());
         Alliance color = node.getColorState();
-        String core = String.format("Parent:%s | key:%s | Init:%b | Propa:%b | moves:%d | %s | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s", //
+        String core = String.format("MOVE: %s | PATH:%s | Parent:%s | key:%s | Init:%b | Propa:%b | Nodes:%d | moves:%d | %s | %s | Value:%f | Reward:%f | V-Loss:%f | Visits:%d | childs:%d | %d:%s",
+                node.getMove(),
+                szMove,
                 node.getParent() == null ? "null" : node.getParent().getMove() == null ? "ROOT" : String.valueOf(node.getParent().getMove()),
                 node.getKey(),
                 node.getCacheValue().isInitialized(),
                 node.isPropagated(),
+                node.getCacheValue().getNodes().size(),
                 node.getChildMoves().size(),
                 color == null ? "no color" : color.toString(), //
-                szMove, //
                 String.format("Prop:%d", node.getNbPropagationsToExecute()),
                 node.getCacheValue().getValue(), //
                 node.getExpectedReward(false), //
@@ -127,7 +129,7 @@ public class DotGenerator {
         node.getChildsAsCollection().forEach(child -> {
             if (child != null) {
                 int visits = child.getVisits();
-                double policy = node.getCacheValue().getPolicies()[PolicyUtils.indexFromMove(child.getMove())];
+                double policy = node.getChildNodes().get(child.getMove()).getPolicy();
                 if ((DotGenerator.displayLeafNode || visits > 0) || child.getState() != MCTSNode.State.INTERMEDIATE) {
                     int hashCode = generate(g, child, depth + 1, depthMax);
                     double exploitation = child.getExpectedReward(false);

@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -15,6 +16,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 
@@ -94,9 +96,17 @@ public class MCTSNode implements Serializable {
     @Getter
     private int nbPropagationsToExecute = 0;
 
+    @Getter
     static public class ChildNode {
-        MCTSNode node;
-        double policy;
+        MCTSNode node = null;
+        double policy = 0.0;
+
+        public ChildNode() {
+        }
+
+        public ChildNode(MCTSNode node) {
+            this.node = node;
+        }
     }
 
     @Getter
@@ -157,6 +167,7 @@ public class MCTSNode implements Serializable {
 
     /**
      * To call only if cacheValue does not already contains child
+     *
      * @param move
      * @param childMoves
      * @param key
@@ -186,10 +197,12 @@ public class MCTSNode implements Serializable {
 
     /**
      * a MCTSNode hash is the hash calculated from the path from the root to this node
+     *
      * @return
      */
     public long hash() {
-        return Utils.hash(this.getMovesFromRootAsString());
+        String sz = this.getMovesFromRootAsString();
+        return Utils.hash(sz);
     }
 
     /**
@@ -216,15 +229,11 @@ public class MCTSNode implements Serializable {
      *
      * @param value the value used to updateValueAndPolicies the reward
      */
-    public int propagate(double value) {
-//        int nbPropagation;
-//        for (nbPropagation = 0; nbPropagation < this.nbPropagationsToExecute; nbPropagation++) {
+    public int propagateOneTime(double value) {
         this.sum += value;
         this.incVisits();
-//        }
-        log.debug("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
+        log.info("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
         this.nbPropagationsToExecute = 0;
-//        return nbPropagation;
         return 1;
     }
 
@@ -237,7 +246,7 @@ public class MCTSNode implements Serializable {
     }
 
     public void setAsRoot() {
-        log.warn("[{}] SET AS ROOT:{} {}", this.getColorState(), getCacheValue().value, this);
+        log.warn("[{}] SET AS ROOT:{} {}", this.getColorState(), getCacheValue().getValue(), this);
         this.state = ROOT;
         if (this.parent != null) {
             this.parent.clearChildrens();
@@ -251,7 +260,8 @@ public class MCTSNode implements Serializable {
 
     private void clearChildrens() {
         for (Move move : this.childNodes.keySet()) {
-            MCTSNode oldNode = this.childNodes.replace(move, null);
+            ChildNode chilNode = this.childNodes.replace(move, null);
+            MCTSNode oldNode = chilNode.node;
             if (oldNode != null) oldNode.parent = null;
         }
     }
@@ -353,7 +363,7 @@ public class MCTSNode implements Serializable {
     }
 
     void resetExpectedReward(float value) {
-        this.cacheValue.value = value;
+        this.cacheValue.setValue(value);
         this.cacheValue.setInitialized(true);
         syncSum();
         if (log.isDebugEnabled()) log.debug("RESET EXPECTED REWARD DONE: {}", this);
@@ -369,7 +379,7 @@ public class MCTSNode implements Serializable {
 
     public double getExpectedReward(boolean withVirtualLoss) {
         syncSum();
-        if (this.getVisits() == 0) return this.getCacheValue().value - (withVirtualLoss ? virtualLoss : 0);
+        if (this.getVisits() == 0) return this.getCacheValue().getValue() - (withVirtualLoss ? virtualLoss : 0);
         else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits() + 1);
     }
 
@@ -392,40 +402,62 @@ public class MCTSNode implements Serializable {
     }
 
     public List<MCTSNode> getNonNullChildsAsCollection() {
-        return this.childNodes.values().stream().map(childNode -> childNode.node).filter(node -> node != null).collect(Collectors.toList());
+        return this.childNodes
+                .values()
+                .stream()
+                .filter(childNode -> childNode != null)
+                .map(childNode -> childNode.node)
+                .filter(node -> node != null)
+                .collect(Collectors.toList());
     }
 
     public Collection<MCTSNode> getChildsAsCollection() {
-        return this.childNodes.values().stream().map(childNode -> childNode.node).collect(Collectors.toCollection());
+        return this.childNodes
+                .values()
+                .stream()
+                .filter(childNode -> childNode != null)
+                .map(childNode -> childNode.node)
+                .collect(Collectors.toList());
+    }
+
+    public ChildNode findChildNode(final Move move) {
+        if (move == null)
+            return null;
+        return this.childNodes.get(move);
     }
 
     public MCTSNode findChild(final Move move) {
-        if (move == null)
-            return null;
-        return this.childNodes.get(move).node;
+        ChildNode childNode = this.findChildNode(move);
+        if (childNode == null) return null;
+        return childNode.node;
     }
 
     /**
-     * Add a children node to this
+     * Add a children node to the current node
      *
-     * @param childNode
+     * @param node
      */
-    public void addChild(final MCTSNode childNode) {
-        assert (childNode.move != null);
-        assert (childNode != this);
-        final MCTSNode oldChild = this.childNodes.put(childNode.move, childNode);
-        if (oldChild != null) {
+    public void addChild(final MCTSNode node) {
+        assert (node.move != null);
+        assert (node != this);
+        if (this.childNodes.containsKey(node.move)) {
+            ChildNode oldNode = this.childNodes.get(node.move);
+            if (oldNode != null && oldNode.node != null) {
+                log.info("addChild() OLD node.move:{} hashCode:{}\nnode:{}", oldNode.node.move, oldNode.node.move.hashCode(), oldNode.node);
+                log.info("addChild() NEW node.move:{} hashCode:{}\nnode:{}", node.move, node.move.hashCode(), node);
+            }
+        }
+        final ChildNode oldChildNode = this.childNodes.put(node.move, new ChildNode(node));
+        if (oldChildNode != null && oldChildNode.node != null) {
             log.error("Add a child to a node with already this child set:{}", this);
-            log.error("OldChild:{}", oldChild);
-            log.error("NewChild:{}", childNode);
+            log.error("OldChild:{}", oldChildNode.node);
+            log.error("NewChild:{}", node);
             return;
-            // throw new RuntimeException("Adding a child to a node that already have this child ");
         }
-        if (childNode.parent != null) {
-            log.warn("Child already builded:{}", childNode);
-            // throw new RuntimeException("child has already a parent");
+        if (node.parent != null) {
+            log.warn("Child already builded:{}", node);
         }
-        childNode.parent = this;
+        node.parent = this;
     }
 
     public static MCTSNode getFirstRoot(final MCTSNode node) {
@@ -435,14 +467,15 @@ public class MCTSNode implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("MCTSNode[%d] -> Move:%s Color:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
+        return String.format("MCTSNode[%d] -> Path:%s Move:%s Color:%s leaf:%b visit:%d expectedReward:%e value:%e parent:%b childs:%d nbPropragate:%d state:%s virtual:%f", //
                 this.key,
+                this.getMovesFromRootAsString(),
                 this.move == null ? "Starting" : this.move, //
                 this.move == null ? "N / A" : this.move.getAllegiance(),
                 this.leaf,
                 this.visits, //
                 this.getExpectedReward(true), //
-                this.getCacheValue() == null ? CacheValue.NOT_INITIALIZED_VALUE : this.getCacheValue().value,
+                this.getCacheValue() == null ? CacheValue.NOT_INITIALIZED_VALUE : this.getCacheValue().getValue(),
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //
                 this.nbPropagationsToExecute,
@@ -483,7 +516,6 @@ public class MCTSNode implements Serializable {
     }
 
     /**
-     *
      * @return the number of sub nodes including the current node
      */
     public int getNumberOfAllNodes() {
@@ -521,4 +553,21 @@ public class MCTSNode implements Serializable {
     public enum State {
         ROOT, INTERMEDIATE, WIN, LOOSE, PAT, REPETITION_X3, REPEAT_50, NOT_ENOUGH_PIECES, NB_MOVES_300
     }
+
+    public void updatePolicies(final double[] policies, boolean isDirichlet) {
+        Collection<Move> childMoves = getChildMoves();
+        int[] indexes = PolicyUtils.getIndexesFilteredPolicies(childMoves);
+        Map<Move, Double> subPolicies = PolicyUtils.toDistribution(policies, indexes, isDirichlet, childMoves);
+        subPolicies.entrySet().forEach( entry -> {
+            Move childMove = entry.getKey();
+            Double policy = entry.getValue();
+            ChildNode childNode = this.childNodes.get(childMove);
+            if(childNode == null) {
+                childNode = new ChildNode();
+                this.childNodes.put(childMove, childNode);
+            }
+            childNode.policy = policy;
+        });
+    }
+
 }

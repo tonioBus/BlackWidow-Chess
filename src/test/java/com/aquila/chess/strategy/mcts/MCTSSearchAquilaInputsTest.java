@@ -75,7 +75,7 @@ public class MCTSSearchAquilaInputsTest {
         log.info("parent:{}", node);
         log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
-        double policy = node.getCacheValue().policies[PolicyUtils.indexFromMove(move)];
+        double policy = node.getChildNodes().get(move).getPolicy();
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
         Helper.checkMCTSTree(whiteStrategy);

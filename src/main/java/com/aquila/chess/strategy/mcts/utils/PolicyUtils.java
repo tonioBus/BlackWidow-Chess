@@ -1,20 +1,17 @@
 package com.aquila.chess.strategy.mcts.utils;
 
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import umontreal.ssj.randvarmulti.DirichletGen;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.chess.engine.classic.board.BoardUtils.NUM_TILES_PER_ROW;
 
@@ -45,6 +42,7 @@ public class PolicyUtils {
 
     /**
      * TODO
+     *
      * @param policyIndex
      * @return
      */
@@ -227,70 +225,69 @@ public class PolicyUtils {
      * @param isDirichlet
      * @return
      */
-    public static void toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
-        double sum = 0;
-        for (int i = 0; i < policies.length; i++) {
-            if (ArrayUtils.contains(indexes, i)) {
-                sum += policies[i];
-            }
-        }
+    public static Map<Move, Double> toDistribution(final double[] policies, int[] indexes, boolean isDirichlet, Collection<Move> moves) {
+        Map<Move, Double> ret = new HashMap<>();
+        double sum = IntStream.of(indexes).mapToDouble(index -> policies[index]).sum();
+
         if (indexes.length > 0 && sum == 0) {
             log.warn("toDistribution(): sum of policies(nb:{})==0", policies.length);
-            return;
+            return ret;
         }
-        for (int i = 0; i < policies.length; i++) {
-            if (sum > 0 && ArrayUtils.contains(indexes, i)) {
-                policies[i] = policies[i] / sum;
-            } else {
-                policies[i] = 0;
-            }
-        }
+        moves.stream().forEach(move -> {
+            int index = PolicyUtils.indexFromMove(move);
+            ret.put(move, policies[index] / sum);
+        });
         if (isDirichlet) {
             if (log.isWarnEnabled()) {
-                logPolicies("ORIGINAL ", policies, indexes, moves);
+                logPolicies("ORIGINAL ", ret.values().stream().toList(), indexes, moves);
             }
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, 0.3);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
             double epsilon = 0.25;
-            int index = 0;
             double[] d = new double[alpha.length];
             dirichletGen.nextPoint(d);
-            double p;
-            for (int i = 0; i < policies.length; i++) {
-                if (ArrayUtils.contains(indexes, i)) {
-                    p = policies[i];
-                    double newP = (1 - epsilon) * p + epsilon * d[index];
-                    policies[i] = (float) newP;
-                    index++;
-                }
-            }
+            AtomicInteger index = new AtomicInteger(0);
+            ret.entrySet().forEach(entry -> {
+                double p = entry.getValue();
+                double newP = (1 - epsilon) * p + epsilon * d[index.getAndIncrement()];
+                entry.setValue(newP);
+            });
+//            for (int i = 0; i < ret.length; i++) {
+//                p = ret[i];
+//                double newP = (1 - epsilon) * p + epsilon * d[index];
+//                ret[i] = (float) newP;
+//                index++;
+//            }
             if (log.isWarnEnabled()) {
-                logPolicies("DIRICHLET", policies, indexes, moves);
+                logPolicies("DIRICHLET", ret.values().stream().toList(), indexes, moves);
             }
         }
+        return ret;
     }
 
-    public static void logPolicies(String label, final double[] policies, int[] indexes, Collection<Move> moves) {
+    public static void logPolicies(String label, final List<Double> subPolicies, int[] indexes, Collection<Move> moves) {
         double maxPolicy = 0.0;
         double minPolicy = 1.0;
         int maxPolicyIndex = -1;
         int minPolicyIndex = -1;
-        for (int i = 0; i < policies.length; i++) {
-            if (policies[i] > maxPolicy) {
-                maxPolicy = policies[i];
-                maxPolicyIndex = i;
+        int i = 0;
+        for (Double policy : subPolicies) {
+            if (policy > maxPolicy) {
+                maxPolicy = policy;
+                maxPolicyIndex = indexes[i];
             }
-            if (policies[i] > 0.0 && policies[i] < minPolicy) {
-                minPolicy = policies[i];
-                minPolicyIndex = i;
+            if (policy > 0.0 && policy < minPolicy) {
+                minPolicy = policy;
+                minPolicyIndex = indexes[i];
             }
+            i++;
         }
         log.warn("{}: MAX policy: {} index:{} move:{} | MIN policy: {} index:{} move:{}", label,
                 maxPolicy, maxPolicyIndex, moveFromIndex(maxPolicyIndex, moves), minPolicy, minPolicyIndex, moveFromIndex(minPolicyIndex, moves));
         log.warn("{}: indexes: {} <-> {} : policies>0", label,
-                indexes.length,
-                Arrays.stream(policies).filter(policy -> policy > 0).count());
+                moves.size(),
+                subPolicies.stream().filter(policy -> policy > 0).count());
     }
 
     static {

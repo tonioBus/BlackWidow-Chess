@@ -6,12 +6,10 @@ import java.io.Serializable;
 
 public class OutputNN implements Serializable {
     @Getter
-    protected double value;
+    final protected double value;
 
     @Getter
-    protected double[] policies;
-
-    protected OutputNN() {}
+    final protected double[] policies;
 
     public OutputNN(double value, double[] policies) {
         this.value = value;

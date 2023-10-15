@@ -68,7 +68,6 @@ public class DeepLearningAGZ {
 
     static final int CACHE_VALUES_SIZE = 40000;
 
-    @Setter
     @Getter
     private int batchSize;
 
@@ -239,19 +238,20 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-    public double[] getBatchedPolicies(long key, final Collection<Move> moves, boolean withDirichlet, final Statistic statistic) {
-        CacheValue output = cacheValues.get(key);
-        if (output != null) {
-            if (log.isDebugEnabled())
-                log.debug("getBatchedPolicies(): key:{}", key);
-            statistic.nbRetrieveNNCachedPolicies++;
-            return output.getPolicies();
-        } else {
-            String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
-            log.error(msg);
-            throw new RuntimeException(msg);
-        }
-    }
+//    @Deprecated
+//    public double[] getBatchedPolicies(long key, final Statistic statistic) {
+//        CacheValue output = cacheValues.get(key);
+//        if (output != null) {
+//            if (log.isDebugEnabled())
+//                log.debug("getBatchedPolicies(): key:{}", key);
+//            statistic.nbRetrieveNNCachedPolicies++;
+//            return output.getPolicies();
+//        } else {
+//            String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
+//            log.error(msg);
+//            throw new RuntimeException(msg);
+//        }
+//    }
 
     public double getScore() {
         return nn.getScore();

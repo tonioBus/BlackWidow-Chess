@@ -215,7 +215,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.deepLearning.getCacheValues().getLostCacheValue().getNodes().size(),
                 this.deepLearning.getCacheValues().getDrawnCacheValue().getNodes().size());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
-                length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().value, bestNode.getExpectedReward(false));
+                length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
         if (optionalMove.isEmpty()) {
             log.warn(
@@ -332,11 +332,15 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error(msg);
             throw new RuntimeException(msg);
         }
-        stepNode.getChildNodes().values().stream().filter(child -> child != null).forEach(child -> {
-            int index = PolicyUtils.indexFromMove(child.getMove());
-            double probability = (double) child.getVisits() / (double) stepNode.getVisits();
-            probabilities.put(index, probability);
-        });
+        stepNode.getChildNodes()
+                .values()
+                .stream()
+                .filter(childNode -> childNode != null && childNode.node!=null)
+                .forEach(childNode -> {
+                    int index = PolicyUtils.indexFromMove(childNode.node.getMove());
+                    double probability = (double) childNode.node.getVisits() / (double) stepNode.getVisits();
+                    probabilities.put(index, probability);
+                });
         return probabilities;
     }
 
@@ -353,32 +357,5 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.debug("CREATE STEP TRAINING ->[{}] INPUTS:\n{}", alliance, inputs);
         return lastOneStepRecord;
     }
-
-//    @Deprecated
-//    public String saveBatch(String trainDir, ResultGame resultGame) throws IOException {
-//        final int numGames = maxGame(trainDir + "/") + 1;
-//        log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
-//        log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, trainGame.getOneStepRecordList().size());
-//        final String filename = trainGame.save(trainDir, numGames, resultGame);
-//        log.info("SAVE DONE in {}", filename);
-//        clearTrainGame();
-//        return filename;
-//    }
-
-//    private int maxGame(String path) {
-//        File dataDirectory = new File(path);
-//        int max = 0;
-//        if (dataDirectory.canRead()) {
-//            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
-//                int currentNumber = Integer.valueOf(file.getName()).intValue();
-//                if (currentNumber > max) max = currentNumber;
-//            }
-//        }
-//        return max;
-//    }
-
-//    public void clearTrainGame() {
-//        this.trainGame.clear();
-//    }
 
 }

@@ -91,6 +91,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         currentRoot.syncSum();
         currentRoot.dirichletDone = false;
         final CacheValue rootValue = currentRoot.getCacheValue();
+        rootValue.addNode(currentRoot);
         if (rootValue != null) {
             log.info("[{}] RESET ROOT NORMALIZATION key: {}", this.nbStep, currentRoot);
             MCTSNode.resetBuildOrder();
@@ -110,18 +111,15 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
         }
         boolean isEnding = false;
         while (isEnding == false) {
-            try {
-                deepLearning.flushJob(false);
-            } catch (ExecutionException e) {
-                throw new RuntimeException("Error during last flushJobs", e);
-            }
-            Future<Integer> future = executorService.take();
-            if (future == null) {
-                ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) WORKER_THREAD_POOL;
-                if (log.isErrorEnabled())
-                    log.error("FUTURE is NULL. NB_THREAD:{} ", threadPoolExecutor.getActiveCount());
-                throw new Error("future null !!!");
-            }
+            Future<Integer> future;
+            do {
+                future = executorService.poll(50, TimeUnit.MILLISECONDS);
+                try {
+                    deepLearning.flushJob(false);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException("Error during last flushJobs", e);
+                }
+            } while(future==null);
             try {
                 final Integer effectiveNbSearchCalls = future.get();
                 nbSearchCalls += effectiveNbSearchCalls;
@@ -141,16 +139,15 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                         log.debug("[{}] SUBMIT NEW TASK({}) 1:{} childs:{}", nbStep, nbSubmit, effectiveNbSearchCalls.intValue(), this.currentRoot.getNonNullChildsAsCollection().size());
                         executorService.submit(mctsSearchWalker);
                         nbSubmit++;
+                        try {
+                            deepLearning.flushJob(false);
+                        } catch (ExecutionException e) {
+                            throw new RuntimeException("Error during last flushJobs", e);
+                        }
                     } else {
                         WORKER_THREAD_POOL.shutdown();
                         while (!WORKER_THREAD_POOL.awaitTermination(100, TimeUnit.MILLISECONDS)) ;
                         isEnding = true;
-                        if (log.isInfoEnabled()) {
-                            log.info("[{}] END OF SEARCH DETECTED nbSearchCalls:{} submit:{} childs:{} visits:{}", nbStep, nbSearchCalls, nbSubmit, currentRoot.getNumberOfAllNodes(), currentRoot.getVisits());
-                            if (currentRoot.getNumberOfAllNodes() < 100)
-                                log.info("-------------------------------------\n{}\n-------------------------------------\n",
-                                        DotGenerator.toString(currentRoot, 10));
-                        }
                     }
                 }
             } catch (InterruptedException e) {
@@ -163,6 +160,12 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
             deepLearning.flushJob(true);
         } catch (ExecutionException e) {
             log.error("Error during last flushJobs", e);
+        }
+        if (log.isInfoEnabled()) {
+            log.info("[{}] END OF SEARCH DETECTED nbSearchCalls:{} submit:{} childs:{} visits:{}", nbStep, nbSearchCalls, nbSubmit, currentRoot.getNumberOfAllNodes(), currentRoot.getVisits());
+            if (currentRoot.getNumberOfAllNodes() < 100)
+                log.info("-------------------------------------\n{}\n-------------------------------------\n",
+                        DotGenerator.toString(currentRoot, 10, true));
         }
         return currentRoot.getVisits();
     }

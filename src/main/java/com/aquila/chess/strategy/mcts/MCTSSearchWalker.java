@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
 import com.aquila.chess.utils.Utils;
@@ -84,7 +83,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
     public Integer call() throws Exception {
         Thread.currentThread().setName(String.format("Worker:%d Submit:%d", numThread, nbSubmit));
         cpuct = updateCpuct.update(mctsGame.getMoves().size());
-        SearchResult searchResult = search(currentRoot, 0, true);
+        SearchResult searchResult = search(currentRoot, 0);
         if (searchResult == null) {
             log.debug("[{}] END SEARCH: NULL", nbStep);
         } else {
@@ -95,7 +94,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         return searchResult.nbSearchCalls;
     }
 
-    protected SearchResult search(final MCTSNode opponentNode, int depth, final boolean isRootNode) throws Exception {
+    protected SearchResult search(final MCTSNode opponentNode, int depth) throws Exception {
         log.debug("MCTS SEARCH: depth:{} opponentNode:{}", depth, opponentNode);
         final Alliance colorOpponent = opponentNode.getColorState();
         final Alliance color2play = colorOpponent.complementary();
@@ -121,7 +120,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     collect(Collectors.toList());
             if (looseMoves.size() == opponentNode.getChildNodes().size())
                 return new SearchResult("DETECTED LEAF NODES", 1);
-            selectedMove = selection(opponentNode, isRootNode, depth, looseMoves);
+            selectedMove = selection(opponentNode, depth, looseMoves);
             log.debug("SELECTION: {}", selectedMove);
             if (selectedMove == null) return new SearchResult("NO SELECTION POSSIBLE", 0);
             selectedNode = opponentNode.findChild(selectedMove);
@@ -134,7 +133,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 log.debug("MCTS SEARCH EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
                 try {
-                    log.debug("MCTS CREATE NODE for MOVE:{}", selectedMove);
+                    log.debug("EXPANSION MCTS CREATE NODE for MOVE:{}", selectedMove);
                     selectedNode = MCTSNode.createNode(mctsGame.getBoard(), selectedMove, key, cacheValue);
                     opponentNode.addChild(selectedNode);
                     // log.debug("CACHE VALUE ALREADY DEFINED: ADDING NODE TO PROPAGATE:\n{}", selectedNode);
@@ -178,7 +177,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             return new SearchResult("LEAF NODE", 1);
         } else {
             // recursive calls
-            SearchResult searchResult = search(selectedNode, depth + 1, false);
+            SearchResult searchResult = search(selectedNode, depth + 1);
             // retro-propagate done in ServiceNN
             selectedNode.decVirtualLoss();
             log.debug("RETRO-PROPAGATION: {}", selectedNode);
@@ -271,7 +270,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             }
             synchronized (opponentNode.getChildNodes()) {
                 if (opponentNode.findChild(possibleMove) == null) {
-                    log.debug("[{}] CREATE NEW {} NODE path:{} :{}", this.colorStrategy, state, child.getMovesFromRootAsString(), child.getCacheValue().value);
+                    log.debug("[{}] CREATE NEW {} NODE path:{} :{}", this.colorStrategy, state, child.getMovesFromRootAsString(), child.getCacheValue().getValue());
                     opponentNode.addChild(child);
                 }
             }
@@ -315,7 +314,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         }
     }
 
-    protected Move selection(final MCTSNode opponentNode, final boolean isRootNode, int depth, List<Move> looseMoves) {
+    protected Move selection(final MCTSNode opponentNode, int depth, List<Move> looseMoves) {
         double maxUcb = Double.NEGATIVE_INFINITY;
         double ucb;
         double policy;
@@ -341,29 +340,29 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 label,
                 opponentNode,
                 statistic);
-        final double[] policies = deepLearning.getBatchedPolicies(
-                key,
-                moves,
-                isRootNode & withDirichlet,
-                statistic);
+//        final double[] policies = deepLearning.getBatchedPolicies(
+//                key,
+//                statistic);
+        // opponentNode.updatePolicies(policies, withDirichlet);
         synchronized (moves) {
             for (final Move possibleMove : moves) {
                 int childVisits = 0;
-                child = opponentNode.findChild(possibleMove);
-                if (child == null) {
+                final MCTSNode.ChildNode childNode = opponentNode.findChildNode(possibleMove);
+                if (childNode == null || childNode.node == null) {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
                     key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
                     CacheValue cacheValue = deepLearning.getCacheValues().get(key);
                     log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
                 } else {
+                    child = childNode.node;
                     if (child.getState() == LOOSE) continue;
                     exploitation = child.getExpectedReward(true);
                     childVisits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
                 // if (sumVisits > 0) {
-                policy = policies[PolicyUtils.indexFromMove(possibleMove)];
+                policy = childNode == null ? 0 : childNode.policy; // policies[PolicyUtils.indexFromMove(possibleMove)];
                 if (log.isDebugEnabled()) {
                     log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
                     log.debug("policy:{}", policy);
@@ -404,6 +403,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     /**
      * From https://colab.research.google.com/github/es2mac/SwiftDigger/blob/master/TetrisField.ipynb
+     *
      * @param opponentNode
      * @param cpuct
      * @param visits

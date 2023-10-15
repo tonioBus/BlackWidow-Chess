@@ -83,14 +83,14 @@ public class MCTSAquilaExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @ValueSource(ints = {20, 100, 200, 400, 800})
+    @ValueSource(ints = {5, 20, 100, 200, 400, 800})
     @ParameterizedTest
     @DisplayName("detect black promotion")
     void testSimulationDetectPossibleBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
-        deepLearningBlack.setBatchSize(5);
+        if (nbStep <= 10) deepLearningBlack.getServiceNN().setBatchSize(2);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -98,7 +98,9 @@ public class MCTSAquilaExerciceTest {
                 1,
                 updateCpuct,
                 -1)
-                .withDirichlet(dirichlet)
+                .withDirichlet((steps) -> {
+                    return true;
+                })
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
@@ -134,18 +136,19 @@ public class MCTSAquilaExerciceTest {
      * 4  --- --- --- --- --- --- --- ---  4
      * 3  P-B --- --- --- --- --- K-B ---  3
      * 2  --- --- --- --- --- --- --- ---  2
-     * 1  --- --- --- --- --- --- K-W ---  1
+     * 1  --- --- --- --- --- --- --- K-W  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 300, 400, 800})
+    @ValueSource(ints = {10, 100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
     void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kh1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
+        if (nbStep <= 10) deepLearningBlack.getServiceNN().setBatchSize(2);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -249,7 +252,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 400, 800})
+    @ValueSource(ints = {5, 100, 200, 400, 800})
     void testEndWithWhitePromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
@@ -274,6 +277,7 @@ public class MCTSAquilaExerciceTest {
         Move move = null;
         for (int i = 0; i < 3; i++) {
             Game.GameStatus status = game.play();
+            if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
             move = game.getLastMove();
             log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
             Helper.checkMCTSTree(whiteStrategy);
@@ -283,7 +287,6 @@ public class MCTSAquilaExerciceTest {
             }
             assertEquals(IN_PROGRESS, status, "wrong status: only white-chessmate or in progress is allow");
         }
-        if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have a chessmate");
     }
@@ -513,7 +516,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 400, 800})
+    @ValueSource(ints = {10, 100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
