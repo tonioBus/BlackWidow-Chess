@@ -123,7 +123,7 @@ public class MainFitNNAquila implements Runnable {
         } catch (IOException e) {
             log.error("Error when saving NN", e);
         }
-        log.info("Train done in directories:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("- ", "- ", "")));
+        log.info("Train done in directories:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("\n- ", "- ", "")));
     }
 
     private void waitForKey() {

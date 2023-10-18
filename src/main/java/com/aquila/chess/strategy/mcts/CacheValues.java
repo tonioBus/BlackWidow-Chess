@@ -65,6 +65,7 @@ public class CacheValues {
 
     /**
      * update value and policies on 1 node. The node is define by the key
+     *
      * @param key
      * @param value
      * @param notNormalisedPolicies
@@ -81,5 +82,16 @@ public class CacheValues {
 
     public void clearNodes() {
         lruMap.values().parallelStream().filter(cacheValue -> !cacheValue.isLeaf()).forEach(cacheValue -> cacheValue.clearNodes());
+    }
+
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        this.lruMap
+                .entrySet()
+                .stream()
+                .forEach(entry -> {
+                    sb.append(String.format("- [%d] -> %s", entry.getKey(), entry.getValue()));
+                });
+        return sb.toString();
     }
 }

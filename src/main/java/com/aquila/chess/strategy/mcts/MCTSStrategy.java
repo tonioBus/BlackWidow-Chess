@@ -103,15 +103,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move play(final Game game,
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
-//        if (this.partnerStrategy.getDirectRoot() != null && this.mctsGame != null) {
-//            OneStepRecord lastOneStepRecord = createStepTraining(
-//                    this.mctsGame,
-//                    this.getMctsGame().getLastMove(),
-//                    this.alliance.complementary(),
-//                    this.partnerStrategy.getDirectRoot()
-//            );
-//            trainGame.add(lastOneStepRecord);
-//        }
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent);
         assert (directRoot != null);
@@ -165,11 +156,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (this.directRoot == null) {
             long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-            if (cacheValue.getNodes().size() > 0) {
-                cacheValue.getNodes().values().stream().forEach(node -> {
-                    assert (node.getMove().getAllegiance() == alliance.complementary());
-                });
-            }
+            cacheValue.verifyAlliance(alliance.complementary());
             this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, cacheValue);
             return;
         }
@@ -211,9 +198,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
         log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}",
                 this.getAlliance(),
-                this.deepLearning.getCacheValues().getWinCacheValue().getNodes().size(),
-                this.deepLearning.getCacheValues().getLostCacheValue().getNodes().size(),
-                this.deepLearning.getCacheValues().getDrawnCacheValue().getNodes().size());
+                this.deepLearning.getCacheValues().getWinCacheValue().getNbNodes(),
+                this.deepLearning.getCacheValues().getLostCacheValue().getNbNodes(),
+                this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();

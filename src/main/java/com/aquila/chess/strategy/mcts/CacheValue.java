@@ -2,17 +2,18 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
+import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Move;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.DoubleStream;
+
+import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 
 @Slf4j
 public class CacheValue implements Serializable {
@@ -35,8 +36,7 @@ public class CacheValue implements Serializable {
 
     final private String label;
 
-    @Getter
-    final private Map<Long, MCTSNode> nodes = Collections.synchronizedMap(new HashMap<>());
+    final private Map<MCTSNodePath, MCTSNode> nodes = Collections.synchronizedMap(new HashMap<>());
 
     CacheValue(double value, String label, double[] policies) {
         this.value = value;
@@ -46,12 +46,12 @@ public class CacheValue implements Serializable {
 
     public String toString() {
         final StringBuffer sb = new StringBuffer();
-        sb.append("initialized=" + this.initialized);
-        sb.append("label=" + this.label);
-        sb.append("value=" + this.value);
+        sb.append(String.format("  initialized:%b\n", this.initialized));
+        sb.append(String.format("  label=%s\n", this.label));
+        sb.append(String.format("  value=%f\n", this.value));
         try {
             nodes.entrySet().forEach(entry -> {
-                sb.append(String.format("- %d -> %s", entry.getKey(), entry.getValue().getMovesFromRootAsString()));
+                sb.append(String.format("  - node %s -> %s\n", entry.getKey(), entry.getValue().getMovesFromRootAsString()));
             });
         } catch (ConcurrentModificationException e) {
             sb.append(" nodes not available (sync)");
@@ -61,7 +61,7 @@ public class CacheValue implements Serializable {
 
     public synchronized void normalizePolicies() {
         if (nodes.size() == 0) {
-            log.warn("Can not normalize policies, not connected to any nodes: {}", this.label);
+            log.debug("Can not normalize policies, not connected to any nodes: {}", this.label);
             return;
         }
         if (!this.isInitialized()) return;
@@ -72,7 +72,7 @@ public class CacheValue implements Serializable {
                     .forEach(node -> {
                         boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
                         isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
-                        log.warn("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
+                        log.debug("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
                         node.updatePolicies(policies, isDirichlet);
                         node.dirichletDone = true;
                     });
@@ -104,27 +104,26 @@ public class CacheValue implements Serializable {
         }
     }
 
+
     public void addNode(final MCTSNode node) {
         assert node != null;
-        long keyNode = node.hash();
+        MCTSNodePath pathFromRoot = node.getPathFromRoot();
+        log.info("addNode({}) currentNodesSize:{}", pathFromRoot, nodes.size());
         try {
             if (log.isDebugEnabled() && nodes.size() > 0 && !node.isLeaf()) {
-                log.error("############# adding node: {} -> {}", keyNode, node.getMovesFromRootAsString());
+                log.error("############# adding node: {} -> {}", pathFromRoot, node.getMovesFromRootAsString());
                 log.error("nodes already inserted:");
                 nodes.entrySet().forEach(entry -> {
                     log.error("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
                 });
             }
-            if (this.nodes.containsKey(keyNode)) {
-                MCTSNode oldNode = this.nodes.get(keyNode);
-                if (oldNode == null) {
-                    log.error("oldNode null:{}", keyNode);
-                    nodes.entrySet().forEach(entry -> {
-                        log.error("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
-                    });
-                }
+            MCTSNode oldNode = this.nodes.get(pathFromRoot);
+            if (oldNode != null) {
                 oldNode.incNbPropationsToExecute();
-            } else this.nodes.put(keyNode, node);
+            } else {
+                log.info("nodes.put({},{})", pathFromRoot, node.move);
+                this.nodes.put(pathFromRoot, node);
+            }
         } catch (ArrayIndexOutOfBoundsException e) {
             log.error("Error when adding a node: {}", node);
             throw e;
@@ -135,7 +134,6 @@ public class CacheValue implements Serializable {
     public void clearNodes() {
         this.nodes.clear();
     }
-
 
     /**
      * @return true if a connected nodes is
@@ -163,5 +161,45 @@ public class CacheValue implements Serializable {
 
     public double sumPolicies() {
         return DoubleStream.of(policies).sum();
+    }
+
+    public boolean isNodesEmpty() {
+        return nodes.isEmpty();
+    }
+
+    public void verifyAlliance(final Alliance alliance) {
+        if (!this.nodes.isEmpty()) {
+            nodes.values().stream().forEach(node -> {
+                assert (node.getMove().getAllegiance() == alliance);
+            });
+        }
+    }
+
+    public Optional<MCTSNode> getFirstNode() {
+        return nodes.values().stream().findFirst();
+    }
+
+    public Optional<MCTSNode> getRootNode() {
+        return nodes.values().stream().filter(node -> node.getState() == ROOT).findFirst();
+    }
+
+    public MCTSNode getNode(final MCTSNodePath path, Move selectedMove) {
+        MCTSNode ret = nodes.get(new MCTSNodePath(path, selectedMove));
+        log.debug("getNode({},{}", path, ret == null ? ret : ret.move);
+        return ret;
+    }
+
+    public MCTSNode getNode(final MCTSNodePath path) {
+        MCTSNode ret = nodes.get(path);
+        log.debug("getNode({},{}", path, ret == null ? ret : ret.move);
+        return ret;
+    }
+
+    public Collection<MCTSNode> getAllMCTSNodes() {
+        return nodes.values();
+    }
+
+    public int getNbNodes() {
+        return nodes.size();
     }
 }

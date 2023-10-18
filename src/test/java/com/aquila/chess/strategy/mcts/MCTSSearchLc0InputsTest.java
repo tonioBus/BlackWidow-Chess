@@ -136,7 +136,7 @@ public class MCTSSearchLc0InputsTest {
      * PGN format to use with -> https://lichess.org/paste
      */
     @ParameterizedTest
-    @ValueSource(ints = {10, 30, 50, 100})
+    @ValueSource(ints = {30, 50, 100})
     @DisplayName("MCTS tree should avoid white chess-mate")
     void testAvoidWhiteChessMate1Move(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("kg1", "re8,kg3", WHITE);

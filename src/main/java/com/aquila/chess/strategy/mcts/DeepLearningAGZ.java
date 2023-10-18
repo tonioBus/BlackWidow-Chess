@@ -226,11 +226,11 @@ public class DeepLearningAGZ {
         if (!cacheValues.containsKey(key)) {
             String msg = String.format("KEY:%d SHOULD HAVE CREATED MOVE:%s", key, possibleMove);
             log.error(msg);
-            log.error("- {}",
-                    cacheValues.getValues()
-                            .stream()
-                            .map(v -> v.getNodes() != null ? String.valueOf(v.getNodes().get(0).getMove()) : "v.getNode:null")
-                            .collect(Collectors.joining("\n")));
+            log.error("- {}", cacheValues
+                    .getValues()
+                    .stream()
+                    .map(cacheValue -> cacheValue.toString())
+                    .collect(Collectors.joining("\n")));
             throw new RuntimeException(msg);
         }
         CacheValue cacheValue = cacheValues.get(key);
@@ -417,6 +417,7 @@ public class DeepLearningAGZ {
 
     /**
      * this will propagate only node not propagated (node.propagated)
+     *
      * @param node
      */
     public void addDefinedNodeToPropagate(final MCTSNode node) {

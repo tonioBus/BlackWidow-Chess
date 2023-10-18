@@ -83,7 +83,7 @@ public class DotGenerator {
                 node.getKey(),
                 node.getCacheValue().isInitialized(),
                 node.isPropagated(),
-                node.getCacheValue().getNodes().size(),
+                node.getCacheValue().getNbNodes(),
                 node.getChildMoves().size(),
                 color == null ? "no color" : color.toString(), //
                 String.format("Prop:%d", node.getNbPropagationsToExecute()),

@@ -91,7 +91,7 @@ public class ServiceNN {
      */
     public synchronized void executeJobs(boolean force) {
         boolean submit2NN = force || batchJobs2Commit.size() >= batchSize;
-        log.info("SERVICENN.executeJobs() batchJobs2Commit:{}", batchJobs2Commit.size());
+        log.debug("ServiceNN.executeJobs() batchJobs2Commit:{}", batchJobs2Commit.size());
         log.debug("BEGIN executeJobs({})", submit2NN);
         initValueAndPolicies(submit2NN);
         log.debug("END executeJobs({})", submit2NN);
@@ -220,9 +220,9 @@ public class ServiceNN {
                         log.warn("NO PROPAGATION -> Keeping oldCacheValue");
                     }
                     log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
-                    addNodeToPropagate(oldCacheValue.getNodes().values());
+                    addNodeToPropagate(oldCacheValue.getAllMCTSNodes());
                 } else {
-                    addNodeToPropagate(cacheValue.getNodes().values());
+                    addNodeToPropagate(cacheValue.getAllMCTSNodes());
                     log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                 }
             }
@@ -266,7 +266,7 @@ public class ServiceNN {
                 gameCopy,
                 isDirichlet,
                 isRootNode));
-        log.info("SERVICENN.submit() batchJobs2Commit:{}", batchJobs2Commit.size());
+        log.debug("SERVICENN.submit() batchJobs2Commit:{}", batchJobs2Commit.size());
     }
 
 

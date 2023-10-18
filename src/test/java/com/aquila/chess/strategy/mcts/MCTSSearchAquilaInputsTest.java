@@ -70,12 +70,14 @@ public class MCTSSearchAquilaInputsTest {
         final RandomStrategy blackStrategy = new RandomStrategy(Alliance.BLACK, seed + 1000);
         game.setup(whiteStrategy, blackStrategy);
         assertEquals(Game.GameStatus.IN_PROGRESS, game.play());
+        log.info(game.toString());
         final Move move = game.getLastMove();
         final MCTSNode node = whiteStrategy.getDirectRoot();
         log.info("parent:{}", node);
         log.info("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(true, 50));
         double policy = node.getChildNodes().get(move).getPolicy();
+        log.info("cacheValues:\n{}", deepLearningWhite.getCacheValues());
         log.info("policies[{}]={}", move, policy);
         assertTrue(policy > 0);
         Helper.checkMCTSTree(whiteStrategy);

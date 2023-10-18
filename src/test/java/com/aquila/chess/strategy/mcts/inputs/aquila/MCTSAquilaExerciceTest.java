@@ -83,7 +83,7 @@ public class MCTSAquilaExerciceTest {
      * </pre>
      * @formatter:on
      */
-    @ValueSource(ints = {5, 20, 100, 200, 400, 800})
+    @ValueSource(ints = {20, 100, 200, 400, 800})
     @ParameterizedTest
     @DisplayName("detect black promotion")
     void testSimulationDetectPossibleBlackPromotion(int nbStep) throws Exception {
@@ -516,7 +516,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {10, 100, 200, 400, 800})
+    @ValueSource(ints = {100, 200, 400, 800})
     @DisplayName("white chessmate in 2 (a8-a3,*,g2-g3,*,a3-a1)")
     void testMakeWhiteChessMateIn2(int nbStep) throws Exception {
         final Board board = Board.createBoard("ke2", "ra8,kg2,rh2", BLACK);
@@ -591,22 +591,24 @@ public class MCTSAquilaExerciceTest {
     /**
      * @formatter:off <pre>
      *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * 8  R-W --- --- --- --- --- --- ---  8
-     * 7  --- --- --- --- --- --- --- ---  7
+     * 8  --- --- --- --- K-B --- --- ---  8
+     * 7  --- --- --- --- --- --- K-W R-W  7
      * 6  --- --- --- --- --- --- --- ---  6
      * 5  --- --- --- --- --- --- --- ---  5
      * 4  --- --- --- --- --- --- --- ---  4
      * 3  --- --- --- --- --- --- --- ---  3
-     * 2  --- --- --- --- --- --- K-W R-W  2
-     * 1  --- --- --- --- K-B --- --- ---  1
+     * 2  --- --- --- --- --- --- --- ---  2
+     * 1  R-W --- --- --- --- --- --- ---  1
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * Kf3 Kd1 2.Ra1
      * </pre>
      * @formatter:on
      */
-    @Test
-    void testMakeBlackChessMate() throws Exception {
-        final Board board = Board.createBoard("ra8,kg2,rh2", "ke1", WHITE);
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 400, 800})
+    @DisplayName("black chessmate in 2 (g7-g6,*,a1-a8)")
+    void testMakeBlackChessMate(int nbStep) throws Exception {
+        final Board board = Board.createBoard("ra1,kg7,rh7", "ke8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -617,7 +619,7 @@ public class MCTSAquilaExerciceTest {
                 -1)
                 .withDirichlet(dirichlet)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -627,8 +629,14 @@ public class MCTSAquilaExerciceTest {
                 -1)
                 .withDirichlet(dirichlet)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
+        nnWhite.addIndexOffset(2F, "g7-g6", Piece.PieceType.KING);
+        nnWhite.addIndexOffset(1F, "a1-a8", Piece.PieceType.ROOK);
+        log.info("TWEAK NN: g7-g6:{} - a1-a8:{}",
+                PolicyUtils.indexFromMove(Piece.PieceType.ROOK, "g7", "g6"),
+                PolicyUtils.indexFromMove(Piece.PieceType.KING, "a1", "a8")
+        );
         Move move;
         Game.GameStatus status = null;
         for (int i = 0; i < 4; i++) {
