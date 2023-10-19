@@ -438,7 +438,7 @@ public class MCTSNode implements Serializable {
         assert (node != this);
         ChildNode oldNode = this.childNodes.get(node.move);
         if (oldNode != null) {
-            log.info("addChild() NEW node.move:{} hashCode:{}\nnode:{}", node.move, node.move.hashCode(), node);
+            log.debug("addChild() NEW node.move:{} hashCode:{}\nnode:{}", node.move, node.move.hashCode(), node);
             if (oldNode.node == null) oldNode.node = node;
             else throw new RuntimeException("Should not happen");
         } else {
@@ -538,7 +538,7 @@ public class MCTSNode implements Serializable {
         this.visits = 0;
         this.setLeaf(true);
         if (this.cacheValue != null) {
-            log.warn("node:{}\n\t already built with cacheValue:{}", this, this.cacheValue);
+            log.warn("\n*) node:{}\n\talready built with\n*) cacheValue:{}", this, this.cacheValue);
             this.cacheValue.clearNodes();
         }
         this.cacheValue = cacheValue;

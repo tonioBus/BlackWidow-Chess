@@ -108,7 +108,7 @@ public class CacheValue implements Serializable {
     public void addNode(final MCTSNode node) {
         assert node != null;
         MCTSNodePath pathFromRoot = node.getPathFromRoot();
-        log.info("addNode({}) currentNodesSize:{}", pathFromRoot, nodes.size());
+        log.debug("addNode({}) currentNodesSize:{}", pathFromRoot, nodes.size());
         try {
             if (log.isDebugEnabled() && nodes.size() > 0 && !node.isLeaf()) {
                 log.error("############# adding node: {} -> {}", pathFromRoot, node.getMovesFromRootAsString());
@@ -121,7 +121,7 @@ public class CacheValue implements Serializable {
             if (oldNode != null) {
                 oldNode.incNbPropationsToExecute();
             } else {
-                log.info("nodes.put({},{})", pathFromRoot, node.move);
+                log.debug("nodes.put({},{})", pathFromRoot, node.move);
                 this.nodes.put(pathFromRoot, node);
             }
         } catch (ArrayIndexOutOfBoundsException e) {

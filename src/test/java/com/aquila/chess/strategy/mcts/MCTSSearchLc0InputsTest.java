@@ -332,7 +332,6 @@ public class MCTSSearchLc0InputsTest {
         game.play();
         if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbMaxSearchCalls < 100, 50));
         log.warn("CacheSize: {} STATS: {}", deepLearningWhite.getCacheSize(), whiteStrategy.getStatistic());
-        log.info("statistic:{}", whiteStrategy.getStatistic());
         Helper.checkMCTSTree(whiteStrategy);
     }
 
