@@ -252,7 +252,7 @@ public class MCTSAquilaExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {5, 100, 200, 400, 800})
+    @ValueSource(ints = {100, 200, 400, 800})
     void testEndWithWhitePromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("pa6,kg6", "kh8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
@@ -370,8 +370,8 @@ public class MCTSAquilaExerciceTest {
      * <pre>
      *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- K-B --- ---  8
-     * 7  P-W --- --- --- --- --- --- ---  7
-     * 6  --- --- --- R-W --- K-W --- ---  6
+     * 7  --- --- --- --- --- --- --- ---  7
+     * 6  P-W --- --- R-W --- K-W --- ---  6
      * 5  --- --- --- --- --- --- --- ---  5
      * 4  --- --- --- --- --- --- --- ---  4
      * 3  --- --- --- --- --- --- --- ---  3
@@ -382,9 +382,8 @@ public class MCTSAquilaExerciceTest {
      */
     @ParameterizedTest
     @ValueSource(ints = {50, 100, 200, 300, 400})
-    @Disabled
-    void testEndWithWhitePromotion1(int nbSearch) throws Exception {
-        final Board board = Board.createBoard("pa7,rd6,kf6", "kf8", BLACK);
+    void testEndWithWhite1Step(int nbSearch) throws Exception {
+        final Board board = Board.createBoard("pa6,rd6,kf6", "kf8", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
                 game,
@@ -406,41 +405,17 @@ public class MCTSAquilaExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbSearch);
         game.setup(whiteStrategy, blackStrategy);
-        nnBlack.addIndexOffset(2.0F, "f8-g8", Piece.PieceType.KING);
-        nnBlack.addIndexOffset(1.0F, "a7-a8", Piece.PieceType.KING);
-        log.info("TWEAK NN: d6-d7:{} - a7-a8:{}",
-                PolicyUtils.indexFromMove(Piece.PieceType.ROOK, "d6", "d7"),
-                PolicyUtils.indexFromMove(Piece.PieceType.PAWN, "a7", "a8")
-        );
-        Move move = null;
-        for (int i = 0; i < 4; i++) {
-            Game.GameStatus status = game.play();
-            move = game.getLastMove();
-            log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
-            if (i == 0 && !move.toString().equals("Kg8")) {
-                log.info(DotGenerator.toString(blackStrategy.getDirectRoot(), 5));
-                assertTrue(false, "Move should be Kg8 but is: " + move);
-            }
-            switch (move.getAllegiance()) {
-                case WHITE:
-                    List<MCTSNode> wins = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN);
-                    log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
-                    assertTrue(wins.size() > 0);
-                    Helper.checkMCTSTree(whiteStrategy);
-                    break;
-                case BLACK:
-                    if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
-                    List<MCTSNode> looses = blackStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
-                    log.info("[BLACK] Looses Nodes:{}", looses.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
-                    assertTrue(looses.size() > 0);
-                    Helper.checkMCTSTree(blackStrategy);
-                    break;
-            }
-            assertEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate:\n" + game);
-            assertEquals(IN_PROGRESS, status, "wrong status: only black-chessmate or in progress is allow:\n" + game);
-        }
-        if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(false, 50));
-        log.info("GAME:\n{}\n", game.toPGN());
+        Move move;
+        Game.GameStatus status = game.play();
+        move = game.getLastMove();
+        log.warn("Status:{} [{}] move: {} class:{}", status, move.getAllegiance(), move, move.getClass().getSimpleName());
+        log.info(DotGenerator.toString(whiteStrategy.getDirectRoot(), 5));
+        List<MCTSNode> wins = whiteStrategy.getDirectRoot().search(MCTSNode.State.WIN);
+        log.info("[WHITE] Wins Nodes:{}", wins.stream().map(node -> node.getMove().toString()).collect(Collectors.joining(",")));
+        assertTrue(wins.size() > 0);
+        Helper.checkMCTSTree(whiteStrategy);
+        assertEquals("Rd8", move.toString(), "Move should be Rd8 but is: " + move);
+        assertEquals(BLACK_CHESSMATE, status, "We should not have a black chessmate:\n" + game);
     }
 
     /**

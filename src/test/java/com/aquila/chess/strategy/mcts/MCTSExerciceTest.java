@@ -156,9 +156,8 @@ public class MCTSExerciceTest {
                 .withNbThread(NB_THREAD)
                 .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
-        Piece pawn = board.getPiece(BoardUtils.INSTANCE.getCoordinateAtPosition("a3"));
-        nnBlack.addIndexOffset(0.9F, "a3-a2", Piece.PieceType.PAWN);
-        nnBlack.addIndexOffset(0.9F, "a2-a1", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(2F, "a3-a2", Piece.PieceType.PAWN);
+        nnBlack.addIndexOffset(1F, "a2-a1", Piece.PieceType.PAWN);
 
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
@@ -194,8 +193,8 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 300, 400, 800})
-    void testOneShotBlackChessMate() throws Exception {
+    @ValueSource(ints = {10, 100, 200, 300, 400, 800})
+    void testOneShotBlackChessMate(int nbStep) throws Exception {
         final Board board = Board.createBoard("kh1", "pa2,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-H1;H1-G1;G1-H1");
@@ -207,7 +206,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbStep);
         game.setup(whiteStrategy, blackStrategy);
 
         for (int i = 0; i < 2; i++) {

@@ -438,7 +438,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(WIN);
                         node.resetExpectedReward(WIN_VALUE);
                         node.setPropagated(false);
-                    }
+                    } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
                     return new SearchResult("RETURN WIN NODE", 1);
                 } else {
@@ -452,7 +452,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                         node.setState(LOOSE);
                         node.resetExpectedReward(LOOSE_VALUE);
                         node.setPropagated(false);
-                    }
+                    } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
                     return new SearchResult("RETURN LOOSE NODE", 1);
                 }
@@ -481,7 +481,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             node.resetExpectedReward(DRAWN_VALUE);
             node.createLeaf(deepLearning.getCacheValues().getDrawnCacheValue());
             node.setPropagated(false);
-        }
+        } else node.incNbPropationsToExecute();
         this.deepLearning.addDefinedNodeToPropagate(node);
         return new SearchResult("RETURN " + node.getState() + " NODE", 1);
     }
