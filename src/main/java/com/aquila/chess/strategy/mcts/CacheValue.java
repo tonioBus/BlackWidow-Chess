@@ -202,4 +202,8 @@ public class CacheValue implements Serializable {
     public int getNbNodes() {
         return nodes.size();
     }
+
+    public Collection<MCTSNode> getNodes() {
+        return this.nodes.values();
+    }
 }

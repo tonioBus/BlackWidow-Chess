@@ -56,13 +56,13 @@ public class MCTSExerciceTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(64)
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(64)
                 .train(false)
                 .build();
 
@@ -140,9 +140,9 @@ public class MCTSExerciceTest {
      * @formatter:on
      */
     @ParameterizedTest
-    @ValueSource(ints = {100, 200, 300, 400, 800})
+    @ValueSource(ints = {20, 100, 200, 300, 400, 800})
     @DisplayName("white chessmate with black promotion")
-    void CACAtestEndWithBlackPromotion(int nbStep) throws Exception {
+    void testEndWithBlackPromotion(int nbStep) throws Exception {
         final Board board = Board.createBoard("kg1", "pa3,kg3", BLACK);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "G1-h1;H1-G1;G1-H1;H1-G1;G1-H1");
@@ -171,7 +171,7 @@ public class MCTSExerciceTest {
             if (move.getAllegiance().isBlack()) {
                 if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(true, 50));
             }
-            // Helper.checkMCTSTree(blackStrategy);
+            Helper.checkMCTSTree(blackStrategy);
         }
         log.info("GAME:\n{}\n", game.toPGN());
         assertTrue(false, "We should have got a black chessmate");

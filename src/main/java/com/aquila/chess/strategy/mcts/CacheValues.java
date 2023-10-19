@@ -34,6 +34,9 @@ public class CacheValues {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
         this.lruMap.values().parallelStream().forEach(cacheValue -> cacheValue.clearNodes());
         this.lruMap.clear();
+        lostCacheValue.setInitialized(true);
+        drawnCacheValue.setInitialized(true);
+        winCacheValue.setInitialized(true);
         this.lruMap.put(-1L, lostCacheValue);
         this.lruMap.put(0L, drawnCacheValue);
         this.lruMap.put(1L, winCacheValue);

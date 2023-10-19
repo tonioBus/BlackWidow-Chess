@@ -103,7 +103,7 @@ public class ServiceNN {
      * @param length
      */
     private void inferNN(int length) {
-        log.info("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
+        log.debug("RETRIEVE VALUES & POLICIES: BATCH-SIZE:{} <- CURRENT-SIZE:{}", batchSize, length);
         final var nbIn = new double[length][nbFeaturesPlanes][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         createInputs(nbIn);
         System.out.print("#");

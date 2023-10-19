@@ -2,7 +2,6 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
-import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -222,7 +221,8 @@ public class MCTSNode implements Serializable {
      * @param value the value used to updateValueAndPolicies the reward
      */
     public int propagateOneTime(double value) {
-        this.sum += value;
+        if (this.visits == 0) this.sum = value;
+        else this.sum += value;
         this.incVisits();
         log.debug("PROPAGATE ({}) DONE: {}", this.nbPropagationsToExecute, this);
         this.nbPropagationsToExecute = 0;
@@ -376,7 +376,7 @@ public class MCTSNode implements Serializable {
     public double getExpectedReward(boolean withVirtualLoss) {
         syncSum();
         if (this.getVisits() == 0) return this.getCacheValue().getValue() - (withVirtualLoss ? virtualLoss : 0);
-        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits() + 1);
+        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits()); // + 1);
     }
 
     public List<MCTSNode> search(final State... states) {
@@ -533,18 +533,19 @@ public class MCTSNode implements Serializable {
         this.visits++;
     }
 
-    public void createLeaf(CacheValue cacheValue) {
+    /**
+     * @return the nodes to <strong>NOT</strong> propagate as they will be removed
+     */
+    public void createLeaf(final CacheValue cacheValue) {
         this.childNodes.clear();
         this.visits = 0;
         this.setLeaf(true);
-        if (this.cacheValue != null) {
-            log.warn("\n*) node:{}\n\talready built with\n*) cacheValue:{}", this, this.cacheValue);
-            this.cacheValue.clearNodes();
-        }
-        this.cacheValue = cacheValue;
-        this.cacheValue.addNode(this);
-        this.sum = cacheValue.getValue();
         this.sync = true;
+        if (cacheValue != null) {
+            cacheValue.addNode(this);
+            this.cacheValue = cacheValue;
+        }
+        this.sum = this.cacheValue.getValue();
     }
 
     public enum State {
