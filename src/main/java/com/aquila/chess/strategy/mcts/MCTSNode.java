@@ -537,9 +537,11 @@ public class MCTSNode {
         this.setLeaf(true);
         this.sync = true;
         if (cacheValue != null) {
+            if (this.cacheValue != cacheValue) {
+                this.cacheValue.clearNodes();
+                this.cacheValue = cacheValue;
+            }
             cacheValue.addNode(this);
-            this.cacheValue.clearNodes();
-            this.cacheValue = cacheValue;
         }
         this.sum = this.cacheValue.getValue();
     }

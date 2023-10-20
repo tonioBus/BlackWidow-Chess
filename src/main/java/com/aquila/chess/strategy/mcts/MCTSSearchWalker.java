@@ -251,20 +251,19 @@ public class MCTSSearchWalker implements Callable<Integer> {
     }
 
     protected MCTSNode createStopLeafChild(final MCTSNode opponentNode, final Move possibleMove, final MCTSNode.State state) {
+        assert state != LOOSE;
         MCTSNode child = opponentNode.findChild(possibleMove);
         if (child == null) {
             switch (state) {
-//                case LOOSE -> {
-//                    final CacheValue cacheValue = deepLearning.getCacheValues().getLostCacheValue();
-//                    child = new MCTSNode(possibleMove, new ArrayList<>(), -1, cacheValue);
-//                }
                 case WIN -> {
                     final CacheValue cacheValue = deepLearning.getCacheValues().getWinCacheValue();
                     child = new MCTSNode(possibleMove, new ArrayList<>(), 1, cacheValue);
+                    child.createLeaf(cacheValue);
                 }
                 case PAT, REPETITION_X3, REPEAT_50, NOT_ENOUGH_PIECES, NB_MOVES_300 -> {
                     final CacheValue cacheValue = deepLearning.getCacheValues().getDrawnCacheValue();
                     child = new MCTSNode(possibleMove, new ArrayList<>(), 0, cacheValue);
+                    child.createLeaf(cacheValue);
                 }
             }
             synchronized (opponentNode.getChildNodes()) {
@@ -276,7 +275,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
         } else {
             throw new RuntimeException(String.format("Node can not change status:%s", child));
         }
-        child.createLeaf(null);
         return child;
     }
 
@@ -479,7 +477,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     private void undoPropagation(final MCTSNode node, final Alliance simulatedPlayerColor, final Move selectedMove) {
         if (node.isPropagated()) {
-            log.warn("[{}] removePropagation({}) ", this.colorStrategy, node);
+            log.debug("[{}] removePropagation({}) ", this.colorStrategy, node);
             MCTSNode parent = node;
             double value = -node.getCacheValue().getValue();
             do {
