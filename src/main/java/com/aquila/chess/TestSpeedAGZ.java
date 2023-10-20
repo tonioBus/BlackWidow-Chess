@@ -1,7 +1,6 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.INN;
-import com.aquila.chess.strategy.mcts.MCTSGame;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
@@ -33,23 +32,28 @@ public class TestSpeedAGZ {
         start = System.currentTimeMillis();
         int length = 150;
         final var nbIn = new double[length][inputManager.getNbFeaturesPlanes()][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        Lc0InputsFullNN inputsFullNN =inputManager.createInputs(board, null, new ArrayList<Move>(), Alliance.WHITE);
-        for (int i=0; i<length; i++) {
+        Lc0InputsFullNN inputsFullNN = inputManager.createInputs(
+                board,
+                null,
+                new ArrayList<Move>(),
+                game.getInputsManager().getNbRepeat(),
+                Alliance.WHITE);
+        for (int i = 0; i < length; i++) {
             System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
         }
         INDArray inputsArray = Nd4j.create(nbIn);
         end = System.currentTimeMillis();
         delay = end - start;
-        log.info("delay:{} ms / {} s", delay, ((double)delay / 1000));
+        log.info("delay:{} ms / {} s", delay, ((double) delay / 1000));
 
         start = System.currentTimeMillis();
         for (int i = 0; i < 10; i++) {
-           // INDArray inputsArray = Nd4j.create(nbIn);
+            // INDArray inputsArray = Nd4j.create(nbIn);
             INDArray[] ret = computationGraph.output(inputsArray);
         }
         end = System.currentTimeMillis();
         delay = end - start;
-        log.info("delay:{} ms / {} s", delay, ((double)delay / 1000));
+        log.info("delay:{} ms / {} s", delay, ((double) delay / 1000));
     }
 
     @SuppressWarnings("InfiniteLoopStatement")

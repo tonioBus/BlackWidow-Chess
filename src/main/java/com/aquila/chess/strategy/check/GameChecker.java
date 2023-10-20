@@ -58,7 +58,12 @@ public class GameChecker {
         }
         try {
             if (!givenMove.equals(Move.INIT_MOVE)) game.play();
-            InputsFullNN inputsNN = game.getInputsManager().createInputs(game.getBoard(), null, moves, game.getColor2play());
+            InputsFullNN inputsNN = game.getInputsManager().createInputs(
+                    game.getBoard(),
+                    null,
+                    moves,
+                    game.getInputsManager().getNbRepeat(),
+                    game.getColor2play());
             return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);

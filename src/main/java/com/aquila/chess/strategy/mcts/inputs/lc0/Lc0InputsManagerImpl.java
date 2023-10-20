@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Lc0InputsManagerImpl implements InputsManager {
+public class Lc0InputsManagerImpl extends InputsManager {
 
     static final int SIZE_POSITION = 13;
 
@@ -69,6 +69,7 @@ public class Lc0InputsManagerImpl implements InputsManager {
     public Lc0InputsFullNN createInputs(final Board board,
                                         final Move move,
                                         final List<Move> moves,
+                                        int nbRepeat,
                                         final Alliance color2play) {
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         this.createInputs(inputs, board, move, color2play);
