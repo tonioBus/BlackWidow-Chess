@@ -53,21 +53,6 @@ public class DotGenerator {
         return g;
     }
 
-    private String values(final MCTSNode node) {
-        final StringBuffer sb = new StringBuffer();
-        List<MCTSNode.PropragateValue> values = node.getValues();
-        synchronized (values) {
-            values.stream().limit(6).forEach(propragateValue -> {
-                sb.append(String.format("%s:%s:%.6f",
-                        propragateValue.getBuildOrder(),
-                        propragateValue.getPropragateSrc().getName(),
-                        propragateValue.getValue()));
-                sb.append("\n");
-            });
-        }
-        return sb.toString().trim();
-    }
-
     private int generate(final Graph g, final MCTSNode node, final int depth, final int depthMax) {
         if (depth >= depthMax)
             return 0;

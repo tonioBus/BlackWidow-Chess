@@ -485,7 +485,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             do {
                 parent = parent.getParent();
                 parent.incVirtualLoss();
-                parent.unPropagate(value, MCTSNode.PropragateSrc.UN_PROPAGATE, node.getBuildOrder());
+                parent.unPropagate(value);
                 value = -value;
                 parent.decVirtualLoss();
             } while (parent.getState() != MCTSNode.State.ROOT);

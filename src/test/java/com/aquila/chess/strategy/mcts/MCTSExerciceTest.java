@@ -444,7 +444,7 @@ public class MCTSExerciceTest {
                 .withNbSearchCalls(nbSearchCalls);
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G2-G3;A8-A1");
         game.setup(whiteStrategy, blackStrategy);
-        Move move = null;
+        Move move;
         for (int i = 0; i < 4; i++) {
             Game.GameStatus status = game.play();
             move = game.getLastMove();
@@ -457,7 +457,7 @@ public class MCTSExerciceTest {
                     List<MCTSNode> lossNodes = whiteStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
                     log.info("[WHITE] loss EndNodes: {}", lossNodes.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
                     if (i == 0) assertTrue(lossNodes.size() > 0, "WHITE should have detect a loss nodes to avoid them");
-                    // Helper.checkMCTSTree(whiteStrategy);
+                    Helper.checkMCTSTree(whiteStrategy);
                     break;
                 case BLACK:
                     break;

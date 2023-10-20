@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
 import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 
 @Slf4j
-public class MCTSNode implements Serializable {
+public class MCTSNode {
 
     static private int nbBuild = 0;
 
@@ -67,10 +66,6 @@ public class MCTSNode implements Serializable {
 
     @Getter
     @Setter
-    public boolean looseOptimise = false;
-
-    @Getter
-    @Setter
     private boolean chessMate = false;
 
     @Getter
@@ -83,9 +78,6 @@ public class MCTSNode implements Serializable {
     @Getter
     private final int buildOrder;
 
-    @Getter
-    private final List<PropragateValue> values = new ArrayList<>();
-
     @Setter
     @Getter
     private boolean propagated = false;
@@ -93,6 +85,13 @@ public class MCTSNode implements Serializable {
     @Setter
     @Getter
     private int nbPropagationsToExecute = 0;
+
+    @Getter
+    private final transient Map<Move, ChildNode> childNodes = new HashMap<>();
+
+    public void clearCacheValue() {
+        this.cacheValue = null;
+    }
 
     @Getter
     static public class ChildNode {
@@ -107,9 +106,6 @@ public class MCTSNode implements Serializable {
             this.node = node;
         }
     }
-
-    @Getter
-    private final transient Map<Move, ChildNode> childNodes = new HashMap<>();
 
     public static void resetBuildOrder() {
         nbBuild = 0;
@@ -229,8 +225,7 @@ public class MCTSNode implements Serializable {
         return 1;
     }
 
-    public void unPropagate(double value, final PropragateSrc propragateSrc, int buildOrder) {
-        this.values.add(new PropragateValue(-value, propragateSrc, buildOrder));
+    public void unPropagate(double value) {
         this.sum -= value;
         this.nbPropagationsToExecute--;
         this.decVisits();
@@ -543,6 +538,7 @@ public class MCTSNode implements Serializable {
         this.sync = true;
         if (cacheValue != null) {
             cacheValue.addNode(this);
+            this.cacheValue.clearNodes();
             this.cacheValue = cacheValue;
         }
         this.sum = this.cacheValue.getValue();

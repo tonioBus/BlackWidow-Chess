@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.DoubleStream;
 
 import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
@@ -51,7 +50,13 @@ public class CacheValue implements Serializable {
         sb.append(String.format("  value=%f\n", this.value));
         try {
             nodes.entrySet().forEach(entry -> {
-                sb.append(String.format("  - node %s -> %s\n", entry.getKey(), entry.getValue().getMovesFromRootAsString()));
+                sb.append(String.format("  - node %s -> %s (isLeaf:{} propagated:{} sync:{})\n",
+                        entry.getKey(),
+                        entry.getValue().getMovesFromRootAsString(),
+                        entry.getValue().isLeaf(),
+                        entry.getValue().isPropagated(),
+                        entry.getValue().isSync()
+                ));
             });
         } catch (ConcurrentModificationException e) {
             sb.append(" nodes not available (sync)");
@@ -132,31 +137,28 @@ public class CacheValue implements Serializable {
     }
 
     public void clearNodes() {
+       // this.nodes.values().stream().forEach(node -> node.clearCacheValue());
         this.nodes.clear();
     }
 
     /**
-     * @return true if a connected nodes is
+     * @return true if a connected nodes is a leaf
      */
     //FIXME
     public boolean isLeaf() {
         if (nodes.size() > 1) {
             log.debug("Cache value detected with more than 1 connected nodes:\n{}", this);
         }
-        AtomicBoolean ret = new AtomicBoolean(false);
-        nodes.entrySet().forEach(entry -> {
+        boolean ret = false;
+        for (Map.Entry<MCTSNodePath, MCTSNode> entry : nodes.entrySet()) {
             MCTSNode node = entry.getValue();
-            if (node.isLeaf()) {
-                log.debug("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
-                ret.set(true);
-            }
-            if (ret.get() && !node.isLeaf()) {
+            if (node.isLeaf()) ret = true;
+            if (ret && !node.isLeaf()) {
                 log.error("CacheValue seems a leaf but not all connected MCTSNode(s) are leaf");
                 log.error(this.toString());
-                assert false;
             }
-        });
-        return ret.get();
+        }
+        return ret;
     }
 
     public double sumPolicies() {

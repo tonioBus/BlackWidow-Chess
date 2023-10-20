@@ -201,32 +201,34 @@ public class ServiceNN {
      */
     private int updateCacheValuesAndPoliciesWithInference(final List<OutputNN> outputsNN) {
         int index = 0;
-        for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
-            Move move = entry.getValue().move();
-            Alliance color2play = entry.getValue().color2play();
-            long key = entry.getKey();
-            double value = outputsNN.get(index).getValue();
-            double[] policies = outputsNN.get(index).getPolicies();
-            CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
-            synchronized (nodesToPropagate) {
-                if (nodesToPropagate.containsKey(key)) {
-                    MCTSNode propagationNode = nodesToPropagate.get(key);
-                    CacheValue oldCacheValue = propagationNode.getCacheValue();
-                    if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
-                            propagationNode.getState() != MCTSNode.State.ROOT ||
-                            propagationNode.getState() != MCTSNode.State.INTERMEDIATE) {
-                        log.warn("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), oldCacheValue);
-                        log.warn("newCacheValue[{}]:{}", cacheValue.hashCode(), cacheValue);
-                        log.warn("NO PROPAGATION -> Keeping oldCacheValue");
+        synchronized (batchJobs2Commit) {
+            for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
+                Move move = entry.getValue().move();
+                Alliance color2play = entry.getValue().color2play();
+                long key = entry.getKey();
+                double value = outputsNN.get(index).getValue();
+                double[] policies = outputsNN.get(index).getPolicies();
+                CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
+                synchronized (nodesToPropagate) {
+                    if (nodesToPropagate.containsKey(key)) {
+                        MCTSNode propagationNode = nodesToPropagate.get(key);
+                        CacheValue oldCacheValue = propagationNode.getCacheValue();
+                        if (oldCacheValue.hashCode() != cacheValue.hashCode() &&
+                                propagationNode.getState() != MCTSNode.State.ROOT ||
+                                propagationNode.getState() != MCTSNode.State.INTERMEDIATE) {
+                            log.warn("oldCacheValue[{}]:{}", oldCacheValue.hashCode(), oldCacheValue);
+                            log.warn("newCacheValue[{}]:{}", cacheValue.hashCode(), cacheValue);
+                            log.warn("NO PROPAGATION -> Keeping oldCacheValue");
+                        }
+                        log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
+                        addNodeToPropagate(oldCacheValue.getAllMCTSNodes());
+                    } else {
+                        addNodeToPropagate(cacheValue.getAllMCTSNodes());
+                        log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                     }
-                    log.debug("CacheValue [{}/{}] already stored on tmpCacheValues", key, move);
-                    addNodeToPropagate(oldCacheValue.getAllMCTSNodes());
-                } else {
-                    addNodeToPropagate(cacheValue.getAllMCTSNodes());
-                    log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                 }
+                index++;
             }
-            index++;
         }
         return index;
     }
