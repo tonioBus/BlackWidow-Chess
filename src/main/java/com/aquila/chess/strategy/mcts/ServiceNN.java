@@ -189,9 +189,11 @@ public class ServiceNN {
 
     private void createInputs(double[][][][] nbIn) {
         int indexNbIn = 0;
-        for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
-            System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, nbFeaturesPlanes);
-            indexNbIn++;
+        synchronized (batchJobs2Commit) {
+            for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
+                System.arraycopy(entry.getValue().inputs().inputs(), 0, nbIn[indexNbIn], 0, nbFeaturesPlanes);
+                indexNbIn++;
+            }
         }
     }
 
