@@ -34,6 +34,10 @@ public class MCTSGame {
     @Getter
     protected Board board;
 
+    final private CircularFifoQueue<Integer> last6HashCodesAllegiance = new CircularFifoQueue<>(12);
+
+    final private CircularFifoQueue<Integer> last6HashCodesAdversary = new CircularFifoQueue<>(12);
+
 
     public MCTSGame(final Game game) {
         this.board = game.getBoard();

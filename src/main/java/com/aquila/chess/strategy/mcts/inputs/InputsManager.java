@@ -10,17 +10,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class InputsManager {
 
-    final private CircularFifoQueue<Integer> last6HashCodesAllegiance = new CircularFifoQueue<>(6);
-
-    final private CircularFifoQueue<Integer> last6HashCodesAdversary = new CircularFifoQueue<>(6);
+    final private Map<Alliance, CircularFifoQueue<Integer>> lastHashs = new HashMap<>();
+    // final private CircularFifoQueue<Integer> last6HashCodesAllegiance = new CircularFifoQueue<>(13);
 
     public abstract int getNbFeaturesPlanes();
+
+    public InputsManager() {
+        lastHashs.put(Alliance.WHITE, new CircularFifoQueue<>(13));
+        lastHashs.put(Alliance.BLACK, new CircularFifoQueue<>(13));
+    }
 
     /**
      * @param board      - the board on which we apply the move
@@ -40,24 +46,31 @@ public abstract class InputsManager {
     public abstract InputsManager clone();
 
     public Board executeMove(Board board, final Move move) {
-        this.last6HashCodesAdversary.add(hashCode1Alliance(board, move.getAllegiance().complementary()));
         board = move.execute();
-        this.last6HashCodesAllegiance.add(hashCode1Alliance(board, move.getAllegiance()));
+        // this.last6HashCodesAllegiance.add(hashCode1Alliance(board, move.getAllegiance()));
+        this.lastHashs.get(move.getAllegiance()).add(hashCode1Alliance(board, move.getAllegiance()));
         return board;
     }
 
-    public int getNbRepeat() {
+    public int getNbRepeat(final Alliance alliance) {
         int ret = 0;
-        List<Integer> hashs = last6HashCodesAllegiance.stream().collect(Collectors.toList());
+        List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
         Collections.reverse(hashs);
-        if (hashs.size() >= 3) {
-            ret += hashs.get(0) == hashs.get(2) ? 1 : 0;
+        if (hashs.size() > 3) {
+            log.info("hash0:{} hash4:{}", hashs.get(0), hashs.get(2));
+            ret = hashs.get(0).intValue() == hashs.get(2).intValue()
+                    ? 1 : 0;
         }
-        if (hashs.size() >= 4) {
-            ret += hashs.get(1) == hashs.get(3) ? 1 : 0;
+        if (hashs.size() > 5) {
+            ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
+                    hashs.get(0).intValue() == hashs.get(4).intValue()
+                    ? 1 : 0;
         }
-        if (hashs.size() >= 5) {
-            ret += hashs.get(2) == hashs.get(4) ? 1 : 0;
+        if (hashs.size() > 7) {
+            ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
+                    hashs.get(0).intValue() == hashs.get(4).intValue() &&
+                    hashs.get(0).intValue() == hashs.get(6).intValue()
+                    ? 1 : 0;
         }
         return ret;
     }
@@ -75,4 +88,9 @@ public abstract class InputsManager {
 
     public abstract void processPlay(final Board board, final Move move);
 
+    public List<Integer> getHashs(final Alliance alliance) {
+        List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList());
+        Collections.reverse(hashs);
+        return hashs;
+    }
 }
