@@ -204,6 +204,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
         sb.append("\n");
         sb.append(MovesUtils.nbMovesRepeat(moves));
         sb.append("\n");
+        sb.append(getNbRepeat(color2play));
+        sb.append("\n");
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);
             if (piece != null) {

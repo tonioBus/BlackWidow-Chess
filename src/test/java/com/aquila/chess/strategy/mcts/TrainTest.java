@@ -112,6 +112,12 @@ public class TrainTest {
         deepLearningWhite.train(trainGame);
     }
 
+    @Test
+    void testPunctualLoad() throws IOException, ClassNotFoundException {
+        TrainGame trainGame = TrainGame.load("train-aquila-grospc", 654);
+        deepLearningWhite.train(trainGame);
+    }
+
     @AfterAll
     static void afterAll() throws IOException {
         File directory = new File("train-test");
