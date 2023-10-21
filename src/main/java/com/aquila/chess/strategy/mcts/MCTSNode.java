@@ -184,7 +184,6 @@ public class MCTSNode {
             this.move = null;
         }
         this.syncSum();
-        // this.cacheValue.addNode(this);
         log.debug("CREATE NODE[key:{}] -> move:{} cacheValue:{}", key, move, this.getCacheValue());
     }
 
@@ -541,7 +540,7 @@ public class MCTSNode {
                 this.cacheValue.clearNodes();
                 this.cacheValue = cacheValue;
             }
-            cacheValue.addNode(this);
+            this.cacheValue.addNode(this);
         }
         this.sum = this.cacheValue.getValue();
     }

@@ -258,12 +258,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 case WIN -> {
                     final CacheValue cacheValue = deepLearning.getCacheValues().getWinCacheValue();
                     child = new MCTSNode(possibleMove, new ArrayList<>(), 1, cacheValue);
-                    child.createLeaf(cacheValue);
                 }
                 case PAT, REPETITION_X3, REPEAT_50, NOT_ENOUGH_PIECES, NB_MOVES_300 -> {
                     final CacheValue cacheValue = deepLearning.getCacheValues().getDrawnCacheValue();
                     child = new MCTSNode(possibleMove, new ArrayList<>(), 0, cacheValue);
-                    child.createLeaf(cacheValue);
                 }
             }
             synchronized (opponentNode.getChildNodes()) {
@@ -272,6 +270,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     opponentNode.addChild(child);
                 }
             }
+            child.updateCache();
+            child.createLeaf(null);
         } else {
             throw new RuntimeException(String.format("Node can not change status:%s", child));
         }
