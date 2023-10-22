@@ -392,22 +392,26 @@ public class MCTSNode {
     }
 
     public List<MCTSNode> getNonNullChildsAsCollection() {
-        return this.childNodes
-                .values()
-                .stream()
-                .filter(childNode -> childNode != null)
-                .map(childNode -> childNode.node)
-                .filter(node -> node != null)
-                .collect(Collectors.toList());
+        synchronized (childNodes) {
+            return this.childNodes
+                    .values()
+                    .stream()
+                    .filter(childNode -> childNode != null)
+                    .map(childNode -> childNode.node)
+                    .filter(node -> node != null)
+                    .collect(Collectors.toList());
+        }
     }
 
     public Collection<MCTSNode> getChildsAsCollection() {
-        return this.childNodes
-                .values()
-                .stream()
-                .filter(childNode -> childNode != null)
-                .map(childNode -> childNode.node)
-                .collect(Collectors.toList());
+        synchronized (childNodes) {
+            return this.childNodes
+                    .values()
+                    .stream()
+                    .filter(childNode -> childNode != null)
+                    .map(childNode -> childNode.node)
+                    .collect(Collectors.toList());
+        }
     }
 
     public ChildNode findChildNode(final Move move) {
