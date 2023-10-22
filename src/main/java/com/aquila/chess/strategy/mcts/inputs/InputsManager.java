@@ -57,7 +57,6 @@ public abstract class InputsManager {
         List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
         Collections.reverse(hashs);
         if (hashs.size() > 3) {
-            log.info("hash0:{} hash4:{}", hashs.get(0), hashs.get(2));
             ret = hashs.get(0).intValue() == hashs.get(2).intValue()
                     ? 1 : 0;
         }
@@ -67,11 +66,15 @@ public abstract class InputsManager {
                     ? 1 : 0;
         }
         if (hashs.size() > 7) {
+            //log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
+            //        hashs.get(0), hashs.get(2), hashs.get(4), hashs.get(6)); // FIXME to remove
             ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
                     hashs.get(0).intValue() == hashs.get(4).intValue() &&
                     hashs.get(0).intValue() == hashs.get(6).intValue()
                     ? 1 : 0;
         }
+        if (ret > 0) log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
+                hashs.get(0), hashs.get(2), hashs.get(4), hashs.get(6));
         return ret;
     }
 

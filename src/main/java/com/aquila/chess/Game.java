@@ -134,6 +134,17 @@ public class Game {
         }
     }
 
+    public void playAll() {
+        this.board = Board.createStandardBoard();
+        this.moves.stream().forEach(move -> {
+            try {
+                GameStatus status1 = this.play();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     public String toPGN(final Move move) {
         return move.toString();
     }
@@ -257,7 +268,7 @@ public class Game {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
-        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", MovesUtils.nbMovesRepeat(this.getMoves()), this.nbMoveNoAttackAndNoPawn));
+        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", inputsManager.getNbRepeat(getColor2play().complementary()), this.nbMoveNoAttackAndNoPawn));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
         List<Move> legalMoves = this
                 .getNextPlayer()

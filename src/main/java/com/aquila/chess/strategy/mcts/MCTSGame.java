@@ -43,7 +43,7 @@ public class MCTSGame {
         this.board = game.getBoard();
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
         this.status = game.calculateStatus();
-        this.inputsManager = game.getInputsManager();
+        this.inputsManager = game.getInputsManager().clone();
         this.inputsManager.startMCTSStep(game);
     }
 
