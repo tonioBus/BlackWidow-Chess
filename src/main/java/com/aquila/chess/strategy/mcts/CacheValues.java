@@ -84,7 +84,11 @@ public class CacheValues {
     }
 
     public void clearNodes() {
-        lruMap.values().parallelStream().filter(cacheValue -> !cacheValue.isLeaf()).forEach(cacheValue -> cacheValue.clearNodes());
+        for(CacheValue cacheValue: lruMap.values()) {
+            if(!cacheValue.isLeaf()) {
+                cacheValue.clearNodes();
+            }
+        }
     }
 
     public String toString() {

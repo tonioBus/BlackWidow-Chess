@@ -38,7 +38,7 @@ public class GameChecker {
     public InputsFullNN play(String givenMove) {
         final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
         if (!givenMove.equals(Move.INIT_MOVE)) {
-            Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove)).findFirst();
+            Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove.toString())).findFirst();
             if (currentMoveOpt.isEmpty()) {
                 log.error("no legal move found for: {}", givenMove);
                 log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));

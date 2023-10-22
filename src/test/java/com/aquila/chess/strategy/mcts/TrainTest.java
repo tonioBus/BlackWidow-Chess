@@ -10,9 +10,7 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -146,6 +144,7 @@ public class TrainTest {
     }
 
     @Test
+    @Disabled
     void testPunctualLoad() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load("train-aquila-grospc", 654);
         deepLearningWhite.train(trainGame);

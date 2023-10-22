@@ -195,6 +195,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final MCTSNode bestNode = findBestReward(directRoot, currentPossibleMoves, false);
         if (bestNode == null) {
             log.error("!!! no bestnodes found: return random move from the list{}", currentPossibleMoves);
+            log.error("!!! MCTSTree nodes:{}",
+                    directRoot.getChildsAsCollection().stream().filter(node -> node != null).map(MCTSNode::getMove));
             return getRandomMove(currentPossibleMoves);
         }
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
@@ -206,7 +208,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
-        final Optional<Move> optionalMove = currentPossibleMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
+        final Optional<Move> optionalMove = currentPossibleMoves.parallelStream().filter(move -> move.toString().equals(bestNode.getMove().toString())).findAny();
         if (optionalMove.isEmpty()) {
             log.warn(
                     "##########################################################################################################");
@@ -233,7 +235,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         List<MCTSNode> initializeNodes = opponentNode.getChildsAsCollection().stream().filter(node -> node != null).collect(Collectors.toList());
         for (MCTSNode mctsNode : initializeNodes) {
             final Move currentMove = mctsNode.getMove();
-            if (currentPossibleMoves.stream().filter(move1 -> move1.equals(currentMove)).findFirst().isEmpty()) {
+            if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(currentMove.toString())).findFirst().isEmpty()) {
+                log.error("move:{} not in possible move:{}. MCTSTree nodes:{}",
+                        currentMove,
+                        currentPossibleMoves,
+                        initializeNodes.stream().map(node -> node.getMove()).collect(Collectors.toList()));
                 continue; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
             }
             if (mctsNode.getState() == MCTSNode.State.WIN) {
