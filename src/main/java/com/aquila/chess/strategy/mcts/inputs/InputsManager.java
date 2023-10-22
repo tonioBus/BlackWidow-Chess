@@ -59,14 +59,14 @@ public abstract class InputsManager {
         if (hashs.size() > 3) {
             ret = hashs.get(0).intValue() == hashs.get(2).intValue()
                     ? 1 : 0;
-            log.info("hash0:{} hash2:{}",
+            if (ret > 0) log.info("hash0:{} hash2:{}",
                     hashs.get(0), hashs.get(2));
         }
         if (hashs.size() > 5) {
             ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
                     hashs.get(0).intValue() == hashs.get(4).intValue()
                     ? 1 : 0;
-            log.info("hash0:{} hash2:{} hash4:{}",
+            if (ret > 0) log.info("hash0:{} hash2:{} hash4:{}",
                     hashs.get(0), hashs.get(2), hashs.get(4));
         }
         if (hashs.size() > 7) {
@@ -76,7 +76,7 @@ public abstract class InputsManager {
                     hashs.get(0).intValue() == hashs.get(4).intValue() &&
                     hashs.get(0).intValue() == hashs.get(6).intValue()
                     ? 1 : 0;
-            log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
+            if (ret > 0) log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
                     hashs.get(0), hashs.get(2), hashs.get(4), hashs.get(6));
         }
         return ret;

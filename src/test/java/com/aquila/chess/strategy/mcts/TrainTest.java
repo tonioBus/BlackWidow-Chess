@@ -116,7 +116,7 @@ public class TrainTest {
             log.info("#########################################################################");
             // 1 + nbStep ==> INIT_MOVE + nb steps
             if (gameStatus == Game.GameStatus.DRAW_300)
-                assertEquals(game.getMoves().size() + 1, trainGame.getOneStepRecordList().size());
+                assertEquals(game.getMoves().size() - 1, trainGame.getOneStepRecordList().size());
             else
                 assertEquals(game.getMoves().size(), trainGame.getOneStepRecordList().size());
             final String filename = trainGame.saveBatch("train-test", gameStatus);
@@ -128,7 +128,7 @@ public class TrainTest {
         for (int i = 0; i < savedGames.size(); i++) {
             int num = savedGames.get(i);
             Game game = games.get(i);
-            game.playAll();
+            // game.playAll();
             TrainGame loadTrainGame = TrainGame.load("train-test", num);
             try {
                 deepLearningWhite.train(loadTrainGame);

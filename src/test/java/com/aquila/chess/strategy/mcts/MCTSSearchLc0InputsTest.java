@@ -386,7 +386,7 @@ public class MCTSSearchLc0InputsTest {
         if (log.isInfoEnabled()) log.info(blackStrategy.mctsTree4log(nbMaxSearchCalls < 100, 50));
         log.warn("CacheSize: {} STATS: {}", deepLearningBlack.getCacheSize(), blackStrategy.getStatistic()); //statistic.toString());
         if (nbMaxSearchCalls >= 50) {
-            MCTSNode bestNode = blackStrategy.findBestReward(blackStrategy.getDirectRoot(), false);
+            MCTSNode bestNode = blackStrategy.findBestReward(blackStrategy.getDirectRoot(), blackStrategy.getDirectRoot().getChildMoves(), false);
             assertEquals("a2", bestNode.move.toString());
         }
         assertEquals(0, deepLearningBlack.getServiceNN().getBatchJobs2Commit().size());

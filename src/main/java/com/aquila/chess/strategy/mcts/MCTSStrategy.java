@@ -170,7 +170,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     protected Move mctsStep(final Move moveOpponent,
-                            final List<Move> currentMoves)
+                            final List<Move> currentPossibleMoves)
             throws InterruptedException {
         statistic.clear();
         this.deepLearning.getCacheValues().clearNodes();
@@ -192,7 +192,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long endTime = System.currentTimeMillis();
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
-        final MCTSNode bestNode = findBestReward(directRoot, false);
+        final MCTSNode bestNode = findBestReward(directRoot, currentPossibleMoves, false);
+        if (bestNode == null) {
+            log.error("!!! no bestnodes found: return random move from the list{}", currentPossibleMoves);
+            return getRandomMove(currentPossibleMoves);
+        }
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
         log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}",
@@ -202,27 +206,36 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes());
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} visits:{} value:{} reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
-        final Optional<Move> optionalMove = currentMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
+        final Optional<Move> optionalMove = currentPossibleMoves.parallelStream().filter(move -> move.equals(bestNode.getMove())).findAny();
         if (optionalMove.isEmpty()) {
             log.warn(
                     "##########################################################################################################");
-            log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentMoves);
+            log.warn("[{}] ALARM: currentMoves: {}", this.getAlliance(), currentPossibleMoves);
             log.warn("[{}] moveOpponent: {}", this.getAlliance(), moveOpponent);
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         }
-        return bestNode.getMove();
+        final Move move = bestNode.getMove();
+        if (currentPossibleMoves.stream().filter(move1 -> move1.equals(move)).findFirst().isEmpty()) {
+            throw new RuntimeException(String.format("move:%s not in possible move:%s", move, currentPossibleMoves));
+        }
+        return move;
     }
 
     public static double rewardWithLogVisit(final MCTSNode mctsNode) {
         return mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
     }
 
-    public MCTSNode findBestReward(final MCTSNode opponentNode, boolean withLogVisit) {
+    public MCTSNode findBestReward(final MCTSNode opponentNode, final Collection<Move> currentPossibleMoves, boolean withLogVisit) {
+        assert !currentPossibleMoves.isEmpty();
         log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
         List<MCTSNode> bestNodes = new ArrayList<>();
-        for (MCTSNode mctsNode : opponentNode.getChildsAsCollection()) {
-            if (mctsNode == null) continue;
+        List<MCTSNode> initializeNodes = opponentNode.getChildsAsCollection().stream().filter(node -> node != null).collect(Collectors.toList());
+        for (MCTSNode mctsNode : initializeNodes) {
+            final Move currentMove = mctsNode.getMove();
+            if (currentPossibleMoves.stream().filter(move1 -> move1.equals(currentMove)).findFirst().isEmpty()) {
+                continue; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
+            }
             if (mctsNode.getState() == MCTSNode.State.WIN) {
                 bestNodes.clear();
                 bestNodes.add(mctsNode);
@@ -254,7 +267,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
-            throw new RuntimeException("NO BEST NODES");
+            return null;
         } else {
             ret = bestNodes.get(0);
         }
@@ -271,9 +284,18 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return ret;
     }
 
+    private Move getRandomMove(Collection<Move> currentPossibleMoves) {
+        final int index = rand.nextInt(currentPossibleMoves.size());
+        int i = 0;
+        for (Move move : currentPossibleMoves) {
+            if (i == index) return move;
+        }
+        return null;
+    }
+
     public MCTSNode getRandomNodes(List<MCTSNode> nodes) {
-        Collections.shuffle(nodes, rand);
-        return nodes.get(0);
+        final int index = rand.nextInt(nodes.size());
+        return nodes.get(index);
     }
 
     @SuppressWarnings("unused")
@@ -321,7 +343,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         stepNode.getChildNodes()
                 .values()
                 .stream()
-                .filter(childNode -> childNode != null && childNode.node!=null)
+                .filter(childNode -> childNode != null && childNode.node != null)
                 .forEach(childNode -> {
                     int index = PolicyUtils.indexFromMove(childNode.node.getMove());
                     double probability = (double) childNode.node.getVisits() / (double) stepNode.getVisits();

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -136,9 +137,11 @@ public class Game {
 
     public void playAll() {
         this.board = Board.createStandardBoard();
+        AtomicInteger nbStep = new AtomicInteger(1);
         this.moves.stream().forEach(move -> {
             try {
                 GameStatus status1 = this.play();
+                log.info("Status:{} nbStep:{}", status1, nbStep.getAndIncrement());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -185,6 +188,9 @@ public class Game {
         assert (nextStrategy != null);
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
+        if (possibleMoves.stream().filter(move1 -> move1.equals(move)).findFirst().isEmpty()) {
+            throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
+        }
         if (!move.isAttack() &&
                 move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
             this.nbMoveNoAttackAndNoPawn++;
