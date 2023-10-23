@@ -157,14 +157,17 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             CacheValue cacheValue = deepLearning.getCacheValues().get(key);
             cacheValue.verifyAlliance(alliance.complementary());
-            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), possibleMoves, opponentMove, key, cacheValue);
+            this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);
+            log.info("this.directRoot == null:directRoot:{}", directRoot);
             return;
         }
         MCTSNode childNode = this.directRoot.findChild(opponentMove);
         if (childNode == null) {
             long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
             this.directRoot = MCTSNode.createNode(mctsGame.getBoard(), possibleMoves, opponentMove, key, deepLearning.getCacheValues().get(key));
+            log.info("childNode == null:directRoot:{}", directRoot);
         } else {
+            log.info("NOT(childNode == null):childNode{}", childNode);
             directRoot = childNode;
             directRoot.setAsRoot();
         }
@@ -263,8 +266,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (nbBests > 1) {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             log.error("[{}] WARNING in MCTS Best Search Move RANDOM from {} bests moves", getAlliance(), nbBests);
-            log.error("[{}] Moves: {}", getAlliance(), bestNodes.stream().map(move -> move.getPiece() + "->" + move.getMove().toString())
-                    .collect(Collectors.joining(" | ")));
+            log.error("[{}] Moves: {}", getAlliance(), bestNodes.stream().map(node -> node.getMove())
+                    .collect(Collectors.toList()));
             log.error("[{}] This could happen when we have the choices between many way to loose or win", getAlliance());
             log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());

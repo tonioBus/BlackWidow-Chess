@@ -55,9 +55,6 @@ public class MCTSNode {
     private int visits = 0;
 
     @Getter
-    private transient Piece piece;
-
-    @Getter
     @Setter
     private State state = State.INTERMEDIATE;
 
@@ -88,10 +85,6 @@ public class MCTSNode {
 
     @Getter
     private final transient Map<Move, ChildNode> childNodes = new HashMap<>();
-
-    public void clearCacheValue() {
-        this.cacheValue = null;
-    }
 
     @Getter
     static public class ChildNode {
@@ -142,7 +135,7 @@ public class MCTSNode {
         }
     }
 
-    public static MCTSNode createRootNode(final Board rootBoard, final List<Move> childMoves, final Move move, final long boardKey, final CacheValue cacheValue) {
+    public static MCTSNode createRootNode(final List<Move> childMoves, final Move move, final long boardKey, final CacheValue cacheValue) {
         assert move != null;
         synchronized (cacheValue) {
             MCTSNode rootNode;
@@ -151,8 +144,6 @@ public class MCTSNode {
                 rootNode = optRootNode.get();
             } else {
                 if (cacheValue.isNodesEmpty()) {
-                    // final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-
                     rootNode = new MCTSNode(move, childMoves, boardKey, cacheValue);
                 } else {
                     rootNode = cacheValue.getFirstNode().get();
@@ -175,7 +166,6 @@ public class MCTSNode {
     MCTSNode(final Move move, final Collection<Move> childMoves, final long key, final CacheValue cacheValue) {
         this.buildOrder = nbBuild++;
         log.debug("CREATE NODE MOVE:{} key:{}", move, key);
-        this.piece = move == null ? null : move.getMovedPiece();
         childMoves.forEach(move1 -> childNodes.put(move1, null));
         this.dirichletDone = false;
         this.creator = Thread.currentThread();
@@ -184,7 +174,6 @@ public class MCTSNode {
         if (move != null) {
             this.colorState = move.getAllegiance();
             this.move = move;
-            this.piece = move.getMovedPiece();
         } else {
             this.move = null;
         }
