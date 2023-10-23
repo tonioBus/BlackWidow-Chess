@@ -49,6 +49,7 @@ public class Game {
 
     @Getter
     protected Strategy nextStrategy;
+    private List<Move> possibleMoves;
 
 
     @Builder
@@ -186,7 +187,7 @@ public class Game {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
-        List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
+        this.possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
         if (possibleMoves.stream().filter(move1 -> move1.equals(move)).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
@@ -276,12 +277,9 @@ public class Game {
         sb.append(String.format("nbStep:%d\n", moves.size()));
         sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", inputsManager.getNbRepeat(getColor2play().complementary()), this.nbMoveNoAttackAndNoPawn));
         sb.append(String.format("current player:%s\n", getNextPlayer().getAlliance()));
-        List<Move> legalMoves = this
-                .getNextPlayer()
-                .getLegalMoves(Move.MoveStatus.DONE);
         sb.append(String.format("current legal move:[%d] %s\n",
-                legalMoves.size(),
-                legalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(","))));
+                possibleMoves.size(),
+                possibleMoves.stream().map(move -> move.toString()).collect(Collectors.joining(","))));
         sb.append(this.board);
         return sb.toString();
     }

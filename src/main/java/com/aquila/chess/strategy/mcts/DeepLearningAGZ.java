@@ -307,8 +307,8 @@ public class DeepLearningAGZ {
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
             log.error("!! Error during loading of game: only using {} steps", ret.size());
-            // return ret;
-            throw e;
+            return ret;
+            // throw e;
         }
         log.info("Check done: {}", ret.size());
         return ret;

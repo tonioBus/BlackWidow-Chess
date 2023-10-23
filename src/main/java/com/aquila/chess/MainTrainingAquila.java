@@ -87,11 +87,16 @@ public class MainTrainingAquila {
             whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
-            do {
-                gameStatus = game.play();
-                sequence.play();
-                log.warn("game:\n{}", game);
-            } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            try {
+                do {
+                    gameStatus = game.play();
+                    sequence.play();
+                    log.warn("game:\n{}", game);
+                } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            } catch (RuntimeException e) {
+                log.error("game canceled, restarting a new one", e);
+                continue;
+            }
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
