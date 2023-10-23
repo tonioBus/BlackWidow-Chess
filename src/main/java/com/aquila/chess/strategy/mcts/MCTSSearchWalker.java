@@ -137,7 +137,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     log.debug("EXPANSION MCTS CREATE NODE for PATH:{}", path);
                     selectedNode = cacheValue.getNode(path);
                     if (selectedNode == null) {
-                        selectedNode = MCTSNode.createNode(mctsGame.getBoard(), selectedMove, key, cacheValue);
+                        selectedNode = MCTSNode.createNode(mctsGame.getBoard(), null, selectedMove, key, cacheValue);
                         opponentNode.addChild(selectedNode);
                         selectedNode.updateCache();
                     }

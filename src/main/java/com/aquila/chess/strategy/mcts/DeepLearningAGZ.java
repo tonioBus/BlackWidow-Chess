@@ -293,7 +293,7 @@ public class DeepLearningAGZ {
         final GameChecker gameChecker = new GameChecker();
         LinkedList<OneStepRecord> ret = new LinkedList<>();
         try {
-            trainGame.getOneStepRecordList().stream().forEach(oneStepRecord -> {
+            for( OneStepRecord oneStepRecord:trainGame.getOneStepRecordList()) {
                 final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
                 String moveSz = oneStepRecord.move();
                 InputsFullNN inputsNN = gameChecker.play(moveSz);
@@ -303,11 +303,12 @@ public class DeepLearningAGZ {
                         oneStepRecord.color2play(),
                         oneStepRecord.policies());
                 ret.add(newOneStepRecord);
-            });
+            }
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
             log.error("!! Error during loading of game: only using {} steps", ret.size());
-            return ret;
+            // return ret;
+            throw e;
         }
         log.info("Check done: {}", ret.size());
         return ret;

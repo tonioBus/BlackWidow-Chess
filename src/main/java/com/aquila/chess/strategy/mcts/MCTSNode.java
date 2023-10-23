@@ -124,21 +124,25 @@ public class MCTSNode {
     /**
      * Create a node. This method is not responsible to attach this node to his parent
      *
-     * @param move       the move this node represent
-     * @param rootBoard  the board
+     * @param rootBoard     the board
+     * @param possibleMoves
+     * @param move          the move this node represent
      * @param key
      * @param cacheValue
      * @return
      */
-    public static MCTSNode createNode(final Board rootBoard, final Move move, final long key, final CacheValue cacheValue) {
+    public static MCTSNode createNode(final Board rootBoard, final List<Move> possibleMoves, final Move move, final long key, final CacheValue cacheValue) {
         synchronized (cacheValue) {
-            final Board selectBoard = move == null ? rootBoard : move.execute();
-            final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
-            return new MCTSNode(move, childMoves, key, cacheValue);
+            if (possibleMoves == null) {
+                final Board selectBoard = move == null ? rootBoard : move.execute();
+                final List<Move> childMoves = selectBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                return new MCTSNode(move, childMoves, key, cacheValue);
+            } else
+                return new MCTSNode(move, possibleMoves, key, cacheValue);
         }
     }
 
-    public static MCTSNode createRootNode(final Board rootBoard, final Move move, final long boardKey, final CacheValue cacheValue) {
+    public static MCTSNode createRootNode(final Board rootBoard, final List<Move> childMoves, final Move move, final long boardKey, final CacheValue cacheValue) {
         assert move != null;
         synchronized (cacheValue) {
             MCTSNode rootNode;
@@ -147,7 +151,8 @@ public class MCTSNode {
                 rootNode = optRootNode.get();
             } else {
                 if (cacheValue.isNodesEmpty()) {
-                    final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+                    // final List<Move> childMoves = rootBoard.currentPlayer().getLegalMoves(Move.MoveStatus.DONE);
+
                     rootNode = new MCTSNode(move, childMoves, boardKey, cacheValue);
                 } else {
                     rootNode = cacheValue.getFirstNode().get();
@@ -501,7 +506,7 @@ public class MCTSNode {
         }
         if (this.move == null)
             return false;
-        return this.move.equals(move);
+        return this.move.toString().equals(move.toString());
     }
 
     public boolean equals(final MCTSNode mctsNode) {

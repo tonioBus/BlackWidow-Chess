@@ -97,6 +97,7 @@ public class TrainTest {
             do {
                 gameStatus = game.play();
                 if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
+                log.info(game.toString());
                 final Move move = game.getLastMove();
                 String trainMoveSz = trainGame.getOneStepRecordList().getLast().move();
                 if (previousMove != null && !trainMoveSz.equals(previousMove.toString())) {

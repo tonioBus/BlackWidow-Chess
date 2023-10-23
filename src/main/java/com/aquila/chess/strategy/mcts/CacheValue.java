@@ -137,7 +137,6 @@ public class CacheValue implements Serializable {
     }
 
     public void clearNodes() {
-       // this.nodes.values().stream().forEach(node -> node.clearCacheValue());
         this.nodes.clear();
     }
 

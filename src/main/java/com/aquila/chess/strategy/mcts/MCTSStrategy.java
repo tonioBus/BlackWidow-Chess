@@ -104,7 +104,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                      final Move moveOpponent,
                      final List<Move> possibleMoves) throws InterruptedException {
         this.directRoot = null;
-        createRootNode(originalGame, moveOpponent);
+        createRootNode(originalGame, moveOpponent, possibleMoves);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
@@ -144,9 +144,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      *
      * @param game
      * @param opponentMove
+     * @param possibleMoves
      * @return
      */
-    protected void createRootNode(final Game game, final Move opponentMove) {
+    protected void createRootNode(final Game game, final Move opponentMove, final List<Move> possibleMoves) {
         assert opponentMove != null;
         assert opponentMove.isInitMove() || opponentMove.getAllegiance() != this.alliance;
         log.info("opponentMove:{}", opponentMove);
@@ -156,13 +157,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
             CacheValue cacheValue = deepLearning.getCacheValues().get(key);
             cacheValue.verifyAlliance(alliance.complementary());
-            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), opponentMove, key, cacheValue);
+            this.directRoot = MCTSNode.createRootNode(mctsGame.getBoard(), possibleMoves, opponentMove, key, cacheValue);
             return;
         }
         MCTSNode childNode = this.directRoot.findChild(opponentMove);
         if (childNode == null) {
             long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
-            this.directRoot = MCTSNode.createNode(mctsGame.getBoard(), opponentMove, key, deepLearning.getCacheValues().get(key));
+            this.directRoot = MCTSNode.createNode(mctsGame.getBoard(), possibleMoves, opponentMove, key, deepLearning.getCacheValues().get(key));
         } else {
             directRoot = childNode;
             directRoot.setAsRoot();
@@ -197,7 +198,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("!!! no bestnodes found: return random move from the list{}", currentPossibleMoves);
             log.error("!!! MCTSTree nodes:{}",
                     directRoot.getChildsAsCollection().stream().filter(node -> node != null).map(MCTSNode::getMove));
-            return getRandomMove(currentPossibleMoves);
+            assert false;
         }
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
@@ -236,11 +237,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         for (MCTSNode mctsNode : initializeNodes) {
             final Move currentMove = mctsNode.getMove();
             if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(currentMove.toString())).findFirst().isEmpty()) {
-                log.error("move:{} not in possible move:{}. MCTSTree nodes:{}",
+                log.error("move:{} not in possible.\n - Board moves:{}.\n - MCTSTree nodes:{}",
                         currentMove,
                         currentPossibleMoves,
                         initializeNodes.stream().map(node -> node.getMove()).collect(Collectors.toList()));
-                continue; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
+                assert false; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
             }
             if (mctsNode.getState() == MCTSNode.State.WIN) {
                 bestNodes.clear();
