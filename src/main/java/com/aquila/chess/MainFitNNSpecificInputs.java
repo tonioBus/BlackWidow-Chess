@@ -71,7 +71,7 @@ public class MainFitNNSpecificInputs {
     }
 
     public InputsFullNN createInputs(final Move move) {
-        return inputsManager.createInputs(board, move, new ArrayList<Move>(), 0, Alliance.WHITE);
+        return inputsManager.createInputs(board, move, new ArrayList<Move>(), Alliance.WHITE);
     }
 
     public TrainGame createTrainGame(int nbIterations) {

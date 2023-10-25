@@ -62,7 +62,6 @@ public class GameChecker {
                     game.getBoard(),
                     null,
                     moves,
-                    game.getInputsManager().getNbRepeat(game.getColor2play()),
                     game.getColor2play());
             return inputsNN;
         } catch (Exception e) {

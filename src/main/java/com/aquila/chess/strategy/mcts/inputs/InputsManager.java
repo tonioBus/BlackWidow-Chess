@@ -35,7 +35,7 @@ public abstract class InputsManager {
      * @param color2play the color that will play, used only if move is not defined
      * @return
      */
-    public abstract InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, int nbRepeat, final Alliance color2play);
+    public abstract InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
 
     public abstract String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
 

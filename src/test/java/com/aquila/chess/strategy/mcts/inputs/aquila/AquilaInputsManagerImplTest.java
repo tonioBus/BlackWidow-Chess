@@ -33,7 +33,7 @@ class AquilaInputsManagerImplTest {
     void createInputs() {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8,bb8,ph7", WHITE);
         InputsManager inputsManager = new AquilaInputsManagerImpl();
-        InputsFullNN inputs = inputsManager.createInputs(board, null, new ArrayList<>(), 2, BLACK);
+        InputsFullNN inputs = inputsManager.createInputs(board, null, new ArrayList<>(), BLACK);
         log.info("inputs:\n{}", inputs);
 
         long hash1 = inputsManager.hashCode(board, null, new ArrayList<>(), WHITE);

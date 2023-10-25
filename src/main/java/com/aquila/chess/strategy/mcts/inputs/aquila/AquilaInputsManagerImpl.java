@@ -65,17 +65,16 @@ public class AquilaInputsManagerImpl extends InputsManager {
     }
 
     @Override
-    public InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, int nbRepeat, final Alliance color2play) {
+    public InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && !move.isInitMove())
             // if we move, the color2play will be the complementary of the player that just moved
-            this.createInputs(inputs, move.execute(), moves, nbRepeat, move.getAllegiance().complementary());
+            this.createInputs(inputs, move.execute(), moves, move.getAllegiance().complementary());
         else
             this.createInputs(
                     inputs,
                     board,
                     moves,
-                    nbRepeat,
                     color2play);
         return new AquilaInputsFullNN(inputs);
     }
@@ -85,7 +84,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [12][NB_COL][NB_COL]
      */
-    private void createInputs(double[][][] inputs, Board board, final List<Move> allGamesMoves, int nbRepeat, Alliance color2play) {
+    private void createInputs(double[][][] inputs, Board board, final List<Move> allGamesMoves, Alliance color2play) {
+        int nbRepeat = getNbRepeat(color2play);
         board.getAllPieces().parallelStream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
@@ -145,7 +145,6 @@ public class AquilaInputsManagerImpl extends InputsManager {
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
-        // int nbRepeat = MovesUtils.nbMovesRepeat(allGamesMoves);
         fill(inputs[currentIndex + 6], nbRepeat >= 1 ? 1.0F : 0.0F); // 1 REPEAT
         fill(inputs[currentIndex + 7], nbRepeat >= 2 ? 1.0F : 0.0F); // 2 REPEAT
         fill(inputs[currentIndex + 8], nbRepeat >= 3 ? 1.0F : 0.0F); // 3 REPEAT
@@ -202,7 +201,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
         StringBuffer sb = new StringBuffer();
         sb.append(color2play.toString());
         sb.append("\n");
-        sb.append(MovesUtils.nbMovesRepeat(moves));
+        sb.append(getNbRepeat(color2play));
         sb.append("\n");
         sb.append(getNbRepeat(color2play));
         sb.append("\n");
