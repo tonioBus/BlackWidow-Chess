@@ -39,8 +39,8 @@ class InputsManagerTest {
         final StaticStrategy whiteStrategy = new StaticStrategy(WHITE, "H1-G1;G1-F1;F1-G1;G1-H1;H1-G1;G1-H1;H1-G1;G1-H1");
         final StaticStrategy blackStrategy = new StaticStrategy(BLACK, "G3-H3;H3-G3;G3-H3;H3-G3;G3-H3;H3-G3;G3-H3;H3-G3");
         game.setup(whiteStrategy, blackStrategy);
-        MCTSGame mctsGame = new MCTSGame(game);
         for (int i = 0; i < 16; i++) {
+            MCTSGame mctsGame = new MCTSGame(game);
             play(game, mctsGame);
             log.info("hashs:{}", inputsManager.getHashs(game.getLastMove().getAllegiance()));
         }

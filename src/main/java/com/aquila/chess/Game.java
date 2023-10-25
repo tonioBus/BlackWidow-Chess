@@ -185,6 +185,7 @@ public class Game {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
+        this.inputsManager.updateHashsTables(board, nextStrategy.getAlliance());
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         log.info("current player:{}", getNextPlayer().getAlliance());
         log.info("current legal move:[{}] {}",

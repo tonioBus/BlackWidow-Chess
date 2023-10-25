@@ -5,13 +5,11 @@ import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +31,6 @@ public class MCTSGame {
 
     @Getter
     protected Board board;
-
-    final private CircularFifoQueue<Integer> last6HashCodesAllegiance = new CircularFifoQueue<>(12);
-
-    final private CircularFifoQueue<Integer> last6HashCodesAdversary = new CircularFifoQueue<>(12);
-
 
     public MCTSGame(final Game game) {
         this.board = game.getBoard();
@@ -82,7 +75,7 @@ public class MCTSGame {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         add2Last8InputsAndPlay(move);
-        this.board = inputsManager.executeMove(board, move);
+        this.board = inputsManager.updateHashsTables(board, move.getAllegiance());
         return this.status = calculateStatus(board);
     }
 

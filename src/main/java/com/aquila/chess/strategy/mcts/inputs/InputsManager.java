@@ -45,10 +45,8 @@ public abstract class InputsManager {
 
     public abstract InputsManager clone();
 
-    public Board executeMove(Board board, final Move move) {
-        board = move.execute();
-        // this.last6HashCodesAllegiance.add(hashCode1Alliance(board, move.getAllegiance()));
-        this.lastHashs.get(move.getAllegiance()).add(hashCode1Alliance(board, move.getAllegiance()));
+    public Board updateHashsTables(Board board, final Alliance alliance) {
+        this.lastHashs.get(alliance).add(hashCode1Alliance(board, alliance));
         return board;
     }
 
@@ -59,15 +57,20 @@ public abstract class InputsManager {
         if (hashs.size() > 3) {
             ret = hashs.get(0).intValue() == hashs.get(2).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("hash0:{} hash2:{}",
-                    hashs.get(0), hashs.get(2));
+            if (ret > 0) log.info("[{}] hash0:{} hash2:{}",
+                    alliance,
+                    hashs.get(0),
+                    hashs.get(2));
         }
         if (hashs.size() > 5) {
             ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
                     hashs.get(0).intValue() == hashs.get(4).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("hash0:{} hash2:{} hash4:{}",
-                    hashs.get(0), hashs.get(2), hashs.get(4));
+            if (ret > 0) log.info("[{}] hash0:{} hash2:{} hash4:{}",
+                    alliance,
+                    hashs.get(0),
+                    hashs.get(2),
+                    hashs.get(4));
         }
         if (hashs.size() > 7) {
             //log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
@@ -76,8 +79,12 @@ public abstract class InputsManager {
                     hashs.get(0).intValue() == hashs.get(4).intValue() &&
                     hashs.get(0).intValue() == hashs.get(6).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
-                    hashs.get(0), hashs.get(2), hashs.get(4), hashs.get(6));
+            if (ret > 0) log.info("[{}] hash0:{} hash2:{} hash4:{} hash6:{}",
+                    alliance,
+                    hashs.get(0),
+                    hashs.get(2),
+                    hashs.get(4),
+                    hashs.get(6));
         }
         return ret;
     }
