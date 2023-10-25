@@ -3,7 +3,6 @@ package com.aquila.chess.strategy.mcts.inputs.aquila;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Coordinate;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
@@ -203,14 +202,25 @@ public class AquilaInputsManagerImpl extends InputsManager {
         sb.append("\n");
         sb.append(getNbRepeat(color2play));
         sb.append("\n");
-        sb.append(getNbRepeat(color2play));
-        sb.append("\n");
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);
             if (piece != null) {
                 sb.append(String.format("%s=%d,", piece.getPieceType(), position));
             }
         }
+        List<Move> moveWhites = board.whitePlayer().getLegalMoves();
+        Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
+        Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
+        List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
+        Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
+        Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
+        sb.append(!queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        sb.append("\n");
+        sb.append(!kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        sb.append("\n");
+        sb.append(!queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
+        sb.append("\n");
+        sb.append(!kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         return sb.toString();
     }
 
