@@ -59,10 +59,10 @@ public class MainTrainingAquila {
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
             log.info("SEED WHITE:{}", seed1);
+            deepLearningWhite.getCacheValues().clearNodes(true);
+            deepLearningBlack.getCacheValues().clearNodes(true);
             deepLearningWhite.clearAllCaches();
             deepLearningBlack.clearAllCaches();
-            deepLearningWhite.getCacheValues().clearNodes(true);
-            deepLearningBlack.getCacheValues().clearNodes(true);;
             long seed2 = System.nanoTime();
             log.info("SEED BLACK:{}", seed2);
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
