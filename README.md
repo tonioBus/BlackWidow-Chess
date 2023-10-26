@@ -1,4 +1,4 @@
-# BlackWidow-Chess
+# Alpha Zero Chess study
 ## Author: Anthony Bussani
 [Linkedin](https://www.linkedin.com/in/anthony-bussani-a4a06924/)
 
