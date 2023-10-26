@@ -61,6 +61,8 @@ public class MainTrainingAquila {
             log.info("SEED WHITE:{}", seed1);
             deepLearningWhite.clearAllCaches();
             deepLearningBlack.clearAllCaches();
+            deepLearningWhite.getCacheValues().clearNodes(true);
+            deepLearningBlack.getCacheValues().clearNodes(true);;
             long seed2 = System.nanoTime();
             log.info("SEED BLACK:{}", seed2);
             final MCTSStrategy whiteStrategy = new MCTSStrategy(

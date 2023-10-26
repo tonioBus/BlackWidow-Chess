@@ -177,7 +177,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                             final List<Move> currentPossibleMoves)
             throws InterruptedException {
         statistic.clear();
-        this.deepLearning.getCacheValues().clearNodes();
+        this.deepLearning.getCacheValues().clearNodes(false);
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
                 this.nbStep,
                 this.nbThreads,

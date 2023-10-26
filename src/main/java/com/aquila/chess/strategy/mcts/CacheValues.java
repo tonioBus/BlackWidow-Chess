@@ -83,9 +83,9 @@ public class CacheValues {
         return cacheValue;
     }
 
-    public void clearNodes() {
+    public void clearNodes(boolean all) {
         for(CacheValue cacheValue: lruMap.values()) {
-            if(!cacheValue.isLeaf()) {
+            if(!cacheValue.isLeaf() || all) {
                 cacheValue.clearNodes();
             }
         }
