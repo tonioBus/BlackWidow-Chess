@@ -122,6 +122,8 @@ public class TrainTest {
             final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
             savedGames.add(num);
             games.add(game);
+            deepLearningWhite.clearAllCaches();
+            deepLearningBlack.clearAllCaches();
         }
         log.info("Games:\n{}", games.stream().map(game -> game.toString()).collect(Collectors.joining("\n")));
         for (int i = 0; i < savedGames.size(); i++) {

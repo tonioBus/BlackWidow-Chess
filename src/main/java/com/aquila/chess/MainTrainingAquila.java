@@ -31,7 +31,8 @@ public class MainTrainingAquila {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 40000, 55);
+        GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 400000, 55);
+        if (gameManager.stopDetected()) System.exit(-1);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
@@ -48,7 +49,7 @@ public class MainTrainingAquila {
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
-        while (true) {
+        while (!gameManager.stopDetected()) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()
                     .inputsManager(inputsManager)

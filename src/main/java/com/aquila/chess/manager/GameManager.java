@@ -16,6 +16,8 @@ import java.text.ParseException;
 @Slf4j
 public class GameManager {
 
+    public static final String STOP_FILE = "config/STOP";
+
     final String filename;
     int nbGames = 0;
     private final File file;
@@ -98,5 +100,14 @@ public class GameManager {
 
     public int getNbGames() {
         return this.nbGames;
+    }
+
+    public boolean stopDetected() {
+        File file = new File(STOP_FILE);
+        if (file.isFile()) {
+            log.warn("Stop file detected: removing {} sucess:{}", STOP_FILE, file.delete());
+            return true;
+        }
+        return false;
     }
 }
