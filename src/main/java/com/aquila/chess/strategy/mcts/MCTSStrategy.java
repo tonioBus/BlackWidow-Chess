@@ -221,7 +221,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         }
         final Move move = bestNode.getMove();
-        if (currentPossibleMoves.stream().filter(move1 -> move1.equals(move)).findFirst().isEmpty()) {
+        if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(move.toString())).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, currentPossibleMoves));
         }
         return move;

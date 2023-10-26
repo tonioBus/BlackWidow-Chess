@@ -89,12 +89,15 @@ public class ServiceNN {
      *
      * @param force
      */
-    public synchronized void executeJobs(boolean force) {
-        boolean submit2NN = force || batchJobs2Commit.size() >= batchSize;
-        log.debug("ServiceNN.executeJobs() batchJobs2Commit:{}", batchJobs2Commit.size());
-        log.debug("BEGIN executeJobs({})", submit2NN);
-        initValueAndPolicies(submit2NN);
-        log.debug("END executeJobs({})", submit2NN);
+    public void executeJobs(boolean force) {
+        synchronized (batchJobs2Commit) {
+            int batchJobs2CommitSize = batchJobs2Commit.size();
+            boolean submit2NN = force || batchJobs2CommitSize >= batchSize;
+            log.debug("ServiceNN.executeJobs() batchJobs2Commit:{}", batchJobs2CommitSize);
+            log.debug("BEGIN executeJobs({})", submit2NN);
+            initValueAndPolicies(submit2NN, batchJobs2CommitSize);
+            log.debug("END executeJobs({})", submit2NN);
+        }
     }
 
     /**
@@ -161,13 +164,12 @@ public class ServiceNN {
         }
     }
 
-    private void initValueAndPolicies(boolean submit2NN) {
-        int length = batchJobs2Commit.size();
-        if (submit2NN && length > 0) {
-            inferNN(length);
+    private void initValueAndPolicies(boolean submit2NN, int batchJobs2CommitSize) {
+        if (submit2NN && batchJobs2CommitSize > 0) {
+            inferNN(batchJobs2CommitSize);
             batchJobs2Commit.clear();
         }
-        propagateValues(submit2NN, length);
+        propagateValues(submit2NN, batchJobs2CommitSize);
     }
 
     private List<MCTSNode> createPropragationList(final MCTSNode child, long key) {
@@ -245,7 +247,7 @@ public class ServiceNN {
      * @param isDirichlet
      * @param isRootNode
      */
-    protected synchronized void submit(final long key,
+    protected void submit(final long key,
                                        final Move possibleMove,
                                        final Alliance color2play,
                                        final MCTSGame gameCopy,

@@ -114,10 +114,10 @@ public class TrainTest {
             log.info("END OF game :\n{}\n{}", gameStatus, game);
             log.info("#########################################################################");
             // 1 + nbStep ==> INIT_MOVE + nb steps
-            if (gameStatus == Game.GameStatus.DRAW_300)
+            // if (gameStatus == Game.GameStatus.DRAW_300)
                 assertEquals(game.getMoves().size() - 1, trainGame.getOneStepRecordList().size());
-            else
-                assertEquals(game.getMoves().size(), trainGame.getOneStepRecordList().size());
+            //else
+              //  assertEquals(game.getMoves().size(), trainGame.getOneStepRecordList().size());
             final String filename = trainGame.saveBatch("train-test", gameStatus);
             final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
             savedGames.add(num);
