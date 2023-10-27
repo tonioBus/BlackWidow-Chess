@@ -9,7 +9,6 @@ import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
-import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
@@ -22,7 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -293,7 +295,7 @@ public class DeepLearningAGZ {
         final GameChecker gameChecker = new GameChecker();
         LinkedList<OneStepRecord> ret = new LinkedList<>();
         try {
-            for( OneStepRecord oneStepRecord:trainGame.getOneStepRecordList()) {
+            for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
                 final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
                 String moveSz = oneStepRecord.move();
                 InputsFullNN inputsNN = gameChecker.play(moveSz);

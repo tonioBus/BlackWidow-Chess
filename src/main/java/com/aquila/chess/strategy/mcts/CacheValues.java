@@ -32,7 +32,7 @@ public class CacheValues {
 
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
-        this.lruMap.values().stream().forEach(cacheValue -> cacheValue.clearNodes());
+        this.lruMap.values().forEach(CacheValue::clearNodes);
         this.lruMap.clear();
         lostCacheValue.setInitialized(true);
         drawnCacheValue.setInitialized(true);
@@ -61,10 +61,6 @@ public class CacheValues {
     public synchronized CacheValue create(long key, final String label) {
         if (containsKey(key)) throw new RuntimeException("node already created for key:" + key);
         CacheValue ret = CacheValue.getNotInitialized(String.format("[%d] %s", key, label));
-        // to avoid this the
-        this.lruMap.get(-1);
-        this.lruMap.get(0);
-        this.lruMap.get(1);
         this.lruMap.put(key, ret);
         return ret;
     }

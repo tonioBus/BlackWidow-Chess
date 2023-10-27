@@ -148,7 +148,9 @@ public class MainFitNNAquila implements Runnable {
         log.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
-            log.info("load game:{}/{}", subDir, numGame);
+            String filename = String.format("%s/%s", subDir, numGame);
+            log.info("load game:{}", filename);
+            Thread.currentThread().setName(filename);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
                 deepLearningWhite.train(trainGame);
