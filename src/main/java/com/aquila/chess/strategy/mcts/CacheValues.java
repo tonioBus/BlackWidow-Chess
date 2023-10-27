@@ -37,6 +37,9 @@ public class CacheValues {
         lostCacheValue.setInitialized(true);
         drawnCacheValue.setInitialized(true);
         winCacheValue.setInitialized(true);
+        lostCacheValue.clearNodes();
+        drawnCacheValue.clearNodes();
+        winCacheValue.clearNodes();
         this.lruMap.put(-1L, lostCacheValue);
         this.lruMap.put(0L, drawnCacheValue);
         this.lruMap.put(1L, winCacheValue);
