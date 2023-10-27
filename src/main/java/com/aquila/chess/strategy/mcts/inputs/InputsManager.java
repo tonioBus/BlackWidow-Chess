@@ -57,7 +57,7 @@ public abstract class InputsManager {
         if (hashs.size() > 3) {
             ret = hashs.get(0).intValue() == hashs.get(2).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("[{}] hash0:{} hash2:{}",
+            if (ret > 0) log.debug("[{}] hash0:{} hash2:{}",
                     alliance,
                     hashs.get(0),
                     hashs.get(2));
@@ -66,7 +66,7 @@ public abstract class InputsManager {
             ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
                     hashs.get(0).intValue() == hashs.get(4).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("[{}] hash0:{} hash2:{} hash4:{}",
+            if (ret > 0) log.debug("[{}] hash0:{} hash2:{} hash4:{}",
                     alliance,
                     hashs.get(0),
                     hashs.get(2),
@@ -79,7 +79,7 @@ public abstract class InputsManager {
                     hashs.get(0).intValue() == hashs.get(4).intValue() &&
                     hashs.get(0).intValue() == hashs.get(6).intValue()
                     ? 1 : 0;
-            if (ret > 0) log.info("[{}] hash0:{} hash2:{} hash4:{} hash6:{}",
+            if (ret > 0) log.debug("[{}] hash0:{} hash2:{} hash4:{} hash6:{}",
                     alliance,
                     hashs.get(0),
                     hashs.get(2),
