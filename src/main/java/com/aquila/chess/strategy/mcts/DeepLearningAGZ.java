@@ -297,7 +297,7 @@ public class DeepLearningAGZ {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
                 final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
                 String moveSz = oneStepRecord.move();
-                InputsFullNN inputsNN = gameChecker.play(moveSz);
+                InputsFullNN inputsNN = gameChecker.play(moveSz, oneStepRecord.moveColor());
                 OneStepRecord newOneStepRecord = new OneStepRecord(
                         inputsNN,
                         oneStepRecord.move(),

@@ -35,7 +35,7 @@ public class GameChecker {
         return game.getNextPlayer().getLegalMoves();
     }
 
-    public InputsFullNN play(String givenMove) {
+    public InputsFullNN play(String givenMove, Alliance moveColor) {
         final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
         if (!givenMove.equals(Move.INIT_MOVE)) {
             Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove.toString())).findFirst();
@@ -62,7 +62,7 @@ public class GameChecker {
                     game.getBoard(),
                     null,
                     moves,
-                    game.getCurrentPLayerColor());
+                    moveColor);
             return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);
