@@ -116,6 +116,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     this.mctsGame,
                     moveOpponent,
+                    // this.alliance.complementary(),
                     this.alliance,
                     this.directRoot
             );

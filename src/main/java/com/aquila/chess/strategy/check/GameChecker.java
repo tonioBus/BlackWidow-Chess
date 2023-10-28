@@ -47,7 +47,7 @@ public class GameChecker {
             }
             Move currentMove = currentMoveOpt.get();
             moves.add(currentMove);
-            switch (game.getColor2play()) {
+            switch (game.getCurrentPLayerColor()) {
                 case WHITE -> {
                     whitePlayer.setNextMove(currentMove);
                 }
@@ -62,7 +62,7 @@ public class GameChecker {
                     game.getBoard(),
                     null,
                     moves,
-                    game.getColor2play());
+                    game.getCurrentPLayerColor());
             return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);

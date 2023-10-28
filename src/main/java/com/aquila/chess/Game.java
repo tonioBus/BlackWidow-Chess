@@ -63,7 +63,7 @@ public class Game {
         this.strategyBlack = strategyBlack;
     }
 
-    public Alliance getColor2play() {
+    public Alliance getCurrentPLayerColor() {
         return this.board.currentPlayer().getAlliance();
     }
 
@@ -153,7 +153,8 @@ public class Game {
 
     public Board getLastBoard() {
         int size = moves.size();
-        return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
+        if (size == 0 || this.moves.get(size - 1).isInitMove()) return this.getBoard();
+        return this.moves.get(size - 1).execute();
     }
 
     public Move getLastMove() {
@@ -278,7 +279,7 @@ public class Game {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
-        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", inputsManager.getNbRepeat(getColor2play().complementary()), this.nbMoveNoAttackAndNoPawn));
+        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", inputsManager.getNbRepeat(getCurrentPLayerColor().complementary()), this.nbMoveNoAttackAndNoPawn));
         sb.append(this.board);
         return sb.toString();
     }

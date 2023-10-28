@@ -5,19 +5,19 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 
 public record ServiceNNInputsJobs(Move move,
-                                  Alliance color2play,
+                                  Alliance moveColor,
                                   MCTSGame mctsGame,
                                   boolean isDirichlet,
                                   boolean isRootNode,
                                   InputsFullNN inputs) {
 
     public ServiceNNInputsJobs(final Move move,
-                               final Alliance color2play,
+                               final Alliance moveColor,
                                final MCTSGame mctsGame,
                                final boolean isDirichlet,
                                final boolean isRootNode) {
         this(move,
-                color2play,
+                moveColor,
                 mctsGame,
                 isDirichlet,
                 isRootNode,
@@ -25,7 +25,7 @@ public record ServiceNNInputsJobs(Move move,
                         mctsGame.getLastBoard(),
                         move,
                         mctsGame.getMoves(),
-                        color2play));
+                        moveColor));
     }
 
 }

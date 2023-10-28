@@ -31,15 +31,15 @@ public abstract class InputsManager {
     /**
      * @param board      - the board on which we apply the move
      * @param move       - the move to apply or null if nothing need to be applied,
-     *                   the complementary of the color of the move will be used as color2play
-     * @param color2play the color that will play, used only if move is not defined
+     *                   the complementary of the color of the move will be used as moveColor
+     * @param moveColor the color that will play, used only if move is not defined
      * @return
      */
-    public abstract InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
+    public abstract InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
 
-    public abstract String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
+    public abstract String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
 
-    public abstract long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance color2play);
+    public abstract long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
 
     public abstract void startMCTSStep(Game game);
 

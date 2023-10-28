@@ -165,7 +165,7 @@ public class DeepLearningAGZ {
      */
     public synchronized long addState(final MCTSGame mctsGame, final String label, final Move possibleMove, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addState", Thread.currentThread().getName());
-        Alliance color2play = possibleMove.getAllegiance();
+        Alliance moveColor = possibleMove.getAllegiance();
         long key = mctsGame.hashCode(possibleMove);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
@@ -176,7 +176,7 @@ public class DeepLearningAGZ {
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
-            serviceNN.submit(key, possibleMove, color2play, mctsGame, false, false);
+            serviceNN.submit(key, possibleMove, moveColor, mctsGame, false, false);
         } else {
             statistic.nbRetrieveNNCachedValues++;
         }
@@ -187,23 +187,23 @@ public class DeepLearningAGZ {
     /**
      * @param mctsGame
      * @param label
-     * @param color2play
+     * @param moveColor
      * @param statistic
      * @return
      */
-    public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final Alliance color2play, final Statistic statistic) {
+    public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final Alliance moveColor, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addRootState", Thread.currentThread().getName());
-        long key = mctsGame.hashCode(color2play);
+        long key = mctsGame.hashCode(moveColor);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
-                log.debug("[{}] CREATE ROOT CACHE VALUE:{} move:root label:{}", color2play, key, label);
+                log.debug("[{}] CREATE ROOT CACHE VALUE:{} move:root label:{}", moveColor, key, label);
             String lastMoves = mctsGame.getMoves().stream().map(
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, "ROOT");
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
-            serviceNN.submit(key, null, color2play, mctsGame, true, true);
+            serviceNN.submit(key, null, moveColor, mctsGame, true, true);
         } else {
             statistic.nbRetrieveNNCachedValues++;
         }
@@ -211,14 +211,14 @@ public class DeepLearningAGZ {
         return key;
     }
 
-    public synchronized long removeState(final MCTSGame gameCopy, final Alliance color2play, final Move possibleMove) {
+    public synchronized long removeState(final MCTSGame gameCopy, final Alliance moveColor, final Move possibleMove) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN removeState", Thread.currentThread().getName());
-        long key = gameCopy.hashCode(color2play, possibleMove);
+        long key = gameCopy.hashCode(moveColor, possibleMove);
         if (serviceNN.containsJob(key)) {
-            if (log.isDebugEnabled()) log.debug("[{}] DELETE KEY:{} move:{}", color2play, key, possibleMove);
+            if (log.isDebugEnabled()) log.debug("[{}] DELETE KEY:{} move:{}", moveColor, key, possibleMove);
             serviceNN.removeJob(key);
         } else {
-            if (log.isDebugEnabled()) log.debug("[{}] CAN NOT DELETE KEY:{} move:{}", color2play, key, possibleMove);
+            if (log.isDebugEnabled()) log.debug("[{}] CAN NOT DELETE KEY:{} move:{}", moveColor, key, possibleMove);
         }
         if (log.isDebugEnabled()) log.debug("[{}] END removeState", Thread.currentThread().getName());
         return key;
@@ -302,7 +302,7 @@ public class DeepLearningAGZ {
                 OneStepRecord newOneStepRecord = new OneStepRecord(
                         inputsNN,
                         oneStepRecord.move(),
-                        oneStepRecord.color2play(),
+                        oneStepRecord.moveColor(),
                         oneStepRecord.policies());
                 ret.add(newOneStepRecord);
             }
@@ -356,8 +356,8 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             normalize(policies);
-            Alliance playedColor = oneStepRecord.color2play();
-            double actualRewards = getActualRewards(value, playedColor);
+            Alliance moveColor = oneStepRecord.moveColor();
+            double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
             if (policies != null) {
                 policies.forEach((indexFromMove, previousPolicies) -> {
@@ -401,12 +401,12 @@ public class DeepLearningAGZ {
 
     /**
      * @param value
-     * @param color2play
+     * @param moveColor
      * @return
      */
-    public static double getActualRewards(final double value, final Alliance color2play) {
+    public static double getActualRewards(final double value, final Alliance moveColor) {
         int sign = 0;
-        if (color2play.isWhite()) {
+        if (moveColor.isWhite()) {
             sign = 1;
         } else {
             sign = -1;

@@ -208,7 +208,7 @@ public class ServiceNN {
         synchronized (batchJobs2Commit) {
             for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
                 Move move = entry.getValue().move();
-                Alliance color2play = entry.getValue().color2play();
+                Alliance moveColor = entry.getValue().moveColor();
                 long key = entry.getKey();
                 double value = outputsNN.get(index).getValue();
                 double[] policies = outputsNN.get(index).getPolicies();
@@ -228,7 +228,7 @@ public class ServiceNN {
                         addNodeToPropagate(oldCacheValue.getAllMCTSNodes());
                     } else {
                         addNodeToPropagate(cacheValue.getAllMCTSNodes());
-                        log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", color2play, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
+                        log.debug("[{}] RETRIEVE value for key:{} -> move:{} value:{}  policies:{},{},{}", moveColor, key, move == null ? "null" : move, value, policies[0], policies[1], policies[2]);
                     }
                 }
                 index++;
@@ -242,14 +242,14 @@ public class ServiceNN {
      *
      * @param key          - the key of the CacheValue
      * @param possibleMove - the concern move
-     * @param color2play   - the color playing
+     * @param moveColor   - the color playing
      * @param gameCopy
      * @param isDirichlet
      * @param isRootNode
      */
     protected void submit(final long key,
                                        final Move possibleMove,
-                                       final Alliance color2play,
+                                       final Alliance moveColor,
                                        final MCTSGame gameCopy,
                                        final boolean isDirichlet,
                                        final boolean isRootNode) {
@@ -259,16 +259,16 @@ public class ServiceNN {
         }
         if (possibleMove != null) {
             Alliance possibleMoveColor = possibleMove.getAllegiance();
-            if (possibleMoveColor != color2play) {
-                log.error("Not identical color: move:{} color2play:{}", possibleMove, color2play);
+            if (possibleMoveColor != moveColor) {
+                log.error("Not identical color: move:{} moveColor:{}", possibleMove, moveColor);
                 throw new RuntimeException(String.format("Color not Identical, move:%s color:%s",
-                        possibleMove, color2play.toString()));
+                        possibleMove, moveColor.toString()));
             }
         }
         // log.info("ServiceNNInputsJobs(move:{}) key:{}", possibleMove, key);
         batchJobs2Commit.put(key, new ServiceNNInputsJobs(
                 possibleMove,
-                color2play,
+                moveColor,
                 gameCopy,
                 isDirichlet,
                 isRootNode));

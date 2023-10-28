@@ -85,7 +85,7 @@ public class SaveGameTest {
             assertTrue(UtilsTest.verify8inputs((Lc0InputsManagerImpl) game.getInputsManager()));
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.moveColor(), oneStepRecord.move(), oneStepRecord));
         }
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
@@ -99,7 +99,7 @@ public class SaveGameTest {
         loadTrainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
-            log.info("color2play:{}", oneStepRecord.color2play());
+            log.info("moveColor:{}", oneStepRecord.moveColor());
             log.info("----------------------------------------");
         });
     }
@@ -149,7 +149,7 @@ public class SaveGameTest {
             sequence.play();
             log.info("####################################################");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.moveColor(), oneStepRecord.move(), oneStepRecord));
         }
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
@@ -163,7 +163,7 @@ public class SaveGameTest {
         loadTrainGame.getOneStepRecordList().forEach(oneStepRecord -> {
             log.info("move:{}", oneStepRecord.move());
             log.info("policies.size:{}", oneStepRecord.policies().size());
-            log.info("color2play:{}", oneStepRecord.color2play());
+            log.info("moveColor:{}", oneStepRecord.moveColor());
             log.info("----------------------------------------");
         });
     }
@@ -209,7 +209,7 @@ public class SaveGameTest {
         Game.GameStatus gameStatus = null;
         int i = 0;
         for (; i < nbStep; i++) {
-            log.info("PLAYER:{}", game.getColor2play());
+            log.info("PLAYER:{}", game.getCurrentPLayerColor());
             log.info("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
             gameStatus = game.play();
             if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
@@ -220,7 +220,7 @@ public class SaveGameTest {
             sequence.play();
             log.info("----------------------------------------------------");
             log.info("game step[{}] :\n{}", i, game);
-            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.color2play(), oneStepRecord.move(), oneStepRecord));
+            whiteStrategy.getTrainGame().getOneStepRecordList().forEach(oneStepRecord -> log.info("TRAIN STEP {}-{}\n{}", oneStepRecord.moveColor(), oneStepRecord.move(), oneStepRecord));
         }
         assertEquals(game.getMoves().size(), whiteStrategy.getTrainGame().getOneStepRecordList().size() + 1);
         // assertEquals(i - ((i & 0x01) == 0 ? 1 : 0), whiteStrategy.getTrainGame().getOneStepRecordList().size());

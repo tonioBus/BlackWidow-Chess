@@ -62,26 +62,26 @@ public class Lc0InputsManagerImpl extends InputsManager {
      * @param board
      * @param lc0InputsManager
      * @param move
-     * @param color2play
+     * @param moveColor
      * @return
      */
     @Override
     public Lc0InputsFullNN createInputs(final Board board,
                                         final Move move,
                                         final List<Move> moves,
-                                        final Alliance color2play) {
+                                        final Alliance moveColor) {
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        this.createInputs(inputs, board, move, color2play);
+        this.createInputs(inputs, board, move, moveColor);
         return new Lc0InputsFullNN(inputs);
     }
 
     @Override
-    public long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
-        String hashCodeString = getHashCodeString(board, move, moves, color2play);
+    public long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance moveColor) {
+        String hashCodeString = getHashCodeString(board, move, moves, moveColor);
         long ret = hash(hashCodeString);
-        log.debug("[{}] HASHCODE:{}\n{}", color2play, ret, hashCodeString);
+        log.debug("[{}] HASHCODE:{}\n{}", moveColor, ret, hashCodeString);
         if (log.isDebugEnabled())
-            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", color2play, move, Utils.nbMaxBits(ret), ret);
+            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", moveColor, move, Utils.nbMaxBits(ret), ret);
         return ret;
     }
 
@@ -186,12 +186,12 @@ public class Lc0InputsManagerImpl extends InputsManager {
      *
      * @param inputs
      * @param board
-     * @param color2play
+     * @param moveColor
      */
     private void createInputs(final double[][][] inputs,
                               final Board board,
                               final Move move,
-                              final Alliance color2play) {
+                              final Alliance moveColor) {
         int destinationOffset = 0;
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
@@ -230,7 +230,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[PLANE_COLOR], color2play.isBlack() ? 1.0 : 0.0);
+        fill(inputs[PLANE_COLOR], moveColor.isBlack() ? 1.0 : 0.0);
         // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[111], 1.0F);
     }
@@ -301,7 +301,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         }
     }
 
-    public String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance color2play) {
+    public String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance moveColor) {
         Board currentBoard = board;
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
@@ -322,7 +322,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         sb.append("\nM:");
         sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
-        sb.append(color2play);
+        sb.append(moveColor);
         sb.append("\nR:");
         sb.append(MovesUtils.nbMovesRepeat(moves));
         return sb.toString();

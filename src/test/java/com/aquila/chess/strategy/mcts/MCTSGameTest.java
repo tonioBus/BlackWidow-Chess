@@ -85,9 +85,9 @@ public class MCTSGameTest {
             status = game.play();
             final MCTSGame mctsGame = new MCTSGame(game);
             assertEquals(Math.min(8, game.getNbStep()), inputsManager.getLc0Last8Inputs().size());
-            long hashcode = mctsGame.hashCode(game.getColor2play(), null);
+            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor(), null);
             // next test to be sure that hashcode is stateless
-            assertEquals(hashcode, mctsGame.hashCode(game.getColor2play(), null));
+            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor(), null));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
                 String currentLastMoves = inputsManager.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
@@ -100,7 +100,7 @@ public class MCTSGameTest {
                     sb.append("OLD BOARD:\n");
                     sb.append(hashcodes.get(hashcode));
                     sb.append("\nNEW BOARD;\n");
-                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getColor2play()));
+                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
                     assertNotEquals(hashcode, hashcode, sb.toString());
                 }
             }
@@ -126,9 +126,9 @@ public class MCTSGameTest {
         do {
             status = game.play();
             final MCTSGame mctsGame = new MCTSGame(game);
-            long hashcode = mctsGame.hashCode(game.getColor2play(), null);
+            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor(), null);
             // next test to be sure that hashcode is stateless
-            assertEquals(hashcode, mctsGame.hashCode(game.getColor2play(), null));
+            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor(), null));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
                 MCTSGame oldMctsGame = hashcodes.get(hashcode);
@@ -136,9 +136,9 @@ public class MCTSGameTest {
                 StringBuffer sb = new StringBuffer();
                 sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));
                 sb.append("OLD BOARD:\n");
-                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getMoves(), game.getColor2play()));
+                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
                 sb.append("\nNEW BOARD;\n");
-                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getColor2play()));
+                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
                 // assertNotEquals(hashcode, hashcode, sb.toString());
                 log.info(sb.toString());
 

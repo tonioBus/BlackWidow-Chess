@@ -35,6 +35,7 @@ public class MCTSGame {
     public MCTSGame(final Game game) {
         this.board = game.getBoard();
         this.nbMoveNoAttackAndNoPawn = game.getNbMoveNoAttackAndNoPawn();
+        this.moves.addAll(game.getMoves());
         this.status = game.calculateStatus();
         this.inputsManager = game.getInputsManager().clone();
         this.inputsManager.startMCTSStep(game);
@@ -43,6 +44,7 @@ public class MCTSGame {
     public MCTSGame(final MCTSGame mctsGame) {
         this.board = mctsGame.getBoard();
         this.nbMoveNoAttackAndNoPawn = mctsGame.getNbMoveNoAttackAndNoPawn();
+        this.moves.addAll(mctsGame.getMoves());
         this.status = mctsGame.calculateStatus(this.board);
         this.inputsManager = mctsGame.inputsManager.clone();
     }
@@ -55,8 +57,8 @@ public class MCTSGame {
     }
 
     public synchronized long hashCode(@NonNull final Move move) {
-        final Alliance color2play = move.getAllegiance();
-        return inputsManager.hashCode(getLastBoard(), move, moves, color2play);
+        final Alliance moveColor = move.getAllegiance();
+        return inputsManager.hashCode(getLastBoard(), move, moves, moveColor);
     }
 
     public Move getLastMove() {
@@ -65,7 +67,8 @@ public class MCTSGame {
 
     public Board getLastBoard() {
         int size = moves.size();
-        return size == 0 ? this.getBoard() : this.moves.get(size - 1).execute();
+        if (size == 0 || this.moves.get(size - 1).isInitMove()) return this.getBoard();
+        return this.moves.get(size - 1).execute();
     }
 
     public Game.GameStatus play(final Move move) {
