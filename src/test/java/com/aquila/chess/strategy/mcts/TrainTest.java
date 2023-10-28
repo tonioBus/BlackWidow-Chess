@@ -149,7 +149,7 @@ public class TrainTest {
     @Test
     @Disabled
     void testPunctualLoad() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load("train-aquila-grospc", 654);
+        TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
         deepLearningWhite.train(trainGame);
     }
 

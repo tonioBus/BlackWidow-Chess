@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -345,24 +344,26 @@ public class DeepLearningAGZ {
         final TrainInputs inputsForNN = new TrainInputs(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
-        final AtomicInteger atomicInteger = new AtomicInteger();
         final double value = trainGame.getValue();
         List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
 
         for (int stepInChunk = 0; stepInChunk < chunkSize; stepInChunk++) {
-            atomicInteger.set(stepInChunk);
             int gameRound = indexChunk * chunkSize + stepInChunk;
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             normalize(policies);
+            // FIXME
+            // Alliance moveColor = oneStepRecord.moveColor().complementary();
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
             if (policies != null) {
-                policies.forEach((indexFromMove, previousPolicies) -> {
-                    policiesForNN[atomicInteger.get()][indexFromMove] = previousPolicies;
-                });
+                for( Map.Entry<Integer, Double> entry:policies.entrySet()) {
+                    Integer indexFromMove = entry.getKey();
+                    Double previousPolicies = entry.getValue();
+                    policiesForNN[stepInChunk][indexFromMove] = previousPolicies;
+                }
             }
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
