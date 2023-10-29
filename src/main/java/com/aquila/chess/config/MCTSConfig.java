@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Properties;
 
 @Slf4j
@@ -17,6 +19,9 @@ public class MCTSConfig {
     static public MCTSConfig mctsConfig = new MCTSConfig();
 
     private Properties properties = new Properties();
+
+    @Getter
+    private int waitInSeconds = 120;
 
     @Getter
     private MCTSStrategyConfig mctsWhiteStrategyConfig;
@@ -29,6 +34,7 @@ public class MCTSConfig {
         try {
             InputStream in = new FileInputStream(dir);
             properties.loadFromXML(in);
+            this.waitInSeconds = get("waitInSeconds", Integer.class, waitInSeconds);
             mctsWhiteStrategyConfig = new MCTSStrategyConfig("white", properties);
             mctsBlackStrategyConfig = new MCTSStrategyConfig("black", properties);
         } catch (IOException e) {
@@ -51,5 +57,20 @@ public class MCTSConfig {
         return isDirichlet(move.getAllegiance());
     }
 
+    private <T> T get(String property, Class<T> clazz, T defaultValue) {
+        try {
+            return get(property, clazz);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            log.error("Error getting property:"+property, e);
+            return defaultValue;
+        }
+    }
+
+    private <T> T get(String property, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        String value = properties.getProperty(property);
+        Method method = clazz.getDeclaredMethod("valueOf", String.class);
+        return clazz.cast(method.invoke(null, value));
+    }
 
 }
