@@ -32,7 +32,7 @@ public class MainTrainingAquila {
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 400000, 55);
-        if (gameManager.stopDetected()) System.exit(-1);
+        if (gameManager.stopDetected(true)) System.exit(-1);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
@@ -49,7 +49,7 @@ public class MainTrainingAquila {
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
-        while (!gameManager.stopDetected()) {
+        while (!gameManager.stopDetected(true)) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()
                     .inputsManager(inputsManager)
@@ -105,7 +105,7 @@ public class MainTrainingAquila {
             log.info("#########################################################################");
             final String filename = trainGame.saveBatch(trainDir, gameStatus);
             gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
-            if (!gameManager.stopDetected()) {
+            if (!gameManager.stopDetected(false)) {
                 log.info("Waiting for {} seconds (param: waitInSeconds)", MCTSConfig.mctsConfig.getWaitInSeconds());
                 Thread.sleep(MCTSConfig.mctsConfig.getWaitInSeconds() * 1000L);
             }

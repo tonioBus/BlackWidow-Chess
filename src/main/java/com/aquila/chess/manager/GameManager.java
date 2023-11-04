@@ -102,10 +102,10 @@ public class GameManager {
         return this.nbGames;
     }
 
-    public boolean stopDetected() {
+    public boolean stopDetected(boolean delete) {
         File file = new File(STOP_FILE);
         if (file.isFile()) {
-            log.warn("Stop file detected: removing {} sucess:{}", STOP_FILE, file.delete());
+            if(delete) log.warn("Stop file detected: removing {} sucess:{}", STOP_FILE, file.delete());
             return true;
         }
         return false;

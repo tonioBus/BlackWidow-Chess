@@ -136,8 +136,15 @@ public class MainFitNNAquila implements Runnable {
         Properties appProps = new Properties();
         appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
         log.info("START MainFitNNAquila");
-        int startGame = Integer.valueOf(appProps.getProperty("start.game"));
-        int endGame = Integer.valueOf(appProps.getProperty("end.game"));
+        int startGame=0;
+        int endGame=0;
+        try {
+            startGame = Integer.valueOf(appProps.getProperty("start.game"));
+            endGame = Integer.valueOf(appProps.getProperty("end.game"));
+        } catch(NumberFormatException e) {
+            log.warn("Cannot used files in {}", subDir);
+            return;
+        }
         log.info("startGame: {}", startGame);
         log.info("endGame: {}", endGame);
         int nbGames = trainGames(subDir, startGame, endGame, deepLearningWhite);

@@ -188,8 +188,8 @@ public class Game {
         assert (nextStrategy != null);
         this.inputsManager.updateHashsTables(board, nextStrategy.getAlliance());
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
-        log.info("current player:{}", getNextPlayer().getAlliance());
-        log.info("current legal move:[{}] {}",
+        log.info("current player:[{}] legal move:[{}] {}",
+                getNextPlayer().getAlliance(),
                 possibleMoves.size(),
                 possibleMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
         Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
