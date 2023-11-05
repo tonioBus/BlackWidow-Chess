@@ -28,7 +28,7 @@ public class UtilsTest {
         for (Lc0Last8Inputs last8Input : lc0Last8Inputs) {
             Move move = last8Input.move();
             if (lastMove != null) {
-                if (move.equals(lastMove)) {
+                if (move.toString().equals(lastMove.toString())) {
                     log.error("currentMove:{} lastMove:{}", move, lastMove);
                     return false;
                 }
