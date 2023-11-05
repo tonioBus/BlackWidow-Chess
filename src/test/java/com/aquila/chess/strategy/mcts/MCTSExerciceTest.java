@@ -559,7 +559,7 @@ public class MCTSExerciceTest {
      */
     @ParameterizedTest
     @ValueSource(ints = {100, 200, 400, 800})
-    void testMakeBlackChessMate() throws Exception {
+    void testMakeBlackChessMate(int nbSearchCalls) throws Exception {
         final Board board = Board.createBoard("ra8,kg2,rh2", "ke1", WHITE);
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final MCTSStrategy whiteStrategy = new MCTSStrategy(
@@ -570,7 +570,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearchCalls);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
                 BLACK,
@@ -579,7 +579,7 @@ public class MCTSExerciceTest {
                 updateCpuct,
                 -1)
                 .withNbThread(NB_THREAD)
-                .withNbSearchCalls(800);
+                .withNbSearchCalls(nbSearchCalls);
         game.setup(whiteStrategy, blackStrategy);
         Move move;
         Game.GameStatus status = null;

@@ -193,7 +193,7 @@ public class Game {
                 possibleMoves.size(),
                 possibleMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
         Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
-        if (possibleMoves.stream().filter(move1 -> move1.equals(move)).findFirst().isEmpty()) {
+        if (possibleMoves.stream().filter(move1 -> move1.toString().equals(move.toString())).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
         }
         if (!move.isAttack() &&
