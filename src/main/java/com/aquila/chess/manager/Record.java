@@ -98,10 +98,12 @@ public class Record {
         this.startDate = new Date(sequence.startDate);
         this.endDate = new Date(endDate);
         this.durationSeconds = endDate - sequence.startDate;
-        if (this.intermediateWhiteWin + this.intermediateBlackWin > 0)
+        if (this.intermediateWhiteWin + this.intermediateBlackWin > 0) {
             this.percentage = ((this.intermediateWhiteWin) * 100)
-                    / (this.intermediateWhiteWin + this.intermediateBlackWin);
-        else
+                    / (this.intermediateNbGame);
+//        this.percentage = ((this.intermediateWhiteWin) * 100)
+//                / (this.intermediateWhiteWin + this.intermediateBlackWin);
+        } else
             this.percentage = 0;
         this.round = sequence.nbStep;
         this.nnScore = nnScore;
