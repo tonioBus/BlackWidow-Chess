@@ -74,7 +74,7 @@ public abstract class Piece {
         int result = this.pieceType.hashCode();
         result = 31 * result + this.pieceAlliance.hashCode();
         result = 31 * result + this.piecePosition;
-        result = 31 * result + (this.isFirstMove ? 1 : 0);
+        result = 31 * result; // + (this.isFirstMove ? 1 : 0);
         return result;
     }
 

@@ -145,7 +145,11 @@ public class MCTSNode {
                 if (cacheValue.isNodesEmpty()) {
                     rootNode = new MCTSNode(move, childMoves, boardKey, cacheValue);
                 } else {
-                    rootNode = cacheValue.getFirstNode().get();
+                    MCTSNode cacheValueNode = cacheValue.getFirstNode().get();
+                    if(!cacheValueNode.getMove().equals(move)) {
+                        log.error("cacheValueNode:{} != move:{}", cacheValueNode, move);
+                    }
+                    rootNode=cacheValueNode;
                 }
                 log.info("CreateRootNode: rootNode:{} cacheValue.nbNodes:{} cacheValue:{}", rootNode, cacheValue.getNbNodes(), cacheValue);
                 rootNode.setAsRoot();
