@@ -62,7 +62,7 @@ public abstract class Piece {
         }
         final Piece otherPiece = (Piece) other;
         return this.piecePosition == otherPiece.piecePosition && this.pieceType == otherPiece.pieceType &&
-               this.pieceAlliance == otherPiece.pieceAlliance && this.isFirstMove == otherPiece.isFirstMove;
+               this.pieceAlliance == otherPiece.pieceAlliance; //  && this.isFirstMove == otherPiece.isFirstMove;
     }
 
     @Override

@@ -1,38 +1,74 @@
-MOVES:INIT-MOVE,Nc3,c5,h4,b5,a3,d6,Nxb5,f6,e3,Bd7,Nxd6,exd6,Rh3,Qb6,f3,Bxh3,e4,Kf7,c3,Ke8,Kf2,Qxb2,Qe1,a5,Qd1,c4,Be2,h6,e5,f5,g3,Qxd2,Bb2,Qd3,f4,Kd8,Bh5,Kc7,Qd2,g6,Bd1,Qd5,e6,Qd3,h5,Be7,Qe1,Bf6,Qe3,Qc2,Bxc2,Bd4,Bd3,Ra7,Be4,Kd8,Bh1,Ke8,Bb7,Nf6,Rd1,Nbd7,Qxd4,Nf8,Qxf6,Nxe6,Qxe6,Kf8,a4,Rh7,Ke2,Rg7,Ke1,Rh7,Bf3,Bg2,Rb1,Bxf3,Ra1,Be4,Ne2,Bh1,Rc1,Rhd7,Qxd6,Kf7,Qd3,g5,Qd5,Ke8,Kd1,Be4,Nd4,Bxd5,Nb5,Re7,Ra1,gxf4,Ra2,Bg2,Kc2,Rab7,gxf4,Kd7,Kd1,Re8,Nd4,Rg8,Nxf5,Be4,Nxh6,Kc7,Ba1,Bg6,f5,Kd6,Kd2,Kd7,Rc2,Kc8,Kd1,Re8,Nf7,Ree7,fxg6,Rb6,Rc1,Kb7,g7,Rbe6,Nh8,Kc7,Bb2,Re1,Kc2,Kd6
-nbStep:137
-current player:White
-current legal move:Nf7,Ng6,g7-g8=Q,g7-g8=R,g7-g8=B,g7-g8=N,Ba3,Ba1,Kd2,Kb1,Rb1,Ra1,Rd1,Rxe1,h6
+2023-11-10 23:22:53,072 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:208] [Black
+ nbPlay:3107
+ nbPossibleMoves:0
+ nbSubmitJobs:5028
+ nbRetrieveNNCachedValues:25205
+ nbRetrieveNNCachedPolicies:0
+ nbRetrieveNNValues:800
+ nbGoodSelection:2453
+ MAXRandomSelectionBestMoves:0
+ MINRandomSelectionBestMoves:2147483647
+ nbRandomSelection:654
+ nbRandomSelectionBestMoves:0
+ average:0.000000
+2023-11-10 23:22:53,072 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:209] [Black
+2023-11-10 23:22:53,072 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:214] [Black
+2023-11-10 23:22:53,072 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:110] [Black
+2023-11-10 23:22:53,072 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:111] [Black
+2023-11-10 23:22:53,073 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:112] [Black
+2023-11-10 23:22:53,073 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.MainTrainingAquila [MainTrainingAquila.java:97]
+GAME STATUS:IN_PROGRESS
+MOVES:INIT-MOVE,c4,Nc6,a4,e5,b4,Nd4,f4,c6,f5,b5,d3,f6,Be3,Ke7,h4,Kf7,g4,Rb8,Rh2,bxa4,Bg2,Nb5,Rxa4,Bb7,Na3,Qe8,Kf1,Nh6,Qa1,Rg8,R5,Nxd7,Ke7,g5,Bc7,Bxg8,Rgxg8,Nxb5,Rg7,Nxb8,Bxb8,Nd4,Bxc4,dxc4,Rg8,g6,Bxh2,Kh1,Bg3
+nbStep:83
+Repetition:0  |  50 draws counter:2
     [a] [b] [c] [d] [e] [f] [g] [h]
- 8  --- --- --- --- --- --- --- N-W  8
- 7  --- --- --- --- R-B --- P-W ---  7
- 6  --- --- --- K-B --- --- --- ---  6
- 5  P-B --- --- --- --- --- --- P-W  5
- 4  P-W --- P-B --- --- --- --- ---  4
- 3  --- --- P-W --- --- --- --- ---  3
- 2  --- B-W K-W --- --- --- --- ---  2
- 1  --- --- R-W --- R-B --- --- ---  1
+ 8  --- --- --- --- --- --- R-B ---  8
+ 7  --- --- --- --- K-B --- --- P-B  7
+ 6  --- --- P-B --- --- P-B P-W ---  6
+ 5  --- --- --- --- --- --- --- P-W  5
+ 4  --- P-W P-W N-W --- --- --- ---  4
+ 3  --- --- --- --- P-W --- B-B ---  3
+ 2  --- --- --- --- --- B-W --- ---  2
+ 1  --- --- --- --- --- --- --- K-W  1
     [a] [b] [c] [d] [e] [f] [g] [h]
 
-2023-06-07 05:18:51,092 WARN [main] c.a.c.s.m.MCTSNode [MCTSNode.java:264] [Black] SET AS ROOT:0.0 MCTSNode[-3716731623490342767] -> Move: Starting visit:0 expectedReward:0,000000e+00 parent:false childs:12 state:INTERMEDIATE virtual:0,000000
-2023-06-07 05:18:51,092 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:94] [68] RESET ROOT NORMALIZATION key: -3716731623490342767
-#%130&|2023-06-07 05:18:53,002 WARN [Worker-0] c.a.c.u.Utils [Utils.java:105] before dirichlet: indexes: 12 <-> 12 : policies>0
-2023-06-07 05:18:53,002 WARN [Worker-0] c.a.c.u.Utils [Utils.java:124] dirichlet: indexes: 12 <-> 12 : policies>0
-17##%132&|57##%143&|62##%147&|67##%161&|64##%141&|60##%139&|82##%138&|72##%147&|124##%155&|69##%142&|74##%133&|48##%134&|69##%140&|83##%131&|64##%134&|76##%137&|127##%128&|82##%128&|83##%133&|140##%154&|85##%148&|124##%129&|80##%137&|129##%148&|104##%133&|172##%149&|80##%132&|162##%137&|116##%153&|62##%155&|77##%148&|76##%139&|129##%133&|153#2023-06-07 05:20:00,546 INFO [Worker-0] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:302] [White] LOOSE MOVES:White-Kd2,Black-Ke5,White-Ba1,Black-Kf4,White-Rc2,Black-Ree2
-#%137&|38##%134&|109##%156&|101##%153&|182##%138&|244##%139&|164#2023-06-07 05:20:12,819 INFO [Worker-0] c.a.c.s.m.MCTSSearchWalker [MCTSSearchWalker.java:302] [White] LOOSE MOVES:White-Kd2,Black-Ke5,White-Ng6,Black-Kf6,White-Rb1,Black-Ree2
-2023-06-07 05:20:12,823 INFO [main] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThread.java:142] [68] END OF SEARCH DETECTED childs:12
-#%50&|Exception in thread "main" java.util.ConcurrentModificationException
-	at java.base/java.util.LinkedHashMap$LinkedHashIterator.nextNode(LinkedHashMap.java:756)
-	at java.base/java.util.LinkedHashMap$LinkedEntryIterator.next(LinkedHashMap.java:788)
-	at java.base/java.util.LinkedHashMap$LinkedEntryIterator.next(LinkedHashMap.java:786)
-	at com.aquila.chess.strategy.mcts.ServiceNN.optimiseLooseNode(ServiceNN.java:111)
-	at com.aquila.chess.strategy.mcts.ServiceNN.propagateValues(ServiceNN.java:141)
-	at com.aquila.chess.strategy.mcts.ServiceNN.initValueAndPolicies(ServiceNN.java:184)
-	at com.aquila.chess.strategy.mcts.ServiceNN.executeJobs(ServiceNN.java:95)
-	at com.aquila.chess.strategy.mcts.DeepLearningAGZ.flushJob(DeepLearningAGZ.java:247)
-	at com.aquila.chess.strategy.mcts.MCTSSearchMultiThread.search(MCTSSearchMultiThread.java:152)
-	at com.aquila.chess.strategy.mcts.MCTSStrategy.mctsStep(MCTSStrategy.java:191)
-	at com.aquila.chess.strategy.mcts.MCTSStrategy.play(MCTSStrategy.java:121)
-	at com.aquila.chess.Game.play(Game.java:160)
-	at com.aquila.chess.MainTrainingAGZ.main(MainTrainingAGZ.java:90)
-
-Process finished with exit code 1
+2023-11-10 23:22:53,073 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.Game [Game.java:191] current player:[White] leg
+2023-11-10 23:22:53,073 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:154] oppone
+2023-11-10 23:22:53,073 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSNode [MCTSNode.java:229] [Black] SET ASReward:-3.629190e-01 value:-3.629190e-01 parent:true childs:24 nbPropragate:1 state:INTERMEDIATE virtual:0.000000
+2023-11-10 23:22:53,073 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSNode [MCTSNode.java:236] nodes already  parent:false childs:24 nbPropragate:1 state:ROOT virtual:0.000000
+2023-11-10 23:22:53,073 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:162] this.d-01 value:-3.629190e-01 parent:false childs:24 nbPropragate:1 state:ROOT virtual:0.000000
+2023-11-10 23:22:53,077 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.u.PolicyUtils [PolicyUtils.java:286] ORIGIN
+2023-11-10 23:22:53,077 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.u.PolicyUtils [PolicyUtils.java:288] ORIGIN
+2023-11-10 23:22:53,077 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.u.PolicyUtils [PolicyUtils.java:286] DIRICH
+2023-11-10 23:22:53,077 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.u.PolicyUtils [PolicyUtils.java:288] DIRICH
+2023-11-10 23:22:53,077 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSSearchMultiThread [MCTSSearchMultiThreaReward:-3.629190e-01 value:-3.629190e-01 parent:false childs:24 nbPropragate:1 state:ROOT virtual:0.000000
+#134&25##128&12##147&51##142&28##140&100##140&36##147&34##138&87##140&21##136&44##150&47##135&38##146&71##134&39##138&49##135&3##136&147##143&50##134&51##104&32#2023-11-10 23:23:05,166 INFO [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSSearc
+2023-11-10 23:23:05,167 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:237] [White-3.629190e-01 parent:false childs:24 nbPropragate:0 state:ROOT virtual:0.000000
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 ERROR [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:244] move:
+ - Board moves:[b5, c5, Nxc6, Ne6, Nb5, Nf5, Nb3, Nf3, Nc2, Ne2, e4, Bxg3, Be1, Bg1, g7, gxh7, h6, Kg2, Kg1].
+ - MCTSTree nodes:[e4, Bf4, gxh7, b5, c5, Bh4, Nf5, Bb8, g7, Bxf2, Nb3, h6, Bc7, Nc2, Kh2, Kg2, Ne6, Ne2, Bh2, Nxc6, Nf3, Bd6,
+2023-11-10 23:23:05,167 WARN [com.aquila.chess.MainTrainingAquila.main()] c.a.c.s.m.MCTSStrategy [MCTSStrategy.java:292] [White

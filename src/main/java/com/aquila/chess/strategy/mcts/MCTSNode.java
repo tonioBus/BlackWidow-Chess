@@ -1,11 +1,9 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.Game;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
-import com.chess.engine.classic.pieces.Piece;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -137,6 +135,7 @@ public class MCTSNode {
 
     public static MCTSNode createRootNode(final List<Move> childMoves, final Move move, final long boardKey, final CacheValue cacheValue) {
         assert move != null;
+        log.info("createRootNode move:{} cacheValue:{}", move, cacheValue);
         synchronized (cacheValue) {
             MCTSNode rootNode;
             Optional<MCTSNode> optRootNode = cacheValue.getRootNode();
@@ -148,6 +147,7 @@ public class MCTSNode {
                 } else {
                     rootNode = cacheValue.getFirstNode().get();
                 }
+                log.info("CreateRootNode: rootNode:{} cacheValue.nbNodes:{} cacheValue:{}", rootNode, cacheValue.getNbNodes(), cacheValue);
                 rootNode.setAsRoot();
                 rootNode.parent = null;
             }

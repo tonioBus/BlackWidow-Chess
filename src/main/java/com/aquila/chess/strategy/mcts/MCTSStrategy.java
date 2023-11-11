@@ -117,7 +117,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                     this.mctsGame,
                     moveOpponent,
                     moveOpponent.getAllegiance(),
-                    // this.alliance,
                     this.directRoot
             );
             trainGame.add(lastOneStepRecord);
@@ -151,7 +150,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     protected void createRootNode(final Game game, final Move opponentMove, final List<Move> possibleMoves) {
         assert opponentMove != null;
         assert opponentMove.isInitMove() || opponentMove.getAllegiance() != this.alliance;
-        log.info("opponentMove:{}", opponentMove);
+        log.info("[{}] opponentMove:{} directRoot:{}", this.alliance, opponentMove, directRoot);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
         if (this.directRoot == null) {
@@ -159,9 +158,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             CacheValue cacheValue = deepLearning.getCacheValues().get(key);
             cacheValue.verifyAlliance(alliance.complementary());
             this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);
-            log.info("this.directRoot == null:directRoot:{}", directRoot);
+            log.info("[{}] this.directRoot == null:directRoot:{}", this.alliance, directRoot);
             return;
         }
+        log.warn("!!! trying to find a child:{}", opponentMove);
         MCTSNode childNode = this.directRoot.findChild(opponentMove);
         if (childNode == null) {
             long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
