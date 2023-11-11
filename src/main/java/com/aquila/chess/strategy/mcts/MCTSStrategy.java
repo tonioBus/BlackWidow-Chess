@@ -153,25 +153,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.info("[{}] opponentMove:{} directRoot:{}", this.alliance, opponentMove, directRoot);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
-        if (this.directRoot == null) {
-            long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
-            CacheValue cacheValue = deepLearning.getCacheValues().get(key);
-            cacheValue.verifyAlliance(alliance.complementary());
-            this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);
-            log.info("[{}] this.directRoot == null:directRoot:{}", this.alliance, directRoot);
-            return;
-        }
-        log.warn("!!! trying to find a child:{}", opponentMove);
-        MCTSNode childNode = this.directRoot.findChild(opponentMove);
-        if (childNode == null) {
-            long key = deepLearning.addState(mctsGame, "ROOT-1", opponentMove, statistic);
-            this.directRoot = MCTSNode.createNode(mctsGame.getBoard(), possibleMoves, opponentMove, key, deepLearning.getCacheValues().get(key));
-            log.info("childNode == null:directRoot:{}", directRoot);
-        } else {
-            log.info("NOT(childNode == null):childNode{}", childNode);
-            directRoot = childNode;
-            directRoot.setAsRoot();
-        }
+        long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
+        CacheValue cacheValue = deepLearning.getCacheValues().get(key);
+        cacheValue.verifyAlliance(alliance.complementary());
+        this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);
+        log.info("[{}] this.directRoot == null:directRoot:{}", this.alliance, directRoot);
     }
 
     protected Move mctsStep(final Move moveOpponent,
