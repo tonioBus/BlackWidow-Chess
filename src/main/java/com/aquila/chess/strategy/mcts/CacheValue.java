@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
@@ -49,15 +50,17 @@ public class CacheValue implements Serializable {
         sb.append(String.format("  label=%s\n", this.label));
         sb.append(String.format("  value=%f\n", this.value));
         try {
-            nodes.entrySet().forEach(entry -> {
-                sb.append(String.format("  - node %s -> %s (isLeaf:%b propagated:%b sync:%b)\n",
+            sb.append(nodes.entrySet()
+                    .stream()
+                    .map(entry ->
+                String.format("  - node %s -> %s (isLeaf:%b propagated:%b sync:%b)\n",
                         entry.getKey(),
                         entry.getValue().getPathFromRoot(),
                         entry.getValue().isLeaf(),
                         entry.getValue().isPropagated(),
                         entry.getValue().isSync()
-                ));
-            });
+                ))
+                    .collect(Collectors.joining("\n")));
         } catch (ConcurrentModificationException e) {
             sb.append(" nodes not available (sync)");
         }
