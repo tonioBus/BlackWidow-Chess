@@ -52,7 +52,7 @@ public class CacheValue implements Serializable {
             nodes.entrySet().forEach(entry -> {
                 sb.append(String.format("  - node %s -> %s (isLeaf:%b propagated:%b sync:%b)\n",
                         entry.getKey(),
-                        entry.getValue().getMovesFromRootAsString(),
+                        entry.getValue().getPathFromRoot(),
                         entry.getValue().isLeaf(),
                         entry.getValue().isPropagated(),
                         entry.getValue().isSync()

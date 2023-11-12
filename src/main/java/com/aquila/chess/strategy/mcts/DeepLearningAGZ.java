@@ -172,7 +172,7 @@ public class DeepLearningAGZ {
             String lastMoves = mctsGame.getMoves().stream().map(
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
-            final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, possibleMove == null ? "ROOT" : possibleMove);
+            final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, possibleMove == null ? "ROOT" : possibleMove);
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, possibleMove, moveColor, mctsGame, false, false);
@@ -199,7 +199,7 @@ public class DeepLearningAGZ {
             String lastMoves = mctsGame.getMoves().stream().map(
                             move -> move == null ? "-" : move.toString()).
                     collect(Collectors.joining(":"));
-            final String labelCacheValue = String.format("Label:%s lastMoves:%s possibleMove:%s", label, lastMoves, "ROOT");
+            final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, "ROOT");
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, null, moveColor, mctsGame, true, true);
@@ -353,8 +353,6 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             normalize(policies);
-            // FIXME
-            // Alliance moveColor = oneStepRecord.moveColor().complementary();
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
