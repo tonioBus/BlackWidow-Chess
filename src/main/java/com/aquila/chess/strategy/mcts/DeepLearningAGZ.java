@@ -191,7 +191,7 @@ public class DeepLearningAGZ {
      * @return
      */
     public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final Alliance moveColor, final Statistic statistic) {
-        log.info("[{}] BEGIN addRootState:{}", Thread.currentThread().getName(), label);
+        log.debug("[{}] BEGIN addRootState:{}", Thread.currentThread().getName(), label);
         long key = mctsGame.hashCode(moveColor);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
@@ -206,7 +206,7 @@ public class DeepLearningAGZ {
         } else {
             statistic.nbRetrieveNNCachedValues++;
         }
-        log.info("[{}] END addRootState:{}", Thread.currentThread().getName(), label);
+        log.debug("[{}] END addRootState:{}", Thread.currentThread().getName(), label);
         return key;
     }
 
