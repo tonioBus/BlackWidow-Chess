@@ -73,7 +73,6 @@ class Lc0InputsManagerImplTest {
                 -1)
                 .withNbSearchCalls(NB_STEP)
                 .withDirichlet(dirichlet);
-        whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null);

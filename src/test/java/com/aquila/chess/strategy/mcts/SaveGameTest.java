@@ -75,7 +75,6 @@ public class SaveGameTest {
                 .withNbThread(1)
                 .withNbSearchCalls(NB_STEP)
                 .withDirichlet(dirichlet);
-        whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         for (int i = 0; i < nbStep; i++) {
@@ -140,7 +139,6 @@ public class SaveGameTest {
                 .withNbThread(1)
                 .withNbSearchCalls(NB_STEP)
                 .withDirichlet(dirichlet);
-        whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         for (int i = 0; i < nbStep; i++) {
@@ -204,7 +202,6 @@ public class SaveGameTest {
                 .withNbThread(1)
                 .withNbSearchCalls(NB_STEP)
                 .withDirichlet(dirichlet);
-        whiteStrategy.setPartnerStrategy(blackStrategy);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         int i = 0;

@@ -87,7 +87,6 @@ public class MainTrainingAquila {
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
                     .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
-            whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             try {

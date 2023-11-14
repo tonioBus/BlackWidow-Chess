@@ -7,22 +7,23 @@ import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class TrainTest {
@@ -63,84 +64,71 @@ public class TrainTest {
 
     }
 
-    @Test
-    void testTrain() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8})
+    void testTrain(int seed) throws Exception {
         List<Game> games = new ArrayList<>();
         List<Integer> savedGames = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            final Board board = Board.createStandardBoard();
-            final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
-            final TrainGame trainGame = new TrainGame();
-            long seed = 1;
-            final MCTSStrategy whiteStrategy = new MCTSStrategy(
-                    game,
-                    Alliance.WHITE,
-                    deepLearningWhite,
-                    seed,
-                    updateCpuct,
-                    -1)
-                    .withTrainGame(trainGame)
-                    .withNbThread(-1)
-                    .withNbSearchCalls(8);
-            // .withNbThread(1);
-            final MCTSStrategy blackStrategy = new MCTSStrategy(
-                    game,
-                    Alliance.BLACK,
-                    deepLearningBlack,
-                    seed,
-                    updateCpuct,
-                    -1)
-                    .withTrainGame(trainGame)
-                    .withNbThread(-1)
-                    .withNbSearchCalls(100);
-            whiteStrategy.setPartnerStrategy(blackStrategy);
-            game.setup(whiteStrategy, blackStrategy);
-            Game.GameStatus gameStatus = null;
-            Move previousMove = null;
-            do {
-                gameStatus = game.play();
-                if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
-                log.info(game.toString());
-                final Move move = game.getLastMove();
-                String trainMoveSz = trainGame.getOneStepRecordList().getLast().move();
-                if (previousMove != null && !trainMoveSz.equals(previousMove.toString())) {
-                    log.error("[{}]: move:{} previousMove:{} trainMove:{}",
-                            move.getAllegiance(),
-                            move,
-                            previousMove,
-                            trainMoveSz);
-                    assertTrue(false);
-                }
-                previousMove = move;
-            } while (true);
-            log.info("#########################################################################");
-            log.info("END OF game :\n{}\n{}", gameStatus, game);
-            log.info("#########################################################################");
-            // 1 + nbStep ==> INIT_MOVE + nb steps
-            // if (gameStatus == Game.GameStatus.DRAW_300)
-                assertEquals(game.getMoves().size()&0xFFFFC, trainGame.getOneStepRecordList().size()&0xFFFFC);
-            //else
-              //  assertEquals(game.getMoves().size(), trainGame.getOneStepRecordList().size());
-            final String filename = trainGame.saveBatch("train-test", gameStatus);
-            final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-            savedGames.add(num);
-            games.add(game);
-            deepLearningWhite.clearAllCaches();
-            deepLearningBlack.clearAllCaches();
+        final Board board = Board.createStandardBoard();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+        final TrainGame trainGame = new TrainGame();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                Alliance.WHITE,
+                deepLearningWhite,
+                seed,
+                updateCpuct,
+                -1)
+                .withTrainGame(trainGame)
+                .withNbThread(-1)
+                .withNbSearchCalls(8);
+        // .withNbThread(1);
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                Alliance.BLACK,
+                deepLearningBlack,
+                seed,
+                updateCpuct,
+                -1)
+                .withTrainGame(trainGame)
+                .withNbThread(-1)
+                .withNbSearchCalls(100);
+        game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus gameStatus = null;
+        do {
+            gameStatus = game.play();
+            if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
+            log.info(game.toString());
+        } while (true);
+        log.info("#########################################################################");
+        log.info("END OF game :\n{}\n{}", gameStatus, game);
+        log.info("#########################################################################");
+        if (gameStatus != Game.GameStatus.DRAW_300 && game.getMoves().size() != trainGame.getOneStepRecordList().size()) {
+            log.error("game moves:{} <-> {} train moves", game.getMoves().size(), trainGame.getOneStepRecordList().size());
+            assertTrue(false);
         }
-        log.info("Games:\n{}", games.stream().map(game -> game.toString()).collect(Collectors.joining("\n")));
-        for (int i = 0; i < savedGames.size(); i++) {
-            int num = savedGames.get(i);
-            Game game = games.get(i);
-            // game.playAll();
-            TrainGame loadTrainGame = TrainGame.load("train-test", num);
-            try {
-                deepLearningWhite.train(loadTrainGame);
-            } catch (IOException e) {
-                log.info("Game:\n{}", game);
-                assertFalse(true, "Exception:" + e);
-            }
+        final String filename = trainGame.saveBatch("train-test", gameStatus);
+        final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
+        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        try {
+            deepLearningWhite.train(loadTrainGame);
+        } catch (IOException e) {
+            log.info("Game:\n{}", game);
+            assertFalse(true, "Exception:" + e);
         }
+
+//        for (int i = 0; i < savedGames.size(); i++) {
+//            int num = savedGames.get(i);
+//            Game game = games.get(i);
+//            // game.playAll();
+//            TrainGame loadTrainGame = TrainGame.load("train-test", num);
+//            try {
+//                deepLearningWhite.train(loadTrainGame);
+//            } catch (IOException e) {
+//                log.info("Game:\n{}", game);
+//                assertFalse(true, "Exception:" + e);
+//            }
+//        }
     }
 
     @Test

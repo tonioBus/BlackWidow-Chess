@@ -45,9 +45,8 @@ public abstract class InputsManager {
 
     public abstract InputsManager clone();
 
-    public Board updateHashsTables(Board board, final Alliance alliance) {
+    public void updateHashsTables(Board board, final Alliance alliance) {
         this.lastHashs.get(alliance).add(hashCode1Alliance(board, alliance));
-        return board;
     }
 
     public int getNbRepeat(final Alliance alliance) {

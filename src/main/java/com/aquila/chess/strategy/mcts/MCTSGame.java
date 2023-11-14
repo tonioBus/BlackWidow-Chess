@@ -78,8 +78,8 @@ public class MCTSGame {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         add2Last8InputsAndPlay(move);
-        this.board = inputsManager.updateHashsTables(board, move.getAllegiance());
-        return this.status = calculateStatus(board);
+        inputsManager.updateHashsTables(board, move.getAllegiance());
+        return this.status = calculateStatus(move.execute());
     }
 
     /**

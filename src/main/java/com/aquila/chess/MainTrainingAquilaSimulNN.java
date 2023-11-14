@@ -84,7 +84,6 @@ public class MainTrainingAquilaSimulNN {
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
             // .withNbThread(1);
-            whiteStrategy.setPartnerStrategy(blackStrategy);
             game.setup(whiteStrategy, blackStrategy);
             GameChecker gameChecker = new GameChecker();
             Game.GameStatus gameStatus;

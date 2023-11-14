@@ -48,10 +48,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private MCTSNode directRoot = null;
 
     @Getter
-    private TrainGame trainGame;
+    private Game.GameStatus currentGameStatus;
 
-    @Setter
-    private MCTSStrategy partnerStrategy = null;
+    @Getter
+    private TrainGame trainGame;
 
     public MCTSStrategy(
             final Game originalGame,
@@ -121,8 +121,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(lastOneStepRecord);
         }
-        Game.GameStatus gameStatus = this.mctsGame.play(move);
-        if (trainGame != null && gameStatus != Game.GameStatus.IN_PROGRESS) {
+        currentGameStatus = this.mctsGame.play(move);
+        if (trainGame != null && currentGameStatus != Game.GameStatus.IN_PROGRESS) {
             OneStepRecord finalOneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,
@@ -133,10 +133,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
         this.directRoot.setState(MCTSNode.State.INTERMEDIATE);
         return move;
-    }
-
-    public boolean isTraining() {
-        return this.partnerStrategy != null;
     }
 
     /**
