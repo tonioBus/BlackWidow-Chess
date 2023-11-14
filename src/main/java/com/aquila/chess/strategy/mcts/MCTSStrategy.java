@@ -323,9 +323,17 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return getName();
     }
 
-    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode) {
+    /**
+     *
+     * @param stepNode
+     * @param move used only if stepNode == null, usefull for the last move of a game, when we do not need to retrieve the rootNode but just checkMate
+     * @return
+     */
+    private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode, final Move move) {
         final Map<Integer, Double> probabilities = new HashMap<>();
         if (stepNode == null) {
+            int index = PolicyUtils.indexFromMove(move);
+            probabilities.put(index, 1.0);
             return probabilities;
         }
         if (!stepNode.isSync()) {
@@ -348,7 +356,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move,
                                                     final Alliance alliance, final MCTSNode directParent) {
         final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
-        Map<Integer, Double> policies = calculatePolicies(directParent);
+        Map<Integer, Double> policies = calculatePolicies(directParent, move);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 inputs,
                 move.toString(),
