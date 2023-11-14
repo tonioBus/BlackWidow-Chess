@@ -135,7 +135,7 @@ public class MCTSNode {
 
     public static MCTSNode createRootNode(final List<Move> childMoves, final Move move, final long boardKey, final CacheValue cacheValue) {
         assert move != null;
-        log.info("createRootNode move:{} cacheValue:{}", move, cacheValue);
+        log.debug("createRootNode move:{} cacheValue:{}", move, cacheValue);
         synchronized (cacheValue) {
             MCTSNode rootNode;
             Optional<MCTSNode> optRootNode = cacheValue.getRootNode();
@@ -145,7 +145,21 @@ public class MCTSNode {
                 if (cacheValue.isNodesEmpty()) {
                     rootNode = new MCTSNode(move, childMoves, boardKey, cacheValue);
                 } else {
-                    MCTSNode cacheValueNode = cacheValue.getFirstNode().get();
+                    MCTSNode cacheValueNode;
+                    List<MCTSNode> cacheValueNodes = cacheValue.getAllMCTSNodes().stream().filter(node -> node.getMove().equals(move)).collect(Collectors.toList());
+                    switch (cacheValueNodes.size()) {
+                        case 0 -> {
+                            cacheValueNode = cacheValue.getFirstNode().get();
+                            log.error("no node with move:{} found in:{}", move, cacheValueNode);
+                        }
+                        case 1 -> {
+                            cacheValueNode = cacheValueNodes.get(0);
+                        }
+                        default -> {
+                            log.error("{} nodes has the move:{} in cacheValue:{}", move, cacheValue);
+                            cacheValueNode = cacheValueNodes.get(0);
+                        }
+                    }
                     if (!cacheValueNode.getMove().equals(move)) {
                         log.error("cacheValueNode:{} != move:{}", cacheValueNode, move);
                     }
