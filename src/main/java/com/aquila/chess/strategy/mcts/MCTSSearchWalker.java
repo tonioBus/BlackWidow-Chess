@@ -309,6 +309,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             opponentNode.resetExpectedReward(LOOSE_VALUE);
             opponentNode.setPropagated(false);
             opponentNode.setState(LOOSE);
+            this.deepLearning.addDefinedNodeToPropagate(opponentNode);
         }
     }
 
