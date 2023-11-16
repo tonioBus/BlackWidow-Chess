@@ -349,20 +349,6 @@ public class MCTSNode {
         }
     }
 
-    /**
-     * Set the expected value of this node to the given value but keep the original one (for traces)
-     * @param expectedValue the expectedValue to set
-     */
-    void resetExpectedRewardForLeaf(float expectedValue) {
-        this.cacheValue.setInitialized(true);
-        double oldValue = this.cacheValue.getValue();
-        this.cacheValue.setValue(expectedValue);
-        this.visits = 0;
-        this.sum = expectedValue;
-        this.setSync(true);
-        log.info("RESET EXPECTED REWARD DONE: oldValue:{} -> {}", oldValue, this);
-    }
-
     @AllArgsConstructor
     @Getter
     static public class PropragateValue {
@@ -536,6 +522,7 @@ public class MCTSNode {
     }
 
     /**
+     * Create a leaf using one the the 3 possible LEAF cache value: WIN, LOST, DRAWN
      * @return the nodes to <strong>NOT</strong> propagate as they will be removed
      */
     public void createLeaf(final CacheValue cacheValue) {
@@ -546,11 +533,24 @@ public class MCTSNode {
         if (cacheValue != null) {
             if (this.cacheValue != cacheValue) {
                 this.cacheValue.clearNodes();
+                log.info("RESET EXPECTED REWARD DONE: oldValue:{} -> {}:newValue", this.cacheValue, cacheValue);
                 this.cacheValue = cacheValue;
             }
             this.cacheValue.addNode(this);
         }
         this.sum = this.cacheValue.getValue();
+    }
+
+    /**
+     * Set the expected value of this node to the given value but keep the original one (for traces)
+     * @param expectedValue the expectedValue to set
+     */
+    void resetExpectedRewardForLeaf(float expectedValue) {
+        this.cacheValue.setInitialized(true);
+        this.cacheValue.setValue(expectedValue);
+        this.visits = 0;
+        this.sum = expectedValue;
+        this.setSync(true);
     }
 
     public enum State {

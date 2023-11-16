@@ -280,9 +280,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected void createDrawnNode(final MCTSNode opponentNode, final Move possibleMove) {
         final MCTSNode child = createStopLeafChild(opponentNode, possibleMove, PAT);
         if (child.getState() != PAT) {
-            log.warn("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
+            // log.warn("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
             child.setState(PAT);
-            child.resetExpectedRewardForLeaf(DRAWN_VALUE);
+            // child.createLeaf(deepLearning.getCacheValues().getDrawnCacheValue());
+            // child.resetExpectedRewardForLeaf(DRAWN_VALUE);
             undoPropagation(child, child.move.getAllegiance(), child.getMove());
             child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
@@ -292,9 +293,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected void createWinNode(final MCTSNode opponentNode, final Move possibleMove) {
         final MCTSNode child = createStopLeafChild(opponentNode, possibleMove, WIN);
         if (child.getState() != WIN) {
-            log.warn("[{}] DETECT WIN MOVE: {} -> WIN-NODE {}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove);
+            // log.warn("[{}] DETECT WIN MOVE: {} -> WIN-NODE {} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
             child.setState(WIN);
-            child.resetExpectedRewardForLeaf(WIN_VALUE);
+            // child.createLeaf(deepLearning.getCacheValues().getWinCacheValue());
+            // child.resetExpectedRewardForLeaf(WIN_VALUE);
             undoPropagation(child, child.move.getAllegiance(), child.getMove());
             child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
@@ -303,10 +305,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     protected void createLooseNode(final MCTSNode opponentNode) {
         if (opponentNode.getState() != LOOSE) {
-            log.info("[{}] STOP LOSS NODE {} LOOSE-NODE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), opponentNode);
+            log.info("[{}] STOP LOSS NODE {} LOOSE-NODE:{} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), opponentNode, opponentNode.getCacheValue().getValue());
             undoPropagation(opponentNode, opponentNode.getColorState(), opponentNode.getMove());
             opponentNode.createLeaf(deepLearning.getCacheValues().getLostCacheValue());
-            opponentNode.resetExpectedRewardForLeaf(LOOSE_VALUE);
+            // opponentNode.resetExpectedRewardForLeaf(LOOSE_VALUE);
             opponentNode.setPropagated(false);
             opponentNode.setState(LOOSE);
             this.deepLearning.addDefinedNodeToPropagate(opponentNode);
@@ -419,9 +421,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                             log.debug("#{} [{} - {}] moves:{} CURRENT COLOR WIN V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         undoPropagation(node, simulatedPlayerColor, selectedMove);
-                        // node.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
+                        node.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
                         node.setState(WIN);
-                        node.resetExpectedRewardForLeaf(WIN_VALUE);
+                        // node.resetExpectedRewardForLeaf(WIN_VALUE);
                         node.setPropagated(false);
                     } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
@@ -433,9 +435,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
                             log.debug("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
                         undoPropagation(node, simulatedPlayerColor, selectedMove);
-                        // node.createLeaf(this.deepLearning.getCacheValues().getLostCacheValue());
+                        node.createLeaf(this.deepLearning.getCacheValues().getLostCacheValue());
                         node.setState(LOOSE);
-                        node.resetExpectedRewardForLeaf(LOOSE_VALUE);
+                        // node.resetExpectedRewardForLeaf(LOOSE_VALUE);
                         node.setPropagated(false);
                     } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
@@ -463,7 +465,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 log.debug("#{} [{} - {}] move:{} {} RETURN: 0", depth, colorStrategy, simulatedPlayerColor, selectedMove,
                         gameStatus);
             undoPropagation(node, simulatedPlayerColor, selectedMove);
-            node.resetExpectedRewardForLeaf(DRAWN_VALUE);
+            // node.resetExpectedRewardForLeaf(DRAWN_VALUE);
             node.createLeaf(deepLearning.getCacheValues().getDrawnCacheValue());
             node.setPropagated(false);
         } else node.incNbPropationsToExecute();
