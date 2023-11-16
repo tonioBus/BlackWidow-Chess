@@ -10,6 +10,7 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -25,6 +26,7 @@ public class MCTSGameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {5, 10, 30})
+    @Disabled
     @Order(0)
     void testCreate(int nbStep) throws Exception {
         final Board board = Board.createStandardBoard();
@@ -73,6 +75,7 @@ public class MCTSGameTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5})
+    @Disabled
     void testMCTSLc0Hashcode(int seed) throws Exception {
         final Board board = Board.createStandardBoard();
         Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();

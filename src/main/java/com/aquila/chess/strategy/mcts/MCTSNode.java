@@ -349,11 +349,18 @@ public class MCTSNode {
         }
     }
 
-    void resetExpectedReward(float value) {
-        this.cacheValue.setValue(value);
+    /**
+     * Set the expected value of this node to the given value but keep the original one (for traces)
+     * @param expectedValue the expectedValue to set
+     */
+    void resetExpectedRewardForLeaf(float expectedValue) {
         this.cacheValue.setInitialized(true);
-        syncSum();
-        if (log.isDebugEnabled()) log.debug("RESET EXPECTED REWARD DONE: {}", this);
+        double oldValue = this.cacheValue.getValue();
+        this.cacheValue.setValue(expectedValue);
+        this.visits = 0;
+        this.sum = expectedValue;
+        this.setSync(true);
+        log.info("RESET EXPECTED REWARD DONE: oldValue:{} -> {}", oldValue, this);
     }
 
     @AllArgsConstructor
@@ -367,7 +374,7 @@ public class MCTSNode {
     public double getExpectedReward(boolean withVirtualLoss) {
         syncSum();
         if (this.getVisits() == 0) return this.getCacheValue().getValue() - (withVirtualLoss ? virtualLoss : 0);
-        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits()); // + 1);
+        else return (sum - (withVirtualLoss ? virtualLoss : 0)) / (this.getVisits());
     }
 
     public List<MCTSNode> search(final State... states) {
