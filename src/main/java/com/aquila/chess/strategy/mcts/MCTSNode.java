@@ -533,7 +533,7 @@ public class MCTSNode {
         if (cacheValue != null) {
             if (this.cacheValue != cacheValue) {
                 this.cacheValue.clearNodes();
-                log.info("RESET EXPECTED REWARD DONE: oldValue:{} -> {}:newValue", this.cacheValue.getValue(), cacheValue);
+                log.info("RESET EXPECTED REWARD DONE: oldValue:{} -> {}:newValue", this.cacheValue.getValue(), cacheValue.getValue());
                 this.cacheValue = cacheValue;
             }
             this.cacheValue.addNode(this);
