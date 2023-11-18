@@ -541,18 +541,6 @@ public class MCTSNode {
         this.sum = this.cacheValue.getValue();
     }
 
-    /**
-     * Set the expected value of this node to the given value but keep the original one (for traces)
-     * @param expectedValue the expectedValue to set
-     */
-    void resetExpectedRewardForLeaf(float expectedValue) {
-        this.cacheValue.setInitialized(true);
-        this.cacheValue.setValue(expectedValue);
-        this.visits = 0;
-        this.sum = expectedValue;
-        this.setSync(true);
-    }
-
     public enum State {
         ROOT, INTERMEDIATE, WIN, LOOSE, PAT, REPETITION_X3, REPEAT_50, NOT_ENOUGH_PIECES, NB_MOVES_300
     }

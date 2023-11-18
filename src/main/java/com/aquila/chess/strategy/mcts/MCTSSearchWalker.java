@@ -416,28 +416,28 @@ public class MCTSSearchWalker implements Callable<Integer> {
             case WHITE_CHESSMATE:
                 if (simulatedPlayerColor == colorStrategy) {
                     if (node.getState() != WIN) {
-                        String sequence = sequenceMoves(node);
-                        if (log.isDebugEnabled())
+                        if (log.isDebugEnabled()) {
+                            String sequence = sequenceMoves(node);
                             log.debug("#{} [{} - {}] moves:{} CURRENT COLOR WIN V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
+                        }
                         undoPropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf(this.deepLearning.getCacheValues().getWinCacheValue());
                         node.setState(WIN);
-                        // node.resetExpectedRewardForLeaf(WIN_VALUE);
                         node.setPropagated(false);
                     } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
                     return new SearchResult("RETURN WIN NODE", 1);
                 } else {
                     if (node.getState() != LOOSE) {
-                        String sequence = sequenceMoves(node);
-                        if (log.isDebugEnabled())
+                        if (log.isDebugEnabled()) {
+                            String sequence = sequenceMoves(node);
                             log.debug("#{} [{} - {}] move:{} CURRENT COLOR LOOSE V1", depth, colorStrategy, simulatedPlayerColor,
                                     sequence);
+                        }
                         undoPropagation(node, simulatedPlayerColor, selectedMove);
                         node.createLeaf(this.deepLearning.getCacheValues().getLostCacheValue());
                         node.setState(LOOSE);
-                        // node.resetExpectedRewardForLeaf(LOOSE_VALUE);
                         node.setPropagated(false);
                     } else node.incNbPropationsToExecute();
                     this.deepLearning.addDefinedNodeToPropagate(node);
@@ -465,7 +465,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 log.debug("#{} [{} - {}] move:{} {} RETURN: 0", depth, colorStrategy, simulatedPlayerColor, selectedMove,
                         gameStatus);
             undoPropagation(node, simulatedPlayerColor, selectedMove);
-            // node.resetExpectedRewardForLeaf(DRAWN_VALUE);
             node.createLeaf(deepLearning.getCacheValues().getDrawnCacheValue());
             node.setPropagated(false);
         } else node.incNbPropationsToExecute();
