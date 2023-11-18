@@ -110,13 +110,14 @@ public class TrainTest {
         final String filename = trainGame.saveBatch("train-test", gameStatus);
         final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
         TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        StatisticsFit statisticsFit = new StatisticsFit(seed, seed);
         try {
-            deepLearningWhite.train(loadTrainGame);
+            deepLearningWhite.train(loadTrainGame, statisticsFit);
         } catch (IOException e) {
             log.info("Game:\n{}", game);
             assertFalse(true, "Exception:" + e);
         }
-
+        log.info("statistics:{}", statisticsFit);
 //        for (int i = 0; i < savedGames.size(); i++) {
 //            int num = savedGames.get(i);
 //            Game game = games.get(i);
@@ -134,14 +135,18 @@ public class TrainTest {
     @Test
     void testLoad() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load("train-test-load", 1);
-        deepLearningWhite.train(trainGame);
+        StatisticsFit statisticsFit = new StatisticsFit(1,1);
+        deepLearningWhite.train(trainGame, statisticsFit);
+        log.info("statistics:{}", statisticsFit);
     }
 
     @Test
     @Disabled
     void testPunctualLoad() throws IOException, ClassNotFoundException {
         TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
-        deepLearningWhite.train(trainGame);
+        StatisticsFit statisticsFit = new StatisticsFit(1060,1060);
+        deepLearningWhite.train(trainGame, statisticsFit);
+        log.info("statistics:{}", statisticsFit);
     }
 
     @AfterAll

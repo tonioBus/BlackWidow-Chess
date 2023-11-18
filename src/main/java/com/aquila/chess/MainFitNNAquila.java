@@ -2,6 +2,7 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.DeepLearningAGZ;
 import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.StatisticsFit;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -32,11 +34,13 @@ public class MainFitNNAquila implements Runnable {
     static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
     public static final String TRAIN_SETTINGS = "train-settings.properties";
 
+    private HashMap<String, StatisticsFit> statistics = new HashMap<>();
+
     UpdateLr updateLr = nbGames -> 1.0e-4;
 
     // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
-    private String[] trainDirs = {"train-aquila", "train-aquila-linux", "train-aquila-grospc"};
+    private String[] trainDirs = {"train-aquila-grospc", "train-aquila", "train-aquila-linux"};
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
@@ -113,10 +117,6 @@ public class MainFitNNAquila implements Runnable {
                 }
             });
         }
-//        train("train-aquila", deepLearningWhite);
-//        train("train-aquila-linux", deepLearningWhite);
-//        train("train-aquila-rog", deepLearningWhite);
-
         try {
             ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
             deepLearningWhite.save();
@@ -124,6 +124,10 @@ public class MainFitNNAquila implements Runnable {
             log.error("Error when saving NN", e);
         }
         log.info("Train done in directories:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("\n- ", "- ", "")));
+        statistics.entrySet().forEach(entry -> {
+            String subDir = entry.getKey();
+            log.info("------------------------------------\nSUBDIR:{}\n{}", subDir, entry.getValue());
+        });
     }
 
     private void waitForKey() {
@@ -145,13 +149,15 @@ public class MainFitNNAquila implements Runnable {
             log.warn("Cannot used files in {}", subDir);
             return;
         }
+        StatisticsFit statisticsFit = new StatisticsFit(startGame, endGame);
+        statistics.put(subDir, statisticsFit);
         log.info("startGame: {}", startGame);
         log.info("endGame: {}", endGame);
-        int nbGames = trainGames(subDir, startGame, endGame, deepLearningWhite);
+        int nbGames = trainGames(subDir, startGame, endGame, deepLearningWhite, statisticsFit);
         log.info("{} -> Train {} games.", subDir, nbGames - startGame);
     }
 
-    public int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite) {
+    public int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite, StatisticsFit statisticsFit) {
         log.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
@@ -160,10 +166,11 @@ public class MainFitNNAquila implements Runnable {
             Thread.currentThread().setName(filename);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
-                deepLearningWhite.train(trainGame);
+                deepLearningWhite.train(trainGame, statisticsFit);
             } catch (Exception e) {
                 log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);
                 log.error("Stopping this training ... :(");
+                statisticsFit.nbErrorTrain.add(""+numGame);
             }
         }
         return numGame;

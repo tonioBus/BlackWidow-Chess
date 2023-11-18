@@ -71,7 +71,7 @@ public class MainFitNNLc0 {
             logger.info("load game:{}", numGame);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
-                deepLearningWhite.train(trainGame);
+                deepLearningWhite.train(trainGame, null);
             } catch (Exception e) {
                 logger.error("Error for the training game: " + numGame, e);
             }

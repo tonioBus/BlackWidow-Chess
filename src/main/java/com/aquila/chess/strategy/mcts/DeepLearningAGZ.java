@@ -319,9 +319,10 @@ public class DeepLearningAGZ {
      * Train the NN by sending batches of FIT_CHUNK size
      *
      * @param trainGame
+     * @param statisticsFit
      * @throws IOException
      */
-    public void train(final TrainGame trainGame) throws IOException {
+    public void train(final TrainGame trainGame, final StatisticsFit statisticsFit) throws IOException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         LinkedList<OneStepRecord> correctStepRecord = checkGame(trainGame);
         int nbCorrectStep = correctStepRecord.size();
@@ -332,15 +333,21 @@ public class DeepLearningAGZ {
         log.info("NETWORK TO FIT[{}]: {}", nbCorrectStep, trainGame.getValue());
         int nbChunk = nbCorrectStep / FIT_CHUNK;
         int restChunk = nbCorrectStep % FIT_CHUNK;
+        switch(trainGame.getValue().intValue()) {
+            case 1 -> { statisticsFit.nbWin++;}
+            case -1 -> { statisticsFit.nbLost++;}
+            case 0 -> { statisticsFit.nbDrawn++;}
+        }
         for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
-            trainChunk(indexChunk, FIT_CHUNK, trainGame);
+            trainChunk(indexChunk, FIT_CHUNK, trainGame,statisticsFit);
         }
         if (restChunk > 0) {
-            trainChunk(nbChunk, restChunk, trainGame);
+            trainChunk(nbChunk, restChunk, trainGame, statisticsFit);
         }
+        statisticsFit.nbTrainGame++;
     }
 
-    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame) {
+    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame, final StatisticsFit statisticsFit) {
         final TrainInputs inputsForNN = new TrainInputs(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
@@ -366,7 +373,10 @@ public class DeepLearningAGZ {
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
         nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
+        statisticsFit.nbInputsFit +=chunkSize;
         double score = nn.getScore();
+        if(score < statisticsFit.scoreMin) statisticsFit.scoreMin = score;
+        if(score > statisticsFit.scoreMax) statisticsFit.scoreMax = score;
         log.info("NETWORK score: {}", score);
         if ("NaN".equals(score + "")) {
             log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");
