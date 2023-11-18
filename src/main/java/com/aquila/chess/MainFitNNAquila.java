@@ -40,7 +40,11 @@ public class MainFitNNAquila implements Runnable {
 
     // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
-    private String[] trainDirs = {"train-aquila-grospc", "train-aquila", "train-aquila-linux"};
+    private String[] trainDirs = {
+            "train-aquila-grospc",
+            "train-aquila",
+            "train-aquila-linux"
+    };
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
@@ -138,15 +142,17 @@ public class MainFitNNAquila implements Runnable {
 
     public void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
         Properties appProps = new Properties();
-        appProps.load(new FileInputStream(subDir + "/" + TRAIN_SETTINGS));
+        String traingFile = subDir + "/" + TRAIN_SETTINGS;
+        appProps.load(new FileInputStream(traingFile));
         log.info("START MainFitNNAquila");
         int startGame=0;
         int endGame=0;
         try {
-            startGame = Integer.valueOf(appProps.getProperty("start.game"));
-            endGame = Integer.valueOf(appProps.getProperty("end.game"));
+            startGame = Integer.valueOf(appProps.getProperty("start.game").trim());
+            endGame = Integer.valueOf(appProps.getProperty("end.game").trim());
         } catch(NumberFormatException e) {
-            log.warn("Cannot used files in {}", subDir);
+            log.error("Exception", e);
+            log.warn("Cannot used training file {}", traingFile);
             return;
         }
         StatisticsFit statisticsFit = new StatisticsFit(startGame, endGame);

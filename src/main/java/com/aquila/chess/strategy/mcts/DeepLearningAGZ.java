@@ -295,15 +295,17 @@ public class DeepLearningAGZ {
         LinkedList<OneStepRecord> ret = new LinkedList<>();
         try {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
-                final Collection<Move> currentMoves = gameChecker.getCurrentLegalMoves();
                 String moveSz = oneStepRecord.move();
                 InputsFullNN inputsNN = gameChecker.play(moveSz, oneStepRecord.moveColor());
-                OneStepRecord newOneStepRecord = new OneStepRecord(
-                        inputsNN,
-                        oneStepRecord.move(),
-                        oneStepRecord.moveColor(),
-                        oneStepRecord.policies());
-                ret.add(newOneStepRecord);
+                if(inputsNN!=null) {
+                    OneStepRecord newOneStepRecord = new OneStepRecord(
+                            inputsNN,
+                            oneStepRecord.move(),
+
+                            oneStepRecord.moveColor(),
+                            oneStepRecord.policies());
+                    ret.add(newOneStepRecord);
+                }
             }
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);

@@ -43,6 +43,7 @@ public class GameChecker {
                 log.error("no legal move found for: {}", givenMove);
                 log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
+                if(game.getNbStep()>=300) return null;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();
