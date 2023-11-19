@@ -110,7 +110,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
                 inputs[24 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
             });
             // King liberty 36 (1+1 planes)
-            if (nbPieces < 8) {
+            if (nbPieces < 10) {
                 if (currentPiece.getPieceType() == Piece.PieceType.KING) {
                     int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
                     legalMoves.stream().forEach(move -> {
