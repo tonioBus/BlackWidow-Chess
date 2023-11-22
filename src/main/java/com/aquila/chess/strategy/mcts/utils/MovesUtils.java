@@ -28,7 +28,7 @@ public class MovesUtils {
     }
 
     static public boolean is3MovesRepeat(List<Move> moves) {
-        return nbMovesRepeat(moves) >= 2;
+        return false; // FIXME nbMovesRepeat(moves) >= 2;
     }
 
 }
