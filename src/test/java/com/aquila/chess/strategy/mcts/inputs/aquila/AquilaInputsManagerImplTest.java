@@ -18,8 +18,8 @@ class AquilaInputsManagerImplTest {
     /**
      * <pre>
      *    [a] [b] [c] [d] [e] [f] [g] [h]
-     * 8  --- --- --- --- --- K-B --- ---  8
-     * 7  P-W --- --- --- --- --- --- ---  7
+     * 8  --- B-B --- --- --- K-B --- ---  8
+     * 7  P-W --- --- --- --- --- --- P-B  7
      * 6  --- --- --- R-W --- K-W --- ---  6
      * 5  --- --- --- --- --- --- --- ---  5
      * 4  --- --- --- --- --- --- --- ---  4
@@ -38,10 +38,8 @@ class AquilaInputsManagerImplTest {
 
         long hash1 = inputsManager.hashCode(board, null, new ArrayList<>(), WHITE);
         long hash2 = inputsManager.hashCode(board, null, new ArrayList<>(), BLACK);
-        long hash3 = inputsManager.hashCode(board, null, new ArrayList<>(), WHITE);
         log.info("hash1={}", hash1);
         log.info("hash2={}", hash2);
-        log.info("hash3={}", hash3);
     }
 
 }
