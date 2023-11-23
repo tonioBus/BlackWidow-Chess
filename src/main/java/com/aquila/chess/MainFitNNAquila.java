@@ -36,7 +36,8 @@ public class MainFitNNAquila implements Runnable {
 
     private HashMap<String, StatisticsFit> statistics = new HashMap<>();
 
-    UpdateLr updateLr = nbGames -> 1.0e-4;
+    @CommandLine.Option(names = {"-uLr", "--updateLr"})
+    private double updateLrConstant = 1.0e-4;
 
     // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
@@ -45,6 +46,8 @@ public class MainFitNNAquila implements Runnable {
             "train-aquila",
             "train-aquila-linux"
     };
+
+    final UpdateLr updateLr = nbGames -> updateLrConstant;
 
     private static void settingsCuda() {
         CudaEnvironment.getInstance().getConfiguration()
