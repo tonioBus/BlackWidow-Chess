@@ -280,10 +280,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected void createDrawnNode(final MCTSNode opponentNode, final Move possibleMove) {
         final MCTSNode child = createStopLeafChild(opponentNode, possibleMove, PAT);
         if (child.getState() != PAT) {
-            // log.warn("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
+            log.info("[{}] DETECT DRAWN MOVE {} -> DRAWN-NODE:{} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
             child.setState(PAT);
-            // child.createLeaf(deepLearning.getCacheValues().getDrawnCacheValue());
-            // child.resetExpectedRewardForLeaf(DRAWN_VALUE);
             undoPropagation(child, child.move.getAllegiance(), child.getMove());
             child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
@@ -293,10 +291,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
     protected void createWinNode(final MCTSNode opponentNode, final Move possibleMove) {
         final MCTSNode child = createStopLeafChild(opponentNode, possibleMove, WIN);
         if (child.getState() != WIN) {
-            // log.warn("[{}] DETECT WIN MOVE: {} -> WIN-NODE {} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
+            log.info("[{}] DETECT WIN MOVE: {} -> WIN-NODE {} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), possibleMove, child.getCacheValue().getValue());
             child.setState(WIN);
-            // child.createLeaf(deepLearning.getCacheValues().getWinCacheValue());
-            // child.resetExpectedRewardForLeaf(WIN_VALUE);
             undoPropagation(child, child.move.getAllegiance(), child.getMove());
             child.setPropagated(false);
             this.deepLearning.addDefinedNodeToPropagate(child);
