@@ -37,7 +37,7 @@ public class MainFitNNAquila implements Runnable {
     private HashMap<String, StatisticsFit> statistics = new HashMap<>();
 
     @CommandLine.Option(names = {"-uLr", "--updateLr"})
-    private double updateLrConstant = 1.0e-4;
+    private double updateLrConstant; // = 1.0e-4;
 
     // train-aquila,train-aquila-linux,train-aquila-rog
     @CommandLine.Option(names = {"-td", "--trainDir"})
@@ -131,6 +131,7 @@ public class MainFitNNAquila implements Runnable {
         } catch (IOException e) {
             log.error("Error when saving NN", e);
         }
+        log.info("Training using UpdateLR:{}", updateLrConstant);
         log.info("Train done in directories:\n{}", Arrays.stream(trainDirs).collect(Collectors.joining("\n- ", "- ", "")));
         statistics.entrySet().forEach(entry -> {
             String subDir = entry.getKey();
