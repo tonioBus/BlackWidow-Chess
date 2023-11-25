@@ -101,6 +101,7 @@ public class MainFitNNAquila implements Runnable {
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
+        log.info("SET UPDATE LR:{}", updateLrConstant);
         nnWhite.setUpdateLr(updateLr, 1);
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
