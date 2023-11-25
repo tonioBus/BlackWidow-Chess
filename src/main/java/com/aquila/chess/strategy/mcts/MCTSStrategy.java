@@ -10,6 +10,7 @@ import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
+import com.chess.engine.classic.pieces.Piece;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -108,7 +109,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
-        log.info("[{}] {} nextPlay() -> {}", this.getAlliance(), this, move);
+        int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        log.info("[{}] PIECES VALUES      WHITE:{} <-> {}:BLACK", this.getAlliance(), whiteValue, blackValue);
+        log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.nbStep++;
 
@@ -159,8 +163,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     protected Move mctsStep(final Move moveOpponent,
                             final List<Move> currentPossibleMoves)
             throws InterruptedException {
-        statistic.clear();
-        this.deepLearning.getCacheValues().clearNodes(false);
+        statistic.clearEachStep();
+        // this.deepLearning.getCacheValues().clearNodes(false);
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
                 this.nbStep,
                 this.nbThreads,
@@ -188,11 +192,17 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         }
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
         log.warn("[{}] CacheSize: {} STATS: {}", this.getAlliance(), this.deepLearning.getCacheSize(), statistic);
-        log.warn("[{}] WinNodes:{} LooseNodes:{} DrawnNodes:{}",
-                this.getAlliance(),
+        statistic.incNodes(this.deepLearning.getCacheValues());
+        log.info(String.format("| %8s | %8s | %8s | %8s |", "", "Win", "Lost", "Drawn"));
+        log.info(String.format("| %8s | %8d | %8d | %8d |", "TOTAL",
+                this.statistic.totalWinNodes,
+                this.statistic.totalLostNodes,
+                this.statistic.totalDrawnNodes));
+        log.info(String.format("| %8s | %8d | %8d | %8d |", "INTER",
                 this.deepLearning.getCacheValues().getWinCacheValue().getNbNodes(),
                 this.deepLearning.getCacheValues().getLostCacheValue().getNbNodes(),
-                this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes());
+                this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes()));
+        this.deepLearning.getCacheValues().clearNodes();// clearCache();
         log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} | BESTNODES.visits:{} BESTNODES.value:{} BESTNODES.reward:{}", this.getAlliance(), nbNumberSearchCalls,
                 length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentPossibleMoves.parallelStream().filter(move -> move.toString().equals(bestNode.getMove().toString())).findAny();

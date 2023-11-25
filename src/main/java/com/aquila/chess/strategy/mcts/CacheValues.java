@@ -32,17 +32,17 @@ public class CacheValues {
 
     public synchronized void clearCache() {
         if (log.isDebugEnabled()) log.debug("EMPTY cacheNNValues: {}", this.lruMap.size());
-        this.lruMap.values().forEach(CacheValue::clearNodes);
+        clearNodes();
         this.lruMap.clear();
         lostCacheValue.setInitialized(true);
         drawnCacheValue.setInitialized(true);
         winCacheValue.setInitialized(true);
-        lostCacheValue.clearNodes();
-        drawnCacheValue.clearNodes();
-        winCacheValue.clearNodes();
-        this.lruMap.put(-1L, lostCacheValue);
-        this.lruMap.put(0L, drawnCacheValue);
-        this.lruMap.put(1L, winCacheValue);
+//        lostCacheValue.clearNodes();
+//        drawnCacheValue.clearNodes();
+//        winCacheValue.clearNodes();
+//        this.lruMap.put(-1L, lostCacheValue);
+//        this.lruMap.put(0L, drawnCacheValue);
+//        this.lruMap.put(1L, winCacheValue);
     }
 
     public synchronized CacheValue get(final long key) {
@@ -82,12 +82,11 @@ public class CacheValues {
         return cacheValue;
     }
 
-    public void clearNodes(boolean all) {
-        for(CacheValue cacheValue: lruMap.values()) {
-            if(!cacheValue.isLeaf() || all) {
-                cacheValue.clearNodes();
-            }
-        }
+    public void clearNodes() {
+        lostCacheValue.clearNodes();
+        drawnCacheValue.clearNodes();
+        winCacheValue.clearNodes();
+        lruMap.values().stream().forEach(CacheValue::clearNodes);
     }
 
     public String toString() {

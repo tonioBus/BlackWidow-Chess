@@ -1,5 +1,7 @@
 package com.aquila.chess.strategy.mcts.utils;
 
+import com.aquila.chess.strategy.mcts.CacheValues;
+
 public class Statistic {
     public int nbCalls;
     public int nbPlay;
@@ -13,8 +15,15 @@ public class Statistic {
     public int minRandomSelectionBestMoves;
     public int nbGoodSelection;
     public int nbSubmitJobs;
+    public int totalWinNodes;
+    public int totalLostNodes;
+    public int totalDrawnNodes;
 
-    public void clear() {
+    public Statistic() {
+        clearEachGame();
+    }
+
+    public void clearEachStep() {
         nbCalls = 0;
         nbPlay = 0;
         nbPossibleMoves = 0;
@@ -26,24 +35,34 @@ public class Statistic {
         nbRandomSelectionBestMoves = 0;
         maxRandomSelectionBestMoves = 0;
         minRandomSelectionBestMoves = Integer.MAX_VALUE;
-        nbSubmitJobs=0;
+        nbSubmitJobs = 0;
+    }
+
+    public void clearEachGame() {
+        totalWinNodes = 0;
+        totalLostNodes = 0;
+        totalDrawnNodes = 0;
     }
 
     @Override
     public String toString() {
-        return String.format("nbCalls:%d\n nbPlay:%d\n nbPossibleMoves:%d\n nbSubmitJobs:%d\n nbRetrieveNNCachedValues:%d\n nbRetrieveNNCachedPolicies:%d\n nbRetrieveNNValues:%d\n nbGoodSelection:%d\n MAXRandomSelectionBestMoves:%d\n MINRandomSelectionBestMoves:%d\n nbRandomSelection:%d\n nbRandomSelectionBestMoves:%d\n average:%f",
-                nbCalls,
-                nbPlay,
-                nbPossibleMoves,
-                nbSubmitJobs,
-                nbRetrieveNNCachedValues,
-                nbRetrieveNNCachedPolicies,
-                nbRetrieveNNValues,
-                nbGoodSelection,
-                maxRandomSelectionBestMoves,
-                minRandomSelectionBestMoves,
-                nbRandomSelection,
-                nbRandomSelectionBestMoves,
-                nbRandomSelection == 0 ? Double.POSITIVE_INFINITY : nbRandomSelectionBestMoves / nbRandomSelection);
+        StringBuffer sb = new StringBuffer();
+        sb.append("\n----------------------------------------------------------------------------------------------------------\n");
+        sb.append(String.format("| %12s | %12s | %12s | %12s | %12s | %12s | %12s |\n",
+                "Calls","Play","PosMoves","SubmitJobs","NNCacheVal","NNCachePol","NNValues"));
+        sb.append(String.format("| %12d | %12d | %12d | %12d | %12d | %12d | %12d |\n",
+                nbCalls,nbPlay,nbPossibleMoves,nbSubmitJobs,nbRetrieveNNCachedValues,nbRetrieveNNCachedPolicies,nbRetrieveNNValues));
+        sb.append("----------------------------------------------------------------------------------------------------------\n");
+        sb.append(String.format("| %12s | %12s | %12s | %12s | %12s | %12s | %12s |\n",
+                "GoodSelect","maxRndSelect","minRndSelect","RndSelect","RndSelBest","",""));
+        sb.append(String.format("| %12d | %12d | %12d | %12d | %12d | %12s | %12s |",
+                nbGoodSelection,maxRandomSelectionBestMoves,minRandomSelectionBestMoves,nbRandomSelection,nbRandomSelectionBestMoves,"",""));
+        return sb.toString();
+    }
+
+    public void incNodes(CacheValues cacheValues) {
+        this.totalWinNodes += cacheValues.getWinCacheValue().getNbNodes();
+        this.totalLostNodes += cacheValues.getLostCacheValue().getNbNodes();
+        this.totalDrawnNodes += cacheValues.getDrawnCacheValue().getNbNodes();
     }
 }
