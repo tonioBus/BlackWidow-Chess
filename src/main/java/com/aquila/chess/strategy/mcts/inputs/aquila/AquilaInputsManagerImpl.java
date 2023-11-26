@@ -110,21 +110,21 @@ public class AquilaInputsManagerImpl extends InputsManager {
                 inputs[24 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
             });
             // King liberty 36 (1+1 planes)
-            if (nbPieces < 10 && currentPiece.getPieceType() == Piece.PieceType.KING) {
-                boolean isInCheck = player.isInCheck();
-                int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
-                if (!isInCheck) {
-                    Coordinate coordinateKing = new Coordinate(currentPiece.getPiecePosition(), currentPiece.getPieceAllegiance());
-                    inputs[36 + offsetBlack][coordinateKing.getXInput()][coordinateKing.getYInput()] = 1;
-                }
-                legalMoves.stream().forEach(move -> {
-                    Move.MoveStatus status = player.makeMove(move).getMoveStatus();
-                    if (status == Move.MoveStatus.DONE) {
-                        Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
-                        inputs[36 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
-                    }
-                });
-            }
+//            if (currentPiece.getPieceType() == Piece.PieceType.KING) {
+//                boolean isInCheck = player.isInCheck();
+//                int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
+//                if (!isInCheck) {
+//                    Coordinate coordinateKing = new Coordinate(currentPiece.getPiecePosition(), currentPiece.getPieceAllegiance());
+//                    inputs[36 + offsetBlack][coordinateKing.getXInput()][coordinateKing.getYInput()] = 1;
+//                }
+//                legalMoves.stream().forEach(move -> {
+//                    Move.MoveStatus status = player.makeMove(move).getMoveStatus();
+//                    if (status == Move.MoveStatus.DONE) {
+//                        Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
+//                        inputs[36 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
+//                    }
+//                });
+//            }
             // Pawn moves 38 (1+1 planes)
             if (currentPiece.getPieceType() == Piece.PieceType.PAWN) {
                 int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
