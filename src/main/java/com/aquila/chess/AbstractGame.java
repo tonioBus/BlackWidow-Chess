@@ -84,7 +84,7 @@ public abstract class AbstractGame {
 
     public synchronized long hashCode(@NonNull final Move move) {
         final Alliance moveColor = move.getAllegiance();
-        final InputRecord inputRecord = new InputRecord(this, getLastBoard(), null, moves, moveColor);
+        final InputRecord inputRecord = new InputRecord(this, getLastBoard(), move, moves, moveColor);
         return inputsManager.hashCode(inputRecord);
     }
 

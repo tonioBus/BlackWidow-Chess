@@ -119,7 +119,7 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 } catch (ExecutionException e) {
                     throw new RuntimeException("Error during last flushJobs", e);
                 }
-            } while(future==null);
+            } while (future == null);
             try {
                 final Integer effectiveNbSearchCalls = future.get();
                 nbSearchCalls += effectiveNbSearchCalls;

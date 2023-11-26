@@ -36,7 +36,6 @@ public class Game extends AbstractGame {
     @Builder
     public Game(InputsManager inputsManager, Board board, Strategy strategyWhite, Strategy strategyBlack) {
         super(inputsManager, board);
-        this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
     }
