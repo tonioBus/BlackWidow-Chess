@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts.inputs.aquila;
 
+import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.utils.Coordinate;
@@ -64,17 +66,34 @@ public class AquilaInputsManagerImpl extends InputsManager {
     }
 
     @Override
-    public InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance moveColor) {
+    public InputsFullNN createInputs(final InputRecord inputRecord) {
+        final AbstractGame abstractGame = inputRecord.abstractGame();
+        final Board board = inputRecord.board();
+        final Move move = inputRecord.move();
+        final List<Move> moves = inputRecord.moves();
+        final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && !move.isInitMove())
             // if we move, the moveColor will be the complementary of the player that just moved
-            this.createInputs(inputs, move.execute(), moves, move.getAllegiance().complementary());
+            this.createInputs(
+                    inputs,
+                    new InputRecord(
+                            abstractGame,
+                            move.execute(),
+                            null,
+                            moves,
+                            move.getAllegiance().complementary())
+            );
         else
             this.createInputs(
                     inputs,
-                    board,
-                    moves,
-                    moveColor);
+                    new InputRecord(
+                            abstractGame,
+                            board,
+                            null,
+                            moves,
+                            moveColor)
+            );
         return new AquilaInputsFullNN(inputs);
     }
 
@@ -83,8 +102,10 @@ public class AquilaInputsManagerImpl extends InputsManager {
      * @return the normalize board for 1 position using board and move. dimensions:
      * [12][NB_COL][NB_COL]
      */
-    private void createInputs(double[][][] inputs, Board board, final List<Move> allGamesMoves, Alliance moveColor) {
-        int nbRepeat = getNbRepeat(moveColor);
+    private void createInputs(double[][][] inputs, InputRecord inputRecord) {
+        final Board board = inputRecord.board();
+        final AbstractGame abstractGame = inputRecord.abstractGame();
+        int nbRepeat = getNbRepeat(inputRecord.moveColor());
         int nbPieces = board.getAllPieces().size();
         board.getAllPieces().stream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
@@ -109,6 +130,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
                 Coordinate attackCoordinate = new Coordinate(attackingPiece);
                 inputs[24 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
             });
+            int whiteValue = abstractGame.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+            int blackValue = abstractGame.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
             // King liberty 36 (1+1 planes)
 //            if (currentPiece.getPieceType() == Piece.PieceType.KING) {
 //                boolean isInCheck = player.isInCheck();
@@ -148,7 +171,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
         fill(inputs[currentIndex + 1], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 2], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[PLANE_COLOR], moveColor.isBlack() ? 1.0 : 0.0);
+        fill(inputs[PLANE_COLOR], inputRecord.moveColor().isBlack() ? 1.0 : 0.0);
         fill(inputs[currentIndex + 5], 1.0F);
         fill(inputs[currentIndex + 6], nbRepeat >= 1 ? 1.0F : 0.0F); // 1 REPEAT
         fill(inputs[currentIndex + 7], nbRepeat >= 2 ? 1.0F : 0.0F); // 2 REPEAT
@@ -182,7 +205,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
     }
 
     @Override
-    public void startMCTSStep(final Game game) {
+    public void startMCTSStep(final AbstractGame abstractGame) {
 
     }
 
@@ -190,19 +213,23 @@ public class AquilaInputsManagerImpl extends InputsManager {
     public InputsManager clone() {
         // no state on this inputManager, so no creation needed
         return new AquilaInputsManagerImpl();
-        // return this;
     }
 
     @Override
-    public long hashCode(Board board, Move move, List<Move> moves, Alliance moveColor) {
-        return Utils.hash(getHashCodeString(board, move, moves, moveColor));
+    public long hashCode(final InputRecord inputRecord) {
+        return Utils.hash(getHashCodeString(inputRecord));
     }
 
     @Override
-    public String getHashCodeString(Board board, Move move, List<Move> moves, Alliance moveColor) {
+    public String getHashCodeString(final InputRecord inputRecord) {
+        final Move move = inputRecord.move();
+        final Alliance moveColor = inputRecord.moveColor();
+        Board board;
         if (move != null && move.getMovedPiece() != null) {
             assert moveColor == move.getAllegiance();
             board = move.execute();
+        } else {
+            board = inputRecord.board();
         }
         StringBuffer sb = new StringBuffer();
         sb.append(moveColor.toString());
@@ -215,6 +242,9 @@ public class AquilaInputsManagerImpl extends InputsManager {
                 sb.append(String.format("%s=%d,", piece.getPieceType(), position));
             }
         }
+        int whiteValue = inputRecord.abstractGame().getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        int blackValue = inputRecord.abstractGame().getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        sb.append(String.format("WvsB:%b\n", whiteValue < blackValue));
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();

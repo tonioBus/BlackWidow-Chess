@@ -22,10 +22,13 @@ public record ServiceNNInputsJobs(Move move,
                 isDirichlet,
                 isRootNode,
                 mctsGame.getInputsManager().createInputs(
+                        new InputRecord(
+                        mctsGame,
                         mctsGame.getLastBoard(),
                         move,
                         mctsGame.getMoves(),
-                        moveColor));
+                        moveColor))
+                );
     }
 
 }

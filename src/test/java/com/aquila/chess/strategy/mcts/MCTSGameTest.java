@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.HungryStrategy;
 import com.aquila.chess.strategy.RandomStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
@@ -103,7 +104,8 @@ public class MCTSGameTest {
                     sb.append("OLD BOARD:\n");
                     sb.append(hashcodes.get(hashcode));
                     sb.append("\nNEW BOARD;\n");
-                    sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
+                    sb.append(inputsManager.getHashCodeString(
+                            new InputRecord(game, game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor())));
                     assertNotEquals(hashcode, hashcode, sb.toString());
                 }
             }
@@ -139,12 +141,22 @@ public class MCTSGameTest {
                 StringBuffer sb = new StringBuffer();
                 sb.append(String.format("SAME HASHCODE FOR 2 DIFFERENT BOARD:%s\n", hashcode));
                 sb.append("OLD BOARD:\n");
-                sb.append(oldInputsManager.getHashCodeString(oldMctsGame.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
+                sb.append(oldInputsManager.getHashCodeString(
+                        new InputRecord(
+                                oldMctsGame,
+                                oldMctsGame.getLastBoard(),
+                                null,
+                                game.getMoves(),
+                                game.getCurrentPLayerColor())));
                 sb.append("\nNEW BOARD;\n");
-                sb.append(inputsManager.getHashCodeString(game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor()));
-                // assertNotEquals(hashcode, hashcode, sb.toString());
+                sb.append(inputsManager.getHashCodeString(
+                        new InputRecord(
+                                game,
+                                game.getLastBoard(),
+                                null,
+                                game.getMoves(),
+                                game.getCurrentPLayerColor())));
                 log.info(sb.toString());
-
             }
             hashcodes.put(hashcode, mctsGame); //.getHashCodeString(mctsGame.getColor2play(), null));
         } while (status == Game.GameStatus.IN_PROGRESS);

@@ -1,6 +1,7 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
@@ -55,7 +56,7 @@ public class MainFitNNSpecificInputs {
         log.info("[{}] score:{}", banner, deepLearningWhite.getScore());
         final int len = moves.size();
         double[][][][] nbIn = new double[len][][][];
-        int i = 0;
+        int i;
         Iterator<Move> iterMove = moves.iterator();
         for (i = 0; i < len; i++) {
             Move m = iterMove.next();
@@ -71,7 +72,8 @@ public class MainFitNNSpecificInputs {
     }
 
     public InputsFullNN createInputs(final Move move) {
-        return inputsManager.createInputs(board, move, new ArrayList<Move>(), Alliance.WHITE);
+        InputRecord inputRecord = new InputRecord(game,board, move, new ArrayList<Move>(), Alliance.WHITE);
+        return inputsManager.createInputs(inputRecord);
     }
 
     public TrainGame createTrainGame(int nbIterations) {

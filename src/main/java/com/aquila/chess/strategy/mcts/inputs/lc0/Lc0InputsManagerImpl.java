@@ -1,7 +1,7 @@
 package com.aquila.chess.strategy.mcts.inputs.lc0;
 
-import com.aquila.chess.Game;
-import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.AbstractGame;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Utils;
@@ -59,52 +59,45 @@ public class Lc0InputsManagerImpl extends InputsManager {
     }
 
     /**
-     * @param board
-     * @param lc0InputsManager
-     * @param move
-     * @param moveColor
      * @return
      */
     @Override
-    public Lc0InputsFullNN createInputs(final Board board,
-                                        final Move move,
-                                        final List<Move> moves,
-                                        final Alliance moveColor) {
+    public Lc0InputsFullNN createInputs(final InputRecord inputRecord) {
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        this.createInputs(inputs, board, move, moveColor);
+        this.createInputs(inputs, inputRecord.board(), inputRecord.move(), inputRecord.moveColor());
         return new Lc0InputsFullNN(inputs);
     }
 
     @Override
-    public long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance moveColor) {
-        String hashCodeString = getHashCodeString(board, move, moves, moveColor);
+    public long hashCode(final InputRecord inputRecord) {
+        String hashCodeString = getHashCodeString(inputRecord);
         long ret = hash(hashCodeString);
-        log.debug("[{}] HASHCODE:{}\n{}", moveColor, ret, hashCodeString);
+        log.debug("[{}] HASHCODE:{}\n{}", inputRecord.moveColor(), ret, hashCodeString);
         if (log.isDebugEnabled())
-            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", moveColor, move, Utils.nbMaxBits(ret), ret);
+            log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", inputRecord.moveColor(), inputRecord.move(), Utils.nbMaxBits(ret), ret);
         return ret;
     }
 
     @Override
-    public void startMCTSStep(final Game game) {
+    public void startMCTSStep(final AbstractGame abstractGame) {
         if (log.isDebugEnabled()) {
-            Move move = game.getLastMove();
+            Move move = abstractGame.getLastMove();
             if (move.getMovedPiece() == null)
                 log.info("INIT POSITION");
             else
                 log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
         }
-        int nbMoves = game.getMoves().size();
+        int nbMoves = abstractGame.getMoves().size();
         if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
-            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(game.getLastBoard(), null);
+            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
             log.debug("push inputs init");
             this.add(null, inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.lc0Last8Inputs.clear();
-            game.getMoves().stream().skip(skipMoves).forEach(move -> {
+            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
                 final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
-                        this.createInputsForOnePosition(game.getLastBoard(), null) :
+                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
                         this.createInputsForOnePosition(move.getBoard(), move);
                 log.debug("push input after init move:{}:\n{}", move, inputs);
                 this.add(move, inputs);
@@ -301,8 +294,11 @@ public class Lc0InputsManagerImpl extends InputsManager {
         }
     }
 
-    public String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance moveColor) {
-        Board currentBoard = board;
+    public String getHashCodeString(final InputRecord inputRecord) {
+        final Move move = inputRecord.move();
+        final List<Move> moves = inputRecord.moves();
+        final Alliance moveColor = inputRecord.moveColor();
+        Board currentBoard = inputRecord.board();
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null && !move.isInitMove()) {

@@ -2,8 +2,6 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
-import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
@@ -14,7 +12,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
@@ -22,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class Game {
+public class Game extends AbstractGame {
 
     @Getter
     protected Strategy strategyWhite;
@@ -31,48 +28,17 @@ public class Game {
     protected Strategy strategyBlack;
 
     @Getter
-    protected Board board;
-
-    @Getter
     protected Move moveOpponent = null;
-
-    @Getter
-    private InputsManager inputsManager;
-
-    @Getter
-    protected int nbMoveNoAttackAndNoPawn = 0;
-    @Getter
-    protected GameStatus status;
-
-    @Getter
-    protected final List<Move> moves = new ArrayList<>(127);
 
     @Getter
     protected Strategy nextStrategy;
 
     @Builder
     public Game(InputsManager inputsManager, Board board, Strategy strategyWhite, Strategy strategyBlack) {
-        if (inputsManager == null) {
-            log.warn("USING DEFAULT INPUT-MANAGER -> LC0");
-            this.inputsManager = new Lc0InputsManagerImpl();
-        } else {
-            this.inputsManager = inputsManager;
-        }
+        super(inputsManager, board);
         this.board = board;
         this.strategyWhite = strategyWhite;
         this.strategyBlack = strategyBlack;
-    }
-
-    public Alliance getCurrentPLayerColor() {
-        return this.board.currentPlayer().getAlliance();
-    }
-
-    public boolean isInitialPosition() {
-        return this.getNbStep() == 0;
-    }
-
-    public int getNbStep() {
-        return this.getMoves().size();
     }
 
     public boolean isLogBoard() {
@@ -151,16 +117,6 @@ public class Game {
         return move.toString();
     }
 
-    public Board getLastBoard() {
-        int size = moves.size();
-        if (size == 0 || this.moves.get(size - 1).isInitMove()) return this.getBoard();
-        return this.moves.get(size - 1).execute();
-    }
-
-    public Move getLastMove() {
-        return this.getMoves().get(this.getMoves().size() - 1);
-    }
-
     public void setup(final Strategy strategyPlayerWhite,
                       final Strategy strategyPlayerBlack) {
         assert (strategyPlayerWhite.getAlliance() == Alliance.WHITE);
@@ -177,11 +133,6 @@ public class Game {
         };
         moveOpponent = initMove;
         this.getMoves().add(initMove);
-
-    }
-
-    public Player getNextPlayer() {
-        return this.board.currentPlayer();
     }
 
     public GameStatus play() throws Exception {
@@ -202,7 +153,7 @@ public class Game {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         board = getNextPlayer().executeMove(move);
-        this.status = calculateStatus();
+        this.status = calculateStatus(board);
         this.nextStrategy = opponentStrategy(this.nextStrategy);
         moveOpponent = move;
         this.moves.add(move);
@@ -216,10 +167,6 @@ public class Game {
         };
     }
 
-    public Player getPlayer(final Alliance alliance) {
-        return alliance.choosePlayerByAlliance(this.board.whitePlayer(), this.board.blackPlayer());
-    }
-
     public enum GameStatus {
         IN_PROGRESS,
         PAT,
@@ -229,45 +176,6 @@ public class Game {
         DRAW_300,
         DRAW_3,
         DRAW_NOT_ENOUGH_PIECES
-    }
-
-    public GameStatus calculateStatus() {
-        if (board.whitePlayer().isInCheckMate()) return GameStatus.WHITE_CHESSMATE;
-        if (board.blackPlayer().isInCheckMate()) return GameStatus.BLACK_CHESSMATE;
-        if (getNextPlayer().isInStaleMate()) return GameStatus.PAT;
-        if (moves.size() >= 300) return GameStatus.DRAW_300;
-        if (MovesUtils.is3MovesRepeat(moves)) return Game.GameStatus.DRAW_3;
-        if (this.nbMoveNoAttackAndNoPawn >= 50) return GameStatus.DRAW_50;
-        if (!isThereEnoughMaterials(this.board)) return GameStatus.DRAW_NOT_ENOUGH_PIECES;
-        return GameStatus.IN_PROGRESS;
-    }
-
-    private boolean isThereEnoughMaterials(final Board board) {
-        long nbWhitePawn = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
-        long nbBlackPawn = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.PAWN).count();
-        if (nbWhitePawn + nbBlackPawn > 0) return true;
-        long nbWhitePieces = board.whitePlayer().getActivePieces().size();
-        long nbBlackPieces = board.blackPlayer().getActivePieces().size();
-        long nbWhiteKnight = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count();
-        long nbBlackKnight = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count();
-        long nbWhiteBishop = board.whitePlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.BISHOP).count();
-        long nbBlackBishop = board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.BISHOP).count();
-
-        final boolean whiteKingAlone = nbWhitePieces == 1;
-        final boolean whiteHasOnly2knights = nbWhitePieces == 3 && nbWhiteKnight == 2;
-        final boolean whiteHasOnly1knight = nbWhitePieces == 2 && nbWhiteKnight == 1;
-        final boolean whiteHasOnly1Bishop = nbWhitePieces == 2 && nbWhiteBishop == 1;
-
-        final boolean blackKingAlone = board.blackPlayer().getActivePieces().size() == 1;
-        final boolean blackHasOnly2knights = board.blackPlayer().getActivePieces().size() == 3
-                && board.blackPlayer().getActivePieces().stream().filter(piece -> piece.getPieceType() == Piece.PieceType.KNIGHT).count() == 2;
-        final boolean blackHasOnly1knight = nbBlackPieces == 2 && nbBlackKnight == 1;
-        final boolean blackHasOnly1Bishop = nbBlackPieces == 2 && nbBlackBishop == 1;
-
-        if ((whiteKingAlone || whiteHasOnly2knights || whiteHasOnly1knight || whiteHasOnly1Bishop) &&
-                (blackKingAlone || blackHasOnly2knights || blackHasOnly1knight || blackHasOnly1Bishop))
-            return false;
-        return true;
     }
 
     @Override

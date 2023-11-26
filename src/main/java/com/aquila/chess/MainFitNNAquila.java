@@ -76,7 +76,8 @@ public class MainFitNNAquila implements Runnable {
      * and 0.0002 after 100, 300, and 500 thousand steps for chess
      */
     public static void main(final String[] args) throws Exception {
-        CommandLine.run(new MainFitNNAquila(), args);
+        CommandLine cmd = new CommandLine(new MainFitNNAquila());
+        cmd.execute( args);
     }
 
     private void checkArguments() {

@@ -1,13 +1,13 @@
 package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -33,10 +33,12 @@ public class TestSpeedAGZ {
         int length = 150;
         final var nbIn = new double[length][inputManager.getNbFeaturesPlanes()][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         Lc0InputsFullNN inputsFullNN = inputManager.createInputs(
-                board,
-                null,
-                new ArrayList<>(),
-                Alliance.WHITE);
+                new InputRecord(
+                        game,
+                        game.getBoard(),
+                        null,
+                        new ArrayList<>(),
+                        Alliance.WHITE));
         for (int i = 0; i < length; i++) {
             System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
         }

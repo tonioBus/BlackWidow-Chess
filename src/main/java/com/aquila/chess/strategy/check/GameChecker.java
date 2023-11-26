@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.check;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.chess.engine.classic.Alliance;
@@ -43,7 +44,7 @@ public class GameChecker {
                 log.error("no legal move found for: {}", givenMove);
                 log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
-                if(game.getNbStep()>=300) return null;
+                if (game.getNbStep() >= 300) return null;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();
@@ -59,11 +60,12 @@ public class GameChecker {
         }
         try {
             if (!givenMove.equals(Move.INIT_MOVE)) game.play();
-            InputsFullNN inputsNN = game.getInputsManager().createInputs(
+            InputRecord inputRecord = new InputRecord(game,
                     game.getBoard(),
                     null,
                     moves,
                     moveColor);
+            InputsFullNN inputsNN = game.getInputsManager().createInputs(inputRecord);
             return inputsNN;
         } catch (Exception e) {
             throw new RuntimeException(e);

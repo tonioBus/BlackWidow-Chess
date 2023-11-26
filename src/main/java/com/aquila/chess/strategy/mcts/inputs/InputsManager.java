@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts.inputs;
 
+import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -35,13 +36,13 @@ public abstract class InputsManager {
      * @param moveColor the color that will play, used only if move is not defined
      * @return
      */
-    public abstract InputsFullNN createInputs(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
+    public abstract InputsFullNN createInputs(InputRecord inputRecord);
 
-    public abstract String getHashCodeString(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
+    public abstract String getHashCodeString(InputRecord inputRecord);
 
-    public abstract long hashCode(final Board board, final Move move, final List<Move> moves, final Alliance moveColor);
+    public abstract long hashCode(InputRecord inputRecord);
 
-    public abstract void startMCTSStep(Game game);
+    public abstract void startMCTSStep(AbstractGame abstractGame);
 
     public abstract InputsManager clone();
 

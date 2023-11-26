@@ -1,9 +1,10 @@
 package com.aquila.chess.strategy.mcts.inputs.aquila;
 
+import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -32,12 +33,14 @@ class AquilaInputsManagerImplTest {
     @Test
     void createInputs() {
         final Board board = Board.createBoard("pa7,rd6,kf6", "kf8,bb8,ph7", WHITE);
+        final Game game = Game.builder().board(board).inputsManager(new AquilaInputsManagerImpl()).build();
         InputsManager inputsManager = new AquilaInputsManagerImpl();
-        InputsFullNN inputs = inputsManager.createInputs(board, null, new ArrayList<>(), BLACK);
+        InputsFullNN inputs = inputsManager.createInputs(
+                new InputRecord(game, board, null, new ArrayList<>(), BLACK));
         log.info("inputs:\n{}", inputs);
 
-        long hash1 = inputsManager.hashCode(board, null, new ArrayList<>(), WHITE);
-        long hash2 = inputsManager.hashCode(board, null, new ArrayList<>(), BLACK);
+        long hash1 = inputsManager.hashCode(new InputRecord(game, board, null, new ArrayList<>(), WHITE));
+        long hash2 = inputsManager.hashCode(new InputRecord(game, board, null, new ArrayList<>(), BLACK));
         log.info("hash1={}", hash1);
         log.info("hash2={}", hash2);
     }
