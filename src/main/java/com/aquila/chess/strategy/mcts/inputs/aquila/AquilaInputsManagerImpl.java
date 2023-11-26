@@ -132,6 +132,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
             });
             int whiteValue = abstractGame.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
             int blackValue = abstractGame.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+            fill(inputs[36], whiteValue < blackValue ? 1.0 : 0.0);
             // King liberty 36 (1+1 planes)
 //            if (currentPiece.getPieceType() == Piece.PieceType.KING) {
 //                boolean isInCheck = player.isInCheck();
