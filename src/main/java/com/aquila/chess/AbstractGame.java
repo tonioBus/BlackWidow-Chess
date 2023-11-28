@@ -143,7 +143,10 @@ public abstract class AbstractGame {
         whiteValue = (whiteValue - 10000) / 10;
         blackValue = (blackValue - 10000) / 10;
         double ratio = (whiteValue - blackValue) / 386;
-        return (ratio + 1) / 2;
+        ratio = (ratio + 1) / 2;
+        if (ratio < 0.0) ratio = 0.0;
+        if (ratio > 1.0) ratio = 1.0;
+        return ratio;
     }
 
 }
