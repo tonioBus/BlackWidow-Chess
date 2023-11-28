@@ -111,7 +111,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        log.info("[{}] PIECES VALUES      WHITE:{} <-> {}:BLACK", this.getAlliance(), whiteValue, blackValue);
+        log.info("[{}] PIECES VALUES | RATIO:{}  | WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
         log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.nbStep++;
