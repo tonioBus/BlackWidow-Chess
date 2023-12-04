@@ -11,7 +11,8 @@ public class StatisticsFit {
     final int startGame;
     final int endGame;
     public int nbTrainGame;
-    public List<String> nbErrorTrain = new ArrayList<>();
+    public List<String> listErrorTrain = new ArrayList<>();
+    public List<String> listFilteredTrain = new ArrayList<>();
     public int nbInputsFit;
     public int nbWin;
     public int nbLost;
@@ -33,11 +34,13 @@ public class StatisticsFit {
         sb.append(String.format("\tnbWin: %d\n", nbWin));
         sb.append(String.format("\tnbLost: %d\n", nbLost));
         sb.append(String.format("\tnbDrawn: %d\n", nbDrawn));
-        sb.append(String.format("\tmediumValue: %f\n", ((double)nbWin-(double)nbLost) /((double)nbWin+nbLost+nbDrawn)));
+        sb.append(String.format("\tmediumValue: %f\n", ((double) nbWin - (double) nbLost) / ((double) nbWin + nbLost + nbDrawn)));
         sb.append(String.format("\tscoreMin: %f\n", scoreMin));
         sb.append(String.format("\tscoreMax: %f\n", scoreMax));
         sb.append(String.format("\tErrorTrains: \n%s\n",
-                nbErrorTrain.stream().collect(Collectors.joining(",","[","]"))));
+                listErrorTrain.stream().collect(Collectors.joining(",", "[", "]"))));
+        sb.append(String.format("\tFilteredTrains: \n%s\n",
+                listFilteredTrain.stream().collect(Collectors.joining(",", "[", "]"))));
         return sb.toString();
     }
 }

@@ -36,6 +36,8 @@ public class MainFitNNAquila implements Runnable {
 
     private HashMap<String, StatisticsFit> statistics = new HashMap<>();
 
+    @CommandLine.Option(names = {"-f", "--filter"})
+    private int[] filters;
     @CommandLine.Option(names = {"-uLr", "--updateLr"})
     private double updateLrConstant; // = 1.0e-4;
 
@@ -178,11 +180,13 @@ public class MainFitNNAquila implements Runnable {
             Thread.currentThread().setName(filename);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
-                deepLearningWhite.train(trainGame, statisticsFit);
+                if(Arrays.stream(filters).mapToDouble(Double::valueOf).filter(filter -> filter==trainGame.getValue()).count()==0)
+                    deepLearningWhite.train(trainGame, statisticsFit);
+                else statisticsFit.listFilteredTrain.add(""+numGame);
             } catch (Exception e) {
                 log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);
                 log.error("Stopping this training ... :(");
-                statisticsFit.nbErrorTrain.add(""+numGame);
+                statisticsFit.listErrorTrain.add(""+numGame);
             }
         }
         return numGame;
