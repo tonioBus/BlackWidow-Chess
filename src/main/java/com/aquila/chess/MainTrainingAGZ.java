@@ -17,13 +17,10 @@ public class MainTrainingAGZ {
     static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
 
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
-    static public final int NB_STEP = 800;
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
-        // return 2.5;
         if (nbStep <= 30) return 2.5;
-        else return 0.0025;
-        // return 2.0 * Math.exp(-0.01 * nbStep);
+        else return 0.00025;
     };
 
     private static final Dirichlet dirichlet = nbStep -> true;
@@ -33,6 +30,7 @@ public class MainTrainingAGZ {
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
+        if (gameManager.stopDetected(true)) System.exit(-1);
         final InputsManager inputsManager = new Lc0InputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
@@ -49,7 +47,7 @@ public class MainTrainingAGZ {
                 .train(false)
                 .build();
         deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
-        while (true) {
+        while (!gameManager.stopDetected(true)) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()
                     .inputsManager(inputsManager)
@@ -71,7 +69,9 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withTrainGame(trainGame)
-                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps());
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
+                    .withNbThread(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getThreads())
+                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isDirichlet());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -80,19 +80,30 @@ public class MainTrainingAGZ {
                     updateCpuct,
                     -1)
                     .withTrainGame(trainGame)
-                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps());
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
+                    .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
+                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
-            do {
-                gameStatus = game.play();
-                sequence.play();
-                log.warn("game:\n{}", game);
-            } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            try {
+                do {
+                    gameStatus = game.play();
+                    sequence.play();
+                    log.warn("game:\n{}", game);
+                } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            } catch (RuntimeException e) {
+                log.error("game canceled, restarting a new one", e);
+                continue;
+            }
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             final String filename = trainGame.saveBatch(trainDir, gameStatus);
             gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
+            if (!gameManager.stopDetected(false)) {
+                log.info("Waiting for {} seconds (param: waitInSeconds)", MCTSConfig.mctsConfig.getWaitInSeconds());
+                Thread.sleep(MCTSConfig.mctsConfig.getWaitInSeconds() * 1000L);
+            }
         }
     }
 }

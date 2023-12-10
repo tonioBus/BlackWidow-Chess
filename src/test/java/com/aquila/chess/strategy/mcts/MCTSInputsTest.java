@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
+import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
@@ -48,27 +50,8 @@ class MCTSInputsTest {
         nnBlack.clearIndexOffset();
     }
 
-//    @Test
-//    void testGameLastInputs() throws ChessPositionException, EndOfGameException {
-//        final Board board = new Board();
-//        final MCTSPlayer whitePlayer = new MCTSPlayer(deepLearningWhite, 1, updateCpuct, -1) //
-//                .withNbMaxSearchCalls(50).withDirichlet(dirichlet);
-//        final MCTSPlayer blackPlayer = new MCTSPlayer(deepLearningBlack, 1, updateCpuct, -1) //
-//                .withNbMaxSearchCalls(50).withDirichlet(dirichlet);
-//        final Game game = new Game(board, whitePlayer, blackPlayer);
-//        double[][][] inputs = new double[DL4JAlphaGoZeroBuilder.FEATURES_PLANES][Board.NB_COL][Board.NB_COL];
-//
-//        game.initWithAllPieces();
-//        log.warn("############################################################");
-//        for (int i = 0; i < 4; i++) {
-//            InputsNNFactory.createInputs(inputs, whitePlayer, Color.WHITE);
-//            game.play();
-//            game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
-//        }
-//    }
-
     @Test
-    void testSavedInputs() {
+    void testSavedLc0Inputs() throws Exception {
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().board(board).inputsManager(inputsManager).build();
@@ -95,40 +78,30 @@ class MCTSInputsTest {
 
         double[][][] inputs = new double[inputsManager.getNbFeaturesPlanes()][Board.NB_COL][Board.NB_COL];
 
-//        log.warn("############################################################");
-//        game.play();
-//        InputsNNFactory.createInputs(inputs, whitePlayer, Color.WHITE);
-//        game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
-//        log.warn("############################################################");
-//        dumpInput(game, 0);
-//        dumpInput(game, 1);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 1);
-//
-//        game.play();
-//        InputsNNFactory.createInputs(inputs, blackPlayer, Color.BLACK);
-//        game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
-//        log.warn("############################################################");
-//        dumpInput(game, 0);
-//        dumpInput(game, 1);
-//        dumpInput(game, 2);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 2);
-//
-//        InputsNNFactory.createInputs(inputs, whitePlayer, Color.WHITE);
-//        game.play();
-//        game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
-//        log.warn("############################################################");
-//        dumpInput(game, 0);
-//        dumpInput(game, 1);
-//        dumpInput(game, 2);
-//        dumpInput(game, 3);
-//        Utils.assertInputsFillWith(0.0, game.getTrainGame().getOneStepRecordList().get(0).getInputs(), 3);
-//
-//        game.play();
-//        game.savePolicies(inputs, Color.WHITE, whitePlayer.getCurrentRootNode());
-//        log.warn("WHITE INPUTING(0) B&W: {}", Utils.displayBoard(inputs, 0));
-//        log.warn("WHITE INPUTING(1) B&W: {}", Utils.displayBoard(inputs, 1));
-//        log.warn("WHITE INPUTING(2) B&W: {}", Utils.displayBoard(inputs, 2));
-//        log.warn("WHITE INPUTING(2) B&W: {}", Utils.displayBoard(inputs, 3));
+        log.warn("############################################################");
+        game.play();
+        InputRecord inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        inputsManager.createInputs(inputRecord);
+        log.warn("############################################################");
+        dumpInput(game, 0);
+        dumpInput(game, 1);
+        game.play();
+        inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        inputsManager.createInputs(inputRecord);
+        log.warn("############################################################");
+        dumpInput(game, 0);
+        dumpInput(game, 1);
+        dumpInput(game, 2);
+        game.play();
+        inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        InputsFullNN inputFullNN = inputsManager.createInputs(inputRecord);
+        log.warn("############################################################");
+        dumpInput(game, 0);
+        dumpInput(game, 1);
+        dumpInput(game, 2);
+        dumpInput(game, 3);
+        game.play();
+        log.warn("WHITE INPUTING(0) B&W: {}", inputFullNN);
     }
 
     private void dumpInput(final Game game, int nbInput) {

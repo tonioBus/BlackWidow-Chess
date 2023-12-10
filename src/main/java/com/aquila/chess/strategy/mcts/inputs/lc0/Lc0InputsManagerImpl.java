@@ -298,23 +298,28 @@ public class Lc0InputsManagerImpl extends InputsManager {
         final Move move = inputRecord.move();
         final List<Move> moves = inputRecord.moves();
         final Alliance moveColor = inputRecord.moveColor();
-        Board currentBoard = inputRecord.board();
+        Board board = inputRecord.board();
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null && !move.isInitMove()) {
             try {
-                currentBoard = move.execute();
+                board = move.execute();
                 moves8inputs.add(move);
             } catch (Exception e) {
                 log.error("[{}] move:{}", move.getAllegiance(), move);
                 log.error("\n{}\n{}\n",
                         "##########################################",
-                        currentBoard.toString()
+                        board.toString()
                 );
                 throw e;
             }
         }
-        sb.append(currentBoard.toString());
+        for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
+            Piece piece = board.getPiece(position);
+            if (piece != null) {
+                sb.append(String.format("%s=%d,", piece.getPieceType(), position));
+            }
+        }
         sb.append("\nM:");
         sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
         sb.append("\nC:");
