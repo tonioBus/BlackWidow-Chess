@@ -100,7 +100,6 @@ public class MainFitNNLc0 implements Runnable {
         }
     }
 
-    @Override
     public void run() throws Exception {
         checkArguments();
         @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
