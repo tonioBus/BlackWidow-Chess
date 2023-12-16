@@ -100,7 +100,8 @@ public class MainFitNNLc0 implements Runnable {
         }
     }
 
-    public void run() throws Exception {
+    @Override
+    public void run() {
         checkArguments();
         @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
