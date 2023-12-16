@@ -52,6 +52,7 @@ public abstract class InputsManager {
 
     public int getNbRepeat(final Alliance alliance) {
         int ret = 0;
+        if(lastHashs.get(alliance)==null) return 0;
         List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
         Collections.reverse(hashs);
         if (hashs.size() > 3) {

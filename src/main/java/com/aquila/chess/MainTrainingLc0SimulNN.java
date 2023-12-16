@@ -1,5 +1,6 @@
 package com.aquila.chess;
 
+import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.manager.GameManager;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
@@ -14,87 +15,83 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingLc0SimulNN {
 
-    static public final int NB_STEP = 800;
-
-    /**
-     * The learning rate was set to 0.2 and dropped to 0.02, 0.002,
-     * and 0.0002 after 100, 300, and 500 thousand steps for chess
-     */
-    public static final UpdateLr updateLr = nbGames -> {
-        if (nbGames > 500000) return 1e-6F;
-        if (nbGames > 300000) return 1e-5F;
-        if (nbGames > 100000) return 1e-4F;
-        return 1e-3;
-    };
-
     private static final UpdateCpuct updateCpuct = nbStep -> {
         if (nbStep <= 30) return 2.5;
-        else return 0.0025;
+        else return 0.00025;
     };
 
-    private static final Dirichlet dirichlet = nbStep -> true; // nbStep <= 30;
+    private static final Dirichlet dirichlet = nbStep -> true;
 
-    private static final String trainDir = "train";
+    private static final String trainDir = "train-simul";
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40, 55);
+        GameManager gameManager = new GameManager("../AGZ_NN/sequences-simul.csv", 40000, 55);
         INN nnWhite = new NNSimul(1);
-        // deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNSimul(2);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(512)
-                .train(true)
+                .batchSize(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getBatch())
+                .train(false)
                 .build();
         DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(512)
+                .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                 .train(false)
                 .build();
-        while (true) {
+        while (!gameManager.stopDetected(true)) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
             final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
-            long seed = System.nanoTime();
+            long seed1 = System.currentTimeMillis();
+            log.info("SEED WHITE:{}", seed1);
+            deepLearningWhite.clearAllCaches();
+            deepLearningBlack.clearAllCaches();
+            long seed2 = System.nanoTime();
+            log.info("SEED BLACK:{}", seed2);
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
                     game,
                     Alliance.WHITE,
                     deepLearningWhite,
-                    seed,
+                    seed1,
                     updateCpuct,
                     -1)
                     .withTrainGame(trainGame)
-                    .withNbSearchCalls(NB_STEP)
-                    .withDirichlet(dirichlet);
-            // .withNbThread(1);
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
+                    .withNbThread(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getThreads())
+                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isDirichlet());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
                     deepLearningBlack,
-                    seed,
+                    seed2,
                     updateCpuct,
                     -1)
                     .withTrainGame(trainGame)
-                    .withNbSearchCalls(NB_STEP)
-                    .withDirichlet(dirichlet);
-            // .withNbThread(1);
+                    .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
+                    .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
+                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
-            do {
-                gameStatus = game.play();
-                sequence.play();
-                Move move = game.getLastMove();
-                log.info("move:{} game:\n{}", move, game);
-            } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            try {
+                do {
+                    gameStatus = game.play();
+                    sequence.play();
+                    log.warn("game:\n{}", game);
+                } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            } catch (RuntimeException e) {
+                log.error("game canceled, restarting a new one", e);
+                continue;
+            }
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             final String filename = trainGame.saveBatch(trainDir, gameStatus);
+            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
         }
     }
 }

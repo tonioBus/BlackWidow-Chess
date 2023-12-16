@@ -14,8 +14,6 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.FileInputStream;
@@ -103,7 +101,7 @@ public class MainFitNNLc0 implements Runnable {
     @Override
     public void run() {
         checkArguments();
-        @NonNull InputsManager inputsManager = new Lc0InputsManagerImpl();
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
