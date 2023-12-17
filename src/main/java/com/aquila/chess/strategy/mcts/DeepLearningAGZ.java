@@ -3,10 +3,7 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.check.GameChecker;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
-import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
-import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
+import com.aquila.chess.strategy.mcts.inputs.*;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -88,21 +85,24 @@ public class DeepLearningAGZ {
     @Getter
     private FixMCTSTreeStrategy fixMCTSTreeStrategy;
 
+    private final InputsManager inputsManager;
+
     @Builder
     public DeepLearningAGZ(final INN nn, boolean train, int batchSize, final InputsManager inputsManager) {
-        this(nn, train, batchSize, inputsManager.getNbFeaturesPlanes());
+        this(nn, train, batchSize, inputsManager, inputsManager.getNbFeaturesPlanes());
     }
 
     public DeepLearningAGZ(final INN nn, DeepLearningAGZ deepLearningAGZ) {
-        this(nn, deepLearningAGZ.isTrain(), deepLearningAGZ.getBatchSize(), deepLearningAGZ.getNbFeaturesPlanes());
+        this(nn, deepLearningAGZ.isTrain(), deepLearningAGZ.getBatchSize(), deepLearningAGZ.inputsManager, deepLearningAGZ.getNbFeaturesPlanes());
     }
 
-    private DeepLearningAGZ(final INN nn, boolean train, int batchSize, int nbFeaturesPlanes) {
+    private DeepLearningAGZ(final INN nn, boolean train, int batchSize, InputsManager inputsManager,int nbFeaturesPlanes) {
         if (batchSize <= 0) throw new RuntimeException("BatchSize should be > 0");
         this.nn = nn;
         this.train = train;
         this.batchSize = batchSize;
         this.nbFeaturesPlanes = nbFeaturesPlanes;
+        this.inputsManager = inputsManager;
         this.serviceNN = ServiceNN.builder()
                 .deepLearningAGZ(this)
                 .nbFeaturesPlanes(nbFeaturesPlanes)
@@ -291,7 +291,7 @@ public class DeepLearningAGZ {
 
     private LinkedList<OneStepRecord> checkGame(final TrainGame trainGame) {
         log.info("Check training size: {}", trainGame.getOneStepRecordList().size());
-        final GameChecker gameChecker = new GameChecker();
+        final GameChecker gameChecker = new GameChecker(inputsManager);
         LinkedList<OneStepRecord> ret = new LinkedList<>();
         try {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {

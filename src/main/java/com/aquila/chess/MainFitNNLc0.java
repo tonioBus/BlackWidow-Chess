@@ -131,6 +131,8 @@ public class MainFitNNLc0 implements Runnable {
         }
         try {
             ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+            log.info("saving not done, uncomment the previous line");
+            System.exit(-1);
             deepLearningWhite.save();
         } catch (IOException e) {
             log.error("Error when saving NN", e);

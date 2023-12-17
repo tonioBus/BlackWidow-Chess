@@ -4,6 +4,7 @@ import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -24,9 +25,9 @@ public class GameChecker {
     private final FixStrategy blackPlayer;
     private final List<Move> moves = new ArrayList<>();
 
-    public GameChecker() {
+    public GameChecker(final InputsManager inputsManager) {
         board = Board.createStandardBoard();
-        game = Game.builder().board(board).inputsManager(new AquilaInputsManagerImpl()).build();
+        game = Game.builder().board(board).inputsManager(inputsManager).build();
         whitePlayer = new FixStrategy(Alliance.WHITE);
         blackPlayer = new FixStrategy(Alliance.BLACK);
         game.setup(whitePlayer, blackPlayer);

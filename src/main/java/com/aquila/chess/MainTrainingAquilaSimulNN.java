@@ -85,7 +85,7 @@ public class MainTrainingAquilaSimulNN {
                     .withDirichlet(dirichlet);
             // .withNbThread(1);
             game.setup(whiteStrategy, blackStrategy);
-            GameChecker gameChecker = new GameChecker();
+            GameChecker gameChecker = new GameChecker(inputsManager);
             Game.GameStatus gameStatus;
             do {
                 gameStatus = game.play();
