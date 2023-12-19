@@ -1,13 +1,9 @@
 package com.aquila.chess;
 
-import com.aquila.chess.strategy.mcts.DeepLearningAGZ;
-import com.aquila.chess.strategy.mcts.INN;
-import com.aquila.chess.strategy.mcts.StatisticsFit;
-import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -24,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,7 +77,7 @@ public class MainFitNNLc0 implements Runnable {
      */
     public static void main(final String[] args) throws Exception {
         CommandLine cmd = new CommandLine(new MainFitNNLc0());
-        cmd.execute( args);
+        cmd.execute(args);
     }
 
     private void checkArguments() {
@@ -114,26 +111,33 @@ public class MainFitNNLc0 implements Runnable {
                 .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
+        boolean saveIt =true;
         if (trainDirs != null && !trainDirs[0].equals("null")) {
-            Arrays.stream(trainDirs).forEach(trainDir -> {
+            for(String trainDir : trainDirs) {
                 log.info("TRAIN DIR: {}", trainDir);
                 try {
                     train(trainDir, deepLearningWhite);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                } catch (TrainException e) {
+                    log.error("TrainException: stopping ...", e);
+                    saveIt = false;
+                    break;
+                } catch (IOException | ClassNotFoundException e) {
+                    log.error("Exception: stopping ...", e);
+                    saveIt = false;
+                    break;
                 } catch (RuntimeException e) {
                     log.error("RuntimeException, we will close without saving", e);
-                    System.exit(-1);
+                    saveIt = false;
+                    break;
                 }
-            });
+            }
         }
         try {
-            ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
-            log.info("saving not done, uncomment the previous line");
-            System.exit(-1);
-            deepLearningWhite.save();
+            if (saveIt) {
+                log.info("Saving NN: do not stop the JVM ...");
+                ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+                deepLearningWhite.save();
+            }
         } catch (IOException e) {
             log.error("Error when saving NN", e);
         }
@@ -143,6 +147,10 @@ public class MainFitNNLc0 implements Runnable {
             String subDir = entry.getKey();
             log.info("------------------------------------\nSUBDIR:{}\n{}", subDir, entry.getValue());
         });
+        if (!saveIt) {
+            log.error("!!! Error: nothing saved.");
+            System.exit(-1);
+        }
     }
 
     private static void waitForKey() {
@@ -151,17 +159,17 @@ public class MainFitNNLc0 implements Runnable {
         input.nextLine();
     }
 
-    public void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException {
+    public void train(final String subDir, final DeepLearningAGZ deepLearningWhite) throws IOException, ClassNotFoundException, TrainException {
         Properties appProps = new Properties();
         String traingFile = subDir + "/" + TRAIN_SETTINGS;
         appProps.load(new FileInputStream(traingFile));
         log.info("START MainFitNNLc0");
-        int startGame=0;
-        int endGame=0;
+        int startGame = 0;
+        int endGame = 0;
         try {
             startGame = Integer.valueOf(appProps.getProperty("start.game").trim());
             endGame = Integer.valueOf(appProps.getProperty("end.game").trim());
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             log.error("Exception", e);
             log.warn("Cannot used training file {}", traingFile);
             return;
@@ -174,7 +182,7 @@ public class MainFitNNLc0 implements Runnable {
         log.info("{} -> Train {} games.", subDir, nbGames - startGame);
     }
 
-    public int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite, StatisticsFit statisticsFit) {
+    public int trainGames(String subDir, final int startGame, final int endGame, final DeepLearningAGZ deepLearningWhite, StatisticsFit statisticsFit) throws TrainException {
         log.info("train games from {} to {}", startGame, endGame);
         int numGame;
         for (numGame = startGame; numGame <= endGame; numGame++) {
@@ -183,13 +191,15 @@ public class MainFitNNLc0 implements Runnable {
             Thread.currentThread().setName(filename);
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
-                if(filters == null || Arrays.stream(filters).mapToDouble(Double::valueOf).filter(filter -> filter==trainGame.getValue()).count()==0)
+                if (filters == null || Arrays.stream(filters).mapToDouble(Double::valueOf).filter(filter -> filter == trainGame.getValue()).count() == 0)
                     deepLearningWhite.train(trainGame, statisticsFit);
-                else statisticsFit.listFilteredTrain.add(""+numGame);
+                else statisticsFit.listFilteredTrain.add("" + numGame);
+            } catch (TrainException e) {
+                throw e;
             } catch (Exception e) {
                 log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);
                 log.error("Stopping this training ... :(");
-                statisticsFit.listErrorTrain.add(""+numGame);
+                statisticsFit.listErrorTrain.add("" + numGame);
             }
         }
         return numGame;

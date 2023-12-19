@@ -63,8 +63,33 @@ public class Lc0InputsManagerImpl extends InputsManager {
      */
     @Override
     public Lc0InputsFullNN createInputs(final InputRecord inputRecord) {
+        final AbstractGame abstractGame = inputRecord.abstractGame();
+        final Board board = inputRecord.board();
+        final Move move = inputRecord.move();
+        final List<Move> moves = inputRecord.moves();
+        final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        this.createInputs(inputs, inputRecord.board(), inputRecord.move(), inputRecord.moveColor());
+        if (move != null && !move.isInitMove())
+            // if we move, the moveColor will be the complementary of the player that just moved
+            this.createInputs(
+                    inputs,
+                    new InputRecord(
+                            abstractGame,
+                            move.execute(),
+                            null,
+                            moves,
+                            move.getAllegiance().complementary())
+            );
+        else
+            this.createInputs(
+                    inputs,
+                    new InputRecord(
+                            abstractGame,
+                            board,
+                            null,
+                            moves,
+                            moveColor)
+            );
         return new Lc0InputsFullNN(inputs);
     }
 
@@ -178,13 +203,9 @@ public class Lc0InputsManagerImpl extends InputsManager {
      * </ul>
      *
      * @param inputs
-     * @param board
-     * @param moveColor
      */
     private void createInputs(final double[][][] inputs,
-                              final Board board,
-                              final Move move,
-                              final Alliance moveColor) {
+                              InputRecord inputRecord) {
         int destinationOffset = 0;
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
@@ -223,7 +244,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
         fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[PLANE_COLOR], moveColor.isBlack() ? 1.0 : 0.0);
+        fill(inputs[PLANE_COLOR], inputRecord.moveColor().isBlack() ? 1.0 : 0.0);
         // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[111], 1.0F);
     }

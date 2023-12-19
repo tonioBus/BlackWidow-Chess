@@ -133,7 +133,7 @@ public class TrainTest {
     }
 
     @Test
-    void testLoad() throws IOException, ClassNotFoundException {
+    void testLoad() throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load("train-test-load", 1);
         StatisticsFit statisticsFit = new StatisticsFit(1,1);
         deepLearningWhite.train(trainGame, statisticsFit);
@@ -142,7 +142,7 @@ public class TrainTest {
 
     @Test
     @Disabled
-    void testPunctualLoad() throws IOException, ClassNotFoundException {
+    void testPunctualLoad() throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
         StatisticsFit statisticsFit = new StatisticsFit(1060,1060);
         deepLearningWhite.train(trainGame, statisticsFit);

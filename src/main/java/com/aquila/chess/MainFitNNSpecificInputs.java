@@ -97,7 +97,7 @@ public class MainFitNNSpecificInputs {
         return trainGame;
     }
 
-    private void run() throws IOException {
+    private void run() throws IOException, TrainException {
         TrainGame trainGame = createTrainGame(500);
         displayValues("BEFORE");
         deepLearningWhite.train(trainGame, null);

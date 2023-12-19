@@ -62,7 +62,7 @@ public class DeepLearningAGZ {
     @Getter
     final private ServiceNN serviceNN;
 
-    static final int FIT_CHUNK = 20;
+    static final int FIT_CHUNK = 1;
 
     static final int CACHE_VALUES_SIZE = 40000;
 
@@ -301,7 +301,6 @@ public class DeepLearningAGZ {
                     OneStepRecord newOneStepRecord = new OneStepRecord(
                             inputsNN,
                             oneStepRecord.move(),
-
                             oneStepRecord.moveColor(),
                             oneStepRecord.policies());
                     ret.add(newOneStepRecord);
@@ -310,7 +309,6 @@ public class DeepLearningAGZ {
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
             log.error("!! Error during loading of game: only using {} steps", ret.size());
-            // return ret;
             throw e;
         }
         log.info("Check done: {}", ret.size());
@@ -324,7 +322,7 @@ public class DeepLearningAGZ {
      * @param statisticsFit
      * @throws IOException
      */
-    public void train(final TrainGame trainGame, final StatisticsFit statisticsFit) throws IOException {
+    public void train(final TrainGame trainGame, final StatisticsFit statisticsFit) throws IOException, TrainException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
         LinkedList<OneStepRecord> correctStepRecord = checkGame(trainGame);
         int nbCorrectStep = correctStepRecord.size();
@@ -349,7 +347,7 @@ public class DeepLearningAGZ {
         statisticsFit.nbTrainGame++;
     }
 
-    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame, final StatisticsFit statisticsFit) {
+    private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame, final StatisticsFit statisticsFit) throws TrainException {
         final TrainInputs inputsForNN = new TrainInputs(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
         final var valuesForNN = new double[chunkSize][1];
@@ -382,7 +380,7 @@ public class DeepLearningAGZ {
         log.info("NETWORK score: {}", score);
         if ("NaN".equals(score + "")) {
             log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");
-            System.exit(-1);
+            throw new TrainException("NN score not defined (0 / 0 ?)");
         }
     }
 
@@ -397,13 +395,12 @@ public class DeepLearningAGZ {
             sum += policy;
         }
         if (policyMap.size() > 0 && sum == 0) {
-            log.warn("toDistribution(): sum of policies(nb:{})==0", policyMap.size());
             final double policy = 1.0 / policyMap.size();
+            log.warn("toDistribution(): sum of policies(nb:{})==0 correction:{}", policyMap.size(), policy);
             for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
                 policyEntry.setValue(policy);
             }
-        }
-        else {
+        } else {
             for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
                 double policy = policyEntry.getValue();
                 policy = policy / sum;

@@ -106,7 +106,6 @@ public class AquilaInputsManagerImpl extends InputsManager {
         final Board board = inputRecord.board();
         final AbstractGame abstractGame = inputRecord.abstractGame();
         int nbRepeat = getNbRepeat(inputRecord.moveColor());
-        int nbPieces = board.getAllPieces().size();
         board.getAllPieces().stream().forEach(currentPiece -> {
             Player player = switch (currentPiece.getPieceAllegiance()) {
                 case WHITE -> board.whitePlayer();
