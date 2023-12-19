@@ -398,14 +398,19 @@ public class DeepLearningAGZ {
         }
         if (policyMap.size() > 0 && sum == 0) {
             log.warn("toDistribution(): sum of policies(nb:{})==0", policyMap.size());
-            return;
+            final double policy = 1.0 / policyMap.size();
+            for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
+                policyEntry.setValue(policy);
+            }
         }
-        for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
-            double policy = policyEntry.getValue();
-            policy = policy / sum;
-            if (policy < 0.0) policy = 0.0;
-            if (policy > 1.0) policy = 1.0;
-            policyEntry.setValue(policy);
+        else {
+            for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
+                double policy = policyEntry.getValue();
+                policy = policy / sum;
+                if (policy < 0.0) policy = 0.0;
+                if (policy > 1.0) policy = 1.0;
+                policyEntry.setValue(policy);
+            }
         }
     }
 
