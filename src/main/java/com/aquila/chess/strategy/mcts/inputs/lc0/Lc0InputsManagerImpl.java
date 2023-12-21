@@ -107,29 +107,29 @@ public class Lc0InputsManagerImpl extends InputsManager {
 
     @Override
     public void startMCTSStep(final AbstractGame abstractGame) {
-//        if (log.isDebugEnabled()) {
-//            Move move = abstractGame.getLastMove();
-//            if (move.getMovedPiece() == null)
-//                log.info("INIT POSITION");
-//            else
-//                log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
-//        }
-//        int nbMoves = abstractGame.getMoves().size();
-//        if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
-//            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
-//            log.debug("push inputs init");
-//            this.add(null, inputs);
-//        } else {
-//            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-//            this.lc0Last8Inputs.clear();
-//            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
-//                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
-//                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
-//                        this.createInputsForOnePosition(move.getBoard(), move);
-//                log.debug("push input after init move:{}:\n{}", move, inputs);
-//                this.add(move, inputs);
-//            });
-//        }
+        if (log.isDebugEnabled()) {
+            Move move = abstractGame.getLastMove();
+            if (move.getMovedPiece() == null)
+                log.info("INIT POSITION");
+            else
+                log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
+        }
+        int nbMoves = abstractGame.getMoves().size();
+        if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
+            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
+            log.debug("push inputs init");
+            this.add(null, inputs);
+        } else {
+            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+            this.lc0Last8Inputs.clear();
+            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
+                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
+                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
+                        this.createInputsForOnePosition(move.getBoard(), move);
+                log.debug("push input after init move:{}:\n{}", move, inputs);
+                this.add(move, inputs);
+            });
+        }
     }
 
     @Override
@@ -212,18 +212,18 @@ public class Lc0InputsManagerImpl extends InputsManager {
         final Board board = inputRecord.board();
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
-        int size = this.getLc0Last8Inputs().size();
-        Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
-        boolean addInputs = true;
-        if (lastMove != null && inputRecord.move() != null) {
-            if (lastMove.equals(inputRecord.move())) {
-                addInputs = false;
-            }
-        }
-        if (addInputs) {
-            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, null);
-            tmp.add(new Lc0Last8Inputs(lastInput1, null));
-        }
+//        int size = this.getLc0Last8Inputs().size();
+//        Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
+//        boolean addInputs = true;
+//        if (lastMove != null && inputRecord.move() != null) {
+//            if (lastMove.equals(inputRecord.move())) {
+//                addInputs = false;
+//            }
+//        }
+//        if (addInputs) {
+//            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, null);
+//            tmp.add(new Lc0Last8Inputs(lastInput1, null));
+//        }
         for (Lc0Last8Inputs lastInput : tmp) {
             System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
             destinationOffset += SIZE_POSITION;

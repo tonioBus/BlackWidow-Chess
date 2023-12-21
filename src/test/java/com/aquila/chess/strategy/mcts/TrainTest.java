@@ -4,6 +4,7 @@ import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
@@ -45,7 +46,7 @@ public class TrainTest {
 
         }
     };
-    InputsManager inputsManager = new AquilaInputsManagerImpl();
+    InputsManager inputsManager = new Lc0InputsManagerImpl();
     final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
             .nn(nnWhite)
             .inputsManager(inputsManager)
