@@ -4,12 +4,14 @@ import com.aquila.chess.AbstractGame;
 import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.utils.MovesUtils;
+import com.aquila.chess.utils.Coordinate;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
+import com.chess.engine.classic.player.Player;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
@@ -105,29 +107,29 @@ public class Lc0InputsManagerImpl extends InputsManager {
 
     @Override
     public void startMCTSStep(final AbstractGame abstractGame) {
-        if (log.isDebugEnabled()) {
-            Move move = abstractGame.getLastMove();
-            if (move.getMovedPiece() == null)
-                log.info("INIT POSITION");
-            else
-                log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
-        }
-        int nbMoves = abstractGame.getMoves().size();
-        if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
-            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
-            log.debug("push inputs init");
-            this.add(null, inputs);
-        } else {
-            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-            this.lc0Last8Inputs.clear();
-            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
-                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
-                        this.createInputsForOnePosition(move.getBoard(), move);
-                log.debug("push input after init move:{}:\n{}", move, inputs);
-                this.add(move, inputs);
-            });
-        }
+//        if (log.isDebugEnabled()) {
+//            Move move = abstractGame.getLastMove();
+//            if (move.getMovedPiece() == null)
+//                log.info("INIT POSITION");
+//            else
+//                log.info("[{}:{}] initLastInputs", move.getAllegiance(), move);
+//        }
+//        int nbMoves = abstractGame.getMoves().size();
+//        if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
+//            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
+//            log.debug("push inputs init");
+//            this.add(null, inputs);
+//        } else {
+//            int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+//            this.lc0Last8Inputs.clear();
+//            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
+//                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
+//                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
+//                        this.createInputsForOnePosition(move.getBoard(), move);
+//                log.debug("push input after init move:{}:\n{}", move, inputs);
+//                this.add(move, inputs);
+//            });
+//        }
     }
 
     @Override
@@ -207,30 +209,22 @@ public class Lc0InputsManagerImpl extends InputsManager {
     private void createInputs(final double[][][] inputs,
                               InputRecord inputRecord) {
         int destinationOffset = 0;
+        final Board board = inputRecord.board();
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
-        if (move != null) {
-            int size = this.getLc0Last8Inputs().size();
-            Move lastMove = this.getLc0Last8Inputs().get(size - 1).move();
-            String moves = this.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
-            boolean addInputs = true;
-            if (lastMove != null) {
-                // log.info("### LAST MOVE:{} SIZE:{} MOVES:{}", lastMove, size, moves);
-                if (lastMove.equals(move)) {
-//                    log.error("MOVE EQUALS({})", lastMove);
-                    addInputs = false;
-                }
-            }
-            if (addInputs) {
-                Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, move);
-                // log.info("++ SIZE:{} MOVES:{} createInouts(offset:{} move:{} color:{}):\n{}", tmp.size(), moves, destinationOffset, move, move.getMovedPiece().getPieceAllegiance(), lastInput1);
-                tmp.add(new Lc0Last8Inputs(lastInput1, move));
+        int size = this.getLc0Last8Inputs().size();
+        Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
+        boolean addInputs = true;
+        if (lastMove != null && inputRecord.move() != null) {
+            if (lastMove.equals(inputRecord.move())) {
+                addInputs = false;
             }
         }
+        if (addInputs) {
+            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, null);
+            tmp.add(new Lc0Last8Inputs(lastInput1, null));
+        }
         for (Lc0Last8Inputs lastInput : tmp) {
-            Piece piece = lastInput.move().getMovedPiece();
-            String color = piece == null ? "null" : piece.getPieceAllegiance().toString();
-            // log.info("createInouts(offset:{} move:{} color:{}):\n{}", destinationOffset, lastInput.move(), color, lastInput.inputs());
             System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
             destinationOffset += SIZE_POSITION;
         }
@@ -245,7 +239,6 @@ public class Lc0InputsManagerImpl extends InputsManager {
         fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], inputRecord.moveColor().isBlack() ? 1.0 : 0.0);
-        // fill(inputs[109], mctsGame.getNbMoveNoAttackAndNoPawn() >= 50 ? 1.0 : 0.0);
         fill(inputs[111], 1.0F);
     }
 
@@ -260,33 +253,19 @@ public class Lc0InputsManagerImpl extends InputsManager {
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
         }
-        for (int y = BoardUtils.NUM_TILES_PER_ROW - 1; y >= 0; y--) {
-            for (int x = 0; x < BoardUtils.NUM_TILES_PER_ROW; x++) {
-                Piece piece = board.getPiece((BoardUtils.NUM_TILES_PER_ROW - y - 1) * BoardUtils.NUM_TILES_PER_ROW + x);
-                if (piece != null) {
-                    int pieceIndex = getPlanesIndex(piece);
-                    nbIn[pieceIndex][x][y] = 1;
-                }
-            }
-        }
-        // FIXME: optimize the copy
-        final var nbInNew = new double[SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        // copy WHITE pieces without modification (player view)
-        for (int planes = 0; planes < 6; planes++) {
-            for (int y = 0; y < BoardUtils.NUM_TILES_PER_ROW; y++) {
-                System.arraycopy(nbIn[planes][y], 0, nbInNew[planes][y], 0, BoardUtils.NUM_TILES_PER_ROW);
-            }
-        }
-        // copy flipped board for BLACK (player view)
-        for (int planes = 6; planes < 12; planes++) {
-            for (int y = 0; y < BoardUtils.NUM_TILES_PER_ROW; y++) {
-                for (int x = 0; x < BoardUtils.NUM_TILES_PER_ROW; x++) {
-                    nbInNew[planes][x][y] = nbIn[planes][BoardUtils.NUM_TILES_PER_ROW - 1 - x][BoardUtils.NUM_TILES_PER_ROW - 1 - y];
-                }
-            }
-        }
-        //FIXME fill(nbInNew[INN.SIZE_POSITION - 1], game.nbMovesWithRepetition() > 0 ? 1.0 : 0.0);
-        return new Lc0InputsOneNN(nbInNew);
+        final Board board2use = board;
+        board.getAllPieces().stream().forEach(currentPiece -> {
+            Player player = switch (currentPiece.getPieceAllegiance()) {
+                case WHITE -> board2use.whitePlayer();
+                case BLACK -> board2use.blackPlayer();
+            };
+            // coordinate calculated from the point of view of the player
+            Coordinate coordinate = new Coordinate(currentPiece);
+            int currentPieceIndex = getPlanesIndex(currentPiece);
+            // Position 0 (6+6 planes)
+            nbIn[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
+        });
+        return new Lc0InputsOneNN(nbIn);
     }
 
     /**
