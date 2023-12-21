@@ -36,11 +36,10 @@ class AquilaInputsManagerImplTest {
         final Game game = Game.builder().board(board).inputsManager(new AquilaInputsManagerImpl()).build();
         InputsManager inputsManager = new AquilaInputsManagerImpl();
         InputsFullNN inputs = inputsManager.createInputs(
-                new InputRecord(game, board, null, new ArrayList<>(), BLACK));
+                new InputRecord(game, new ArrayList<>(), null, BLACK));
         log.info("inputs:\n{}", inputs);
-
-        long hash1 = inputsManager.hashCode(new InputRecord(game, board, null, new ArrayList<>(), WHITE));
-        long hash2 = inputsManager.hashCode(new InputRecord(game, board, null, new ArrayList<>(), BLACK));
+        long hash1 = inputsManager.hashCode(new InputRecord(game, new ArrayList<>(), null, WHITE));
+        long hash2 = inputsManager.hashCode(new InputRecord(game, new ArrayList<>(), null, BLACK));
         log.info("hash1={}", hash1);
         log.info("hash2={}", hash2);
     }

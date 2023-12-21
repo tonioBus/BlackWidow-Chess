@@ -3,7 +3,10 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.check.GameChecker;
-import com.aquila.chess.strategy.mcts.inputs.*;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
+import com.aquila.chess.strategy.mcts.inputs.InputsManager;
+import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
+import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -18,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +98,7 @@ public class DeepLearningAGZ {
         this(nn, deepLearningAGZ.isTrain(), deepLearningAGZ.getBatchSize(), deepLearningAGZ.inputsManager, deepLearningAGZ.getNbFeaturesPlanes());
     }
 
-    private DeepLearningAGZ(final INN nn, boolean train, int batchSize, InputsManager inputsManager,int nbFeaturesPlanes) {
+    private DeepLearningAGZ(final INN nn, boolean train, int batchSize, InputsManager inputsManager, int nbFeaturesPlanes) {
         if (batchSize <= 0) throw new RuntimeException("BatchSize should be > 0");
         this.nn = nn;
         this.train = train;
@@ -296,20 +298,16 @@ public class DeepLearningAGZ {
         try {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
                 String moveSz = oneStepRecord.move();
-                InputsFullNN inputsNN = gameChecker.play(moveSz, oneStepRecord.moveColor());
-                if(inputsNN!=null) {
-                    OneStepRecord newOneStepRecord = new OneStepRecord(
-                            inputsNN,
-                            oneStepRecord.move(),
-                            oneStepRecord.moveColor(),
-                            oneStepRecord.policies());
-                    ret.add(newOneStepRecord);
-                }
+                gameChecker.play(moveSz);
+                InputRecord inputRecord = new InputRecord(gameChecker, gameChecker.getMoves(), gameChecker.getLastMove(), gameChecker.getLastMove().getAllegiance());
+                inputsManager.createInputs(inputRecord);
             }
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
             log.error("!! Error during loading of game: only using {} steps", ret.size());
             throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
         log.info("Check done: {}", ret.size());
         return ret;
@@ -333,13 +331,19 @@ public class DeepLearningAGZ {
         log.info("NETWORK TO FIT[{}]: {}", nbCorrectStep, trainGame.getValue());
         int nbChunk = nbCorrectStep / FIT_CHUNK;
         int restChunk = nbCorrectStep % FIT_CHUNK;
-        switch(trainGame.getValue().intValue()) {
-            case 1 -> { statisticsFit.nbWin++;}
-            case -1 -> { statisticsFit.nbLost++;}
-            case 0 -> { statisticsFit.nbDrawn++;}
+        switch (trainGame.getValue().intValue()) {
+            case 1 -> {
+                statisticsFit.nbWin++;
+            }
+            case -1 -> {
+                statisticsFit.nbLost++;
+            }
+            case 0 -> {
+                statisticsFit.nbDrawn++;
+            }
         }
         for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
-            trainChunk(indexChunk, FIT_CHUNK, trainGame,statisticsFit);
+            trainChunk(indexChunk, FIT_CHUNK, trainGame, statisticsFit);
         }
         if (restChunk > 0) {
             trainChunk(nbChunk, restChunk, trainGame, statisticsFit);
@@ -364,7 +368,7 @@ public class DeepLearningAGZ {
             double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
             if (policies != null) {
-                for( Map.Entry<Integer, Double> entry:policies.entrySet()) {
+                for (Map.Entry<Integer, Double> entry : policies.entrySet()) {
                     Integer indexFromMove = entry.getKey();
                     Double previousPolicies = entry.getValue();
                     policiesForNN[stepInChunk][indexFromMove] = previousPolicies;
@@ -373,10 +377,10 @@ public class DeepLearningAGZ {
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
         nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
-        statisticsFit.nbInputsFit +=chunkSize;
+        statisticsFit.nbInputsFit += chunkSize;
         double score = nn.getScore();
-        if(score < statisticsFit.scoreMin) statisticsFit.scoreMin = score;
-        if(score > statisticsFit.scoreMax) statisticsFit.scoreMax = score;
+        if (score < statisticsFit.scoreMin) statisticsFit.scoreMin = score;
+        if (score > statisticsFit.scoreMax) statisticsFit.scoreMax = score;
         log.info("NETWORK score: {}", score);
         if ("NaN".equals(score + "")) {
             log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");

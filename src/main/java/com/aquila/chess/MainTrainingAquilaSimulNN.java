@@ -91,7 +91,7 @@ public class MainTrainingAquilaSimulNN {
                 gameStatus = game.play();
                 sequence.play();
                 Move move = game.getLastMove();
-                gameChecker.play(move.toString(), move.getAllegiance());
+                gameChecker.play(move.toString());
                 log.info("move:{} game:\n{}", move, game);
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");

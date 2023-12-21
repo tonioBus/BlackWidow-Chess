@@ -68,9 +68,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
     @Override
     public InputsFullNN createInputs(final InputRecord inputRecord) {
         final AbstractGame abstractGame = inputRecord.abstractGame();
-        final Board board = inputRecord.board();
+        final Board board = abstractGame.getBoard();
         final Move move = inputRecord.move();
-        final List<Move> moves = inputRecord.moves();
         final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && !move.isInitMove())
@@ -79,9 +78,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
                     inputs,
                     new InputRecord(
                             abstractGame,
-                            move.execute(),
+                            abstractGame.getMoves(),
                             null,
-                            moves,
                             move.getAllegiance().complementary())
             );
         else
@@ -89,9 +87,8 @@ public class AquilaInputsManagerImpl extends InputsManager {
                     inputs,
                     new InputRecord(
                             abstractGame,
-                            board,
+                            abstractGame.getMoves(),
                             null,
-                            moves,
                             moveColor)
             );
         return new AquilaInputsFullNN(inputs);
@@ -103,7 +100,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
      * [12][NB_COL][NB_COL]
      */
     private void createInputs(double[][][] inputs, InputRecord inputRecord) {
-        final Board board = inputRecord.board();
+        final Board board = inputRecord.abstractGame().getBoard();
         final AbstractGame abstractGame = inputRecord.abstractGame();
         int nbRepeat = getNbRepeat(inputRecord.moveColor());
         board.getAllPieces().stream().forEach(currentPiece -> {
@@ -210,7 +207,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
             assert moveColor == move.getAllegiance();
             board = move.execute();
         } else {
-            board = inputRecord.board();
+            board = inputRecord.abstractGame().getBoard();
         }
         StringBuffer sb = new StringBuffer();
         sb.append(moveColor.toString());

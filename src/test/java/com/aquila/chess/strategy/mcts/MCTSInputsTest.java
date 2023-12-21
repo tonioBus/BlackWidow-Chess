@@ -80,20 +80,20 @@ class MCTSInputsTest {
 
         log.warn("############################################################");
         game.play();
-        InputRecord inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        InputRecord inputRecord = new InputRecord(game, game.getMoves(), game.getLastMove(), game.getCurrentPLayerColor());
         inputsManager.createInputs(inputRecord);
         log.warn("############################################################");
         dumpInput(game, 0);
         dumpInput(game, 1);
         game.play();
-        inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        inputRecord = new InputRecord(game, game.getMoves(), game.getLastMove(), game.getCurrentPLayerColor());
         inputsManager.createInputs(inputRecord);
         log.warn("############################################################");
         dumpInput(game, 0);
         dumpInput(game, 1);
         dumpInput(game, 2);
         game.play();
-        inputRecord = new InputRecord(game, board, game.getLastMove(), game.getMoves(), game.getCurrentPLayerColor());
+        inputRecord = new InputRecord(game, game.getMoves(), game.getLastMove(), game.getCurrentPLayerColor());
         InputsFullNN inputFullNN = inputsManager.createInputs(inputRecord);
         log.warn("############################################################");
         dumpInput(game, 0);

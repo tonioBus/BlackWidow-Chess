@@ -66,9 +66,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Override
     public Lc0InputsFullNN createInputs(final InputRecord inputRecord) {
         final AbstractGame abstractGame = inputRecord.abstractGame();
-        final Board board = inputRecord.board();
         final Move move = inputRecord.move();
-        final List<Move> moves = inputRecord.moves();
         final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && !move.isInitMove())
@@ -77,9 +75,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
                     inputs,
                     new InputRecord(
                             abstractGame,
-                            move.execute(),
+                            inputRecord.moves(),
                             null,
-                            moves,
                             move.getAllegiance().complementary())
             );
         else
@@ -87,9 +84,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
                     inputs,
                     new InputRecord(
                             abstractGame,
-                            board,
+                            inputRecord.moves(),
                             null,
-                            moves,
                             moveColor)
             );
         return new Lc0InputsFullNN(inputs);
@@ -209,7 +205,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
     private void createInputs(final double[][][] inputs,
                               InputRecord inputRecord) {
         int destinationOffset = 0;
-        final Board board = inputRecord.board();
+        final Board board = inputRecord.abstractGame().getBoard();
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
 //        int size = this.getLc0Last8Inputs().size();
@@ -296,9 +292,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
 
     public String getHashCodeString(final InputRecord inputRecord) {
         final Move move = inputRecord.move();
-        final List<Move> moves = inputRecord.moves();
         final Alliance moveColor = inputRecord.moveColor();
-        Board board = inputRecord.board();
+        Board board = inputRecord.abstractGame().getBoard();
         StringBuilder sb = new StringBuilder();
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         if (move != null && !move.isInitMove()) {
@@ -325,7 +320,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         sb.append("\nC:");
         sb.append(moveColor);
         sb.append("\nR:");
-        sb.append(MovesUtils.nbMovesRepeat(moves));
+        sb.append(MovesUtils.nbMovesRepeat(inputRecord.moves()));
         return sb.toString();
     }
 

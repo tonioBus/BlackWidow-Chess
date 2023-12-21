@@ -24,9 +24,8 @@ public record ServiceNNInputsJobs(Move move,
                 mctsGame.getInputsManager().createInputs(
                         new InputRecord(
                         mctsGame,
-                        mctsGame.getLastBoard(),
-                        move,
                         mctsGame.getMoves(),
+                        move,
                         moveColor))
                 );
     }

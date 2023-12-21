@@ -8,8 +8,7 @@ import com.chess.engine.classic.board.Move;
 import java.util.List;
 
 public record InputRecord(AbstractGame abstractGame,
-                          Board board,
-                          Move move,
                           List<Move> moves,
+                          Move move,
                           Alliance moveColor) {
 }

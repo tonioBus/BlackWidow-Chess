@@ -105,7 +105,7 @@ public class MCTSGameTest {
                     sb.append(hashcodes.get(hashcode));
                     sb.append("\nNEW BOARD;\n");
                     sb.append(inputsManager.getHashCodeString(
-                            new InputRecord(game, game.getLastBoard(), null, game.getMoves(), game.getCurrentPLayerColor())));
+                            new InputRecord(game, game.getMoves(), null, game.getCurrentPLayerColor())));
                     assertNotEquals(hashcode, hashcode, sb.toString());
                 }
             }
@@ -144,17 +144,15 @@ public class MCTSGameTest {
                 sb.append(oldInputsManager.getHashCodeString(
                         new InputRecord(
                                 oldMctsGame,
-                                oldMctsGame.getLastBoard(),
-                                null,
                                 game.getMoves(),
+                                null,
                                 game.getCurrentPLayerColor())));
                 sb.append("\nNEW BOARD;\n");
                 sb.append(inputsManager.getHashCodeString(
                         new InputRecord(
                                 game,
-                                game.getLastBoard(),
-                                null,
                                 game.getMoves(),
+                                null,
                                 game.getCurrentPLayerColor())));
                 log.info(sb.toString());
             }

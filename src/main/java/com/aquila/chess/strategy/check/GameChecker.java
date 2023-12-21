@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.check;
 
+import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputRecord;
@@ -17,27 +18,24 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.chess.engine.classic.board.Board.createStandardBoard;
+
 @Slf4j
-public class GameChecker {
-    private final Board board;
+public class GameChecker extends AbstractGame {
     private final Game game;
     private final FixStrategy whitePlayer;
     private final FixStrategy blackPlayer;
     private final List<Move> moves = new ArrayList<>();
 
     public GameChecker(final InputsManager inputsManager) {
-        board = Board.createStandardBoard();
+        super(inputsManager, createStandardBoard());
         game = Game.builder().board(board).inputsManager(inputsManager).build();
         whitePlayer = new FixStrategy(Alliance.WHITE);
         blackPlayer = new FixStrategy(Alliance.BLACK);
         game.setup(whitePlayer, blackPlayer);
     }
 
-    public Collection<Move> getCurrentLegalMoves() {
-        return game.getNextPlayer().getLegalMoves();
-    }
-
-    public InputsFullNN play(String givenMove, Alliance moveColor) {
+    public Game.GameStatus play(String givenMove) throws Exception {
         final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
         if (!givenMove.equals(Move.INIT_MOVE)) {
             Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove.toString())).findFirst();
@@ -45,7 +43,7 @@ public class GameChecker {
                 log.error("no legal move found for: {}", givenMove);
                 log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
-                if (game.getNbStep() >= 300) return null;
+                if (game.getNbStep() >= 300) return Game.GameStatus.DRAW_300;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();
@@ -58,18 +56,11 @@ public class GameChecker {
                     blackPlayer.setNextMove(currentMove);
                 }
             }
+            Game.GameStatus gameStatus = game.play();
+            this.moves.add(currentMove);
+            this.inputsManager.processPlay(getLastBoard(), currentMove);
+            return gameStatus;
         }
-        try {
-            if (!givenMove.equals(Move.INIT_MOVE)) game.play();
-            InputRecord inputRecord = new InputRecord(game,
-                    game.getBoard(),
-                    null,
-                    moves,
-                    moveColor);
-            InputsFullNN inputsNN = game.getInputsManager().createInputs(inputRecord);
-            return inputsNN;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return Game.GameStatus.IN_PROGRESS;
     }
 }

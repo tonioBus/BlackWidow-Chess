@@ -72,7 +72,7 @@ public class MainFitNNSpecificInputs {
     }
 
     public InputsFullNN createInputs(final Move move) {
-        InputRecord inputRecord = new InputRecord(game,board, move, new ArrayList<Move>(), Alliance.WHITE);
+        InputRecord inputRecord = new InputRecord(game, new ArrayList<>(), move, Alliance.WHITE);
         return inputsManager.createInputs(inputRecord);
     }
 

@@ -35,9 +35,8 @@ public class TestSpeedAGZ {
         Lc0InputsFullNN inputsFullNN = inputManager.createInputs(
                 new InputRecord(
                         game,
-                        board,
+                        game.getMoves(),
                         null,
-                        new ArrayList<>(),
                         Alliance.WHITE));
         for (int i = 0; i < length; i++) {
             System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
