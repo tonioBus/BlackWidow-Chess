@@ -25,7 +25,8 @@ public class MCTSGame extends AbstractGame {
         else
             this.nbMoveNoAttackAndNoPawn = 0;
         inputsManager.updateHashsTables(board, move.getAllegiance());
-        this.status = calculateStatus(move.execute(), move);
+        board = move.execute();
+        this.status = calculateStatus(board, move);
         registerMove(move);
         return this.status;
     }
