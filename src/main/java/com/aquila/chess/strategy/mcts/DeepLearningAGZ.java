@@ -62,7 +62,7 @@ public class DeepLearningAGZ {
     @Getter
     final private ServiceNN serviceNN;
 
-    static final int FIT_CHUNK = 1;
+    static final int FIT_CHUNK = 40;
 
     static final int CACHE_VALUES_SIZE = 40000;
 
