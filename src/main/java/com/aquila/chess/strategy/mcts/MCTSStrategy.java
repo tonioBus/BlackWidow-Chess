@@ -341,7 +341,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      */
     private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode, final Move move) {
         final Map<Integer, Double> probabilities = new HashMap<>();
-        if (stepNode == null) {
+        if (stepNode == null || stepNode.getVisits() == 0) {
             int index = PolicyUtils.indexFromMove(move);
             probabilities.put(index, 1.0);
             return probabilities;

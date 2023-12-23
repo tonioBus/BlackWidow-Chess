@@ -1,5 +1,6 @@
 package com.aquila.chess;
 
+import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
@@ -13,11 +14,26 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 
 @Slf4j
 public abstract class AbstractGame {
+
+    @Getter
+    protected Move moveOpponent = null;
+
+    @Getter
+    protected Strategy strategyWhite;
+
+    @Getter
+    protected Strategy strategyBlack;
+
+    @Getter
+    protected Strategy nextStrategy;
 
     @Getter
     protected final InputsManager inputsManager;
@@ -44,6 +60,25 @@ public abstract class AbstractGame {
         }
     }
 
+    public void setup(Strategy strategyWhite, Strategy strategyBlack) {
+        if (strategyWhite != null && strategyBlack != null) {
+            this.strategyWhite = strategyWhite;
+            this.strategyBlack = strategyBlack;
+            assert (strategyWhite.getAlliance() == Alliance.WHITE);
+            assert (strategyBlack.getAlliance() == Alliance.BLACK);
+            nextStrategy = switch (this.board.currentPlayer().getAlliance()) {
+                case WHITE -> strategyWhite;
+                case BLACK -> strategyBlack;
+            };
+        }
+        Move.InitMove initMove = switch (this.board.currentPlayer().getAlliance()) {
+            case WHITE -> new Move.InitMove(board, Alliance.BLACK);
+            case BLACK -> new Move.InitMove(board, Alliance.WHITE);
+        };
+        moveOpponent = initMove;
+        registerMove(moveOpponent);
+    }
+
     public Alliance getCurrentPLayerColor() {
         return this.board.currentPlayer().getAlliance();
     }
@@ -63,7 +98,7 @@ public abstract class AbstractGame {
     }
 
     public Move getLastMove() {
-        return this.getMoves().get(this.getMoves().size() - 1);
+        return this.getMoves().size() == 0 ? null : this.getMoves().get(this.getMoves().size() - 1);
     }
 
     public Player getNextPlayer() {
@@ -84,16 +119,23 @@ public abstract class AbstractGame {
 
     public synchronized long hashCode(@NonNull final Move move) {
         final Alliance moveColor = move.getAllegiance();
-        final InputRecord inputRecord = new InputRecord(this, getMoves(),move,  moveColor);
+        final InputRecord inputRecord = new InputRecord(this, getMoves(), move, moveColor);
         return inputsManager.hashCode(inputRecord);
     }
 
     public long hashCode(final Alliance pieceAllegiance, final Move selectedMove) {
-        final InputRecord inputRecord = new InputRecord(this, getMoves(),selectedMove, pieceAllegiance);
+        final InputRecord inputRecord = new InputRecord(this, getMoves(), selectedMove, pieceAllegiance);
         return this.inputsManager.hashCode(inputRecord);
     }
 
-    public Game.GameStatus calculateStatus(final Board board) {
+    public Game.GameStatus calculateStatus(final Board board, final Move move) {
+        if (move != null) {
+            if (!move.isAttack() &&
+                    move.getMovedPiece().getPieceType() != Piece.PieceType.PAWN)
+                this.nbMoveNoAttackAndNoPawn++;
+            else
+                this.nbMoveNoAttackAndNoPawn = 0;
+        }
         if (board.whitePlayer().isInCheckMate()) return Game.GameStatus.WHITE_CHESSMATE;
         if (board.blackPlayer().isInCheckMate()) return Game.GameStatus.BLACK_CHESSMATE;
         if (board.currentPlayer().isInStaleMate()) return Game.GameStatus.PAT;
@@ -149,4 +191,73 @@ public abstract class AbstractGame {
         return ratio;
     }
 
+    /**
+     * Add to the lastInputs the given move
+     *
+     * @param move
+     */
+    public void registerMove(final Move move) {
+        if (move == null) return;
+        this.moves.add(move);
+        this.inputsManager.processPlay(getLastBoard(), move);
+    }
+
+    public String toPGN() {
+        final StringBuffer sb = new StringBuffer();
+        sb.append(String.format("[Event \"%s\"]\n", "AquilaChess"));
+        sb.append(String.format("[Site \"%S\"]\n", "Mougins 06250"));
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd");
+        final String date = simpleDateFormat.format(new Date());
+        sb.append(String.format("[Date \"%s\"]\n", date));// "1992.11.04"));
+        sb.append(String.format("[Round \"%d\"]\n", this.moves.size()));
+        sb.append(String.format("[White \"%s\"]\n", strategyWhite != null ? strategyWhite.getClass().getSimpleName() : "null"));
+        sb.append(String.format("[Black \"%s\"]\n", strategyBlack != null ? strategyBlack.getClass().getSimpleName() : "null"));
+        String result = "*";
+        if (this.status != null) {
+            switch (this.status) {
+                case WHITE_CHESSMATE:
+                    result = "0-1";
+                    break;
+                case BLACK_CHESSMATE:
+                    result = "1-0";
+                    break;
+                case DRAW_50:
+                case DRAW_300:
+                case PAT:
+                case DRAW_3:
+                case DRAW_NOT_ENOUGH_PIECES:
+                    result = "1/2-1/2";
+                    break;
+            }
+        }
+        sb.append(String.format("[Result \"%s\"]\n", result)); // [Result "0-1"], [Result "1-0"], [Result "1/2-1/2"],
+        movesToPGN(sb);
+        return sb.toString();
+    }
+
+    private void movesToPGN(final StringBuffer sb) {
+        int i = 1;
+        int nbCol = 0;
+
+        final ListIterator<Move> it = this.getMoves().listIterator();
+        it.next(); // to remove the initial move INIT
+        while (it.hasNext()) {
+            nbCol += ("" + i).length() + 9;
+            if (nbCol > 70) {
+                nbCol = 0;
+                sb.append("\n");
+            }
+            if ((i & 1) == 1) {
+                sb.append((i / 2 + 1) + ".");
+            }
+            final Move move = it.next();
+            sb.append(toPGN(move));
+            sb.append(" ");
+            i++;
+        }
+    }
+
+    private String toPGN(final Move move) {
+        return move.toString();
+    }
 }

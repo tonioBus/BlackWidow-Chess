@@ -3,10 +3,8 @@ package com.aquila.chess.strategy.mcts;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.check.GameChecker;
-import com.aquila.chess.strategy.mcts.inputs.InputRecord;
-import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
-import com.aquila.chess.strategy.mcts.inputs.TrainInputs;
+import com.aquila.chess.strategy.mcts.inputs.*;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -241,21 +239,6 @@ public class DeepLearningAGZ {
         return cacheValue;
     }
 
-//    @Deprecated
-//    public double[] getBatchedPolicies(long key, final Statistic statistic) {
-//        CacheValue output = cacheValues.get(key);
-//        if (output != null) {
-//            if (log.isDebugEnabled())
-//                log.debug("getBatchedPolicies(): key:{}", key);
-//            statistic.nbRetrieveNNCachedPolicies++;
-//            return output.getPolicies();
-//        } else {
-//            String msg = String.format("KEY:%d SHOULD HAVE BEEN CREATED", key);
-//            log.error(msg);
-//            throw new RuntimeException(msg);
-//        }
-//    }
-
     public double getScore() {
         return nn.getScore();
     }
@@ -299,8 +282,14 @@ public class DeepLearningAGZ {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
                 String moveSz = oneStepRecord.move();
                 gameChecker.play(moveSz);
-                InputRecord inputRecord = new InputRecord(gameChecker, gameChecker.getMoves(), gameChecker.getLastMove(), gameChecker.getLastMove().getAllegiance());
-                inputsManager.createInputs(inputRecord);
+                InputRecord inputRecord = new InputRecord(gameChecker, gameChecker.getMoves(), gameChecker.getLastMove(), gameChecker.getCurrentPLayerColor().complementary());
+                InputsFullNN inputsFullNN = inputsManager.createInputs(inputRecord);
+                OneStepRecord newOneStepRecord = new OneStepRecord(
+                        inputsFullNN,
+                        oneStepRecord.move(),
+                        oneStepRecord.moveColor(),
+                        oneStepRecord.policies());
+                ret.add(newOneStepRecord);
             }
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
@@ -392,7 +381,7 @@ public class DeepLearningAGZ {
         double sum = 0;
         for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
             double policy = policyEntry.getValue();
-            if (Double.isNaN(policy)) {
+            if (Double.isNaN(policy) || Double.isInfinite(policy)) {
                 policy = 1.0;
                 policyEntry.setValue(policy);
             }

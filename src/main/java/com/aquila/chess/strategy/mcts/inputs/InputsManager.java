@@ -36,7 +36,7 @@ public abstract class InputsManager {
      * @param moveColor the color that will play, used only if move is not defined
      * @return
      */
-    public abstract InputsFullNN createInputs(InputRecord inputRecord);
+    public abstract <T extends InputsFullNN> T createInputs(InputRecord inputRecord);
 
     public abstract String getHashCodeString(InputRecord inputRecord);
 

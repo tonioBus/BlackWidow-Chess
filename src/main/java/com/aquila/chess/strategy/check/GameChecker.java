@@ -22,43 +22,36 @@ import static com.chess.engine.classic.board.Board.createStandardBoard;
 
 @Slf4j
 public class GameChecker extends AbstractGame {
-    private final Game game;
-    private final FixStrategy whitePlayer;
-    private final FixStrategy blackPlayer;
     private final List<Move> moves = new ArrayList<>();
 
     public GameChecker(final InputsManager inputsManager) {
         super(inputsManager, createStandardBoard());
-        game = Game.builder().board(board).inputsManager(inputsManager).build();
-        whitePlayer = new FixStrategy(Alliance.WHITE);
-        blackPlayer = new FixStrategy(Alliance.BLACK);
-        game.setup(whitePlayer, blackPlayer);
+        setup(new FixStrategy(Alliance.WHITE), new FixStrategy(Alliance.BLACK));
     }
 
     public Game.GameStatus play(String givenMove) throws Exception {
-        final Collection<Move> currentMoves = game.getNextPlayer().getLegalMoves();
+        final Collection<Move> currentMoves = super.getNextPlayer().getLegalMoves();
         if (!givenMove.equals(Move.INIT_MOVE)) {
             Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove.toString())).findFirst();
             if (currentMoveOpt.isEmpty()) {
                 log.error("no legal move found for: {}", givenMove);
                 log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-                log.error("game:nb step:{}\n{}\n{}", game.getNbStep(), game.toPGN(), game.getBoard().toString());
-                if (game.getNbStep() >= 300) return Game.GameStatus.DRAW_300;
+                log.error("game:nb step:{}\n{}\n{}", super.getNbStep(), super.toPGN(), super.getBoard().toString());
+                if (super.getNbStep() >= 300) return Game.GameStatus.DRAW_300;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();
-            moves.add(currentMove);
-            switch (game.getCurrentPLayerColor()) {
+            switch (super.getCurrentPLayerColor()) {
                 case WHITE -> {
-                    whitePlayer.setNextMove(currentMove);
+                    ((FixStrategy) strategyWhite).setNextMove(currentMove);
                 }
                 case BLACK -> {
-                    blackPlayer.setNextMove(currentMove);
+                    ((FixStrategy) strategyBlack).setNextMove(currentMove);
                 }
             }
-            Game.GameStatus gameStatus = game.play();
-            this.moves.add(currentMove);
-            this.inputsManager.processPlay(getLastBoard(), currentMove);
+            super.board = currentMove.execute();
+            Game.GameStatus gameStatus = calculateStatus(board, currentMove);
+            registerMove(currentMove);
             return gameStatus;
         }
         return Game.GameStatus.IN_PROGRESS;

@@ -1,13 +1,9 @@
 package com.aquila.chess.strategy.mcts;
 
-import com.aquila.chess.Game;
 import com.aquila.chess.AbstractGame;
-import com.aquila.chess.strategy.mcts.utils.MovesUtils;
-import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
+import com.aquila.chess.Game;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -18,7 +14,7 @@ public class MCTSGame extends AbstractGame {
         this.board = abstractGame.getBoard();
         this.nbMoveNoAttackAndNoPawn = abstractGame.getNbMoveNoAttackAndNoPawn();
         this.moves.addAll(abstractGame.getMoves());
-        this.status = abstractGame.calculateStatus(board);
+        this.status = abstractGame.calculateStatus(board, null);
         this.inputsManager.startMCTSStep(abstractGame);
     }
 
@@ -28,20 +24,10 @@ public class MCTSGame extends AbstractGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        add2Last8InputsAndPlay(move);
         inputsManager.updateHashsTables(board, move.getAllegiance());
-        return this.status = calculateStatus(move.execute());
-    }
-
-    /**
-     * Add to the lastInputs the given move
-     *
-     * @param move
-     */
-    public void add2Last8InputsAndPlay(final Move move) {
-        if (move == null) return;
-        this.moves.add(move);
-        this.inputsManager.processPlay(getLastBoard(), move);
+        this.status = calculateStatus(move.execute(), move);
+        registerMove(move);
+        return this.status;
     }
 
 }
