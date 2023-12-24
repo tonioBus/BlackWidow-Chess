@@ -76,8 +76,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
                     new InputRecord(
                             abstractGame,
                             inputRecord.moves(),
-                            null,
-                            move.getAllegiance().complementary())
+                            inputRecord.move(),
+                            moveColor)
             );
         else
             this.createInputs(
@@ -85,7 +85,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
                     new InputRecord(
                             abstractGame,
                             inputRecord.moves(),
-                            null,
+                            inputRecord.move(),
                             moveColor)
             );
         return new Lc0InputsFullNN(inputs);
@@ -112,9 +112,14 @@ public class Lc0InputsManagerImpl extends InputsManager {
         }
         int nbMoves = abstractGame.getMoves().size();
         if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
+            final Board board = abstractGame.getLastBoard();
             final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
             log.debug("push inputs init");
-            this.add(null, inputs);
+            Move.InitMove initMove = switch (board.currentPlayer().getAlliance()) {
+                case WHITE -> new Move.InitMove(board, Alliance.BLACK);
+                case BLACK -> new Move.InitMove(board, Alliance.WHITE);
+            };
+            this.add(initMove, inputs);
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.lc0Last8Inputs.clear();
@@ -136,7 +141,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
     }
 
     @Override
-    public void processPlay(final Board board, final Move move) {
+    public void registerInput(final Board board, final Move move) {
         Lc0InputsOneNN inputs = this.createInputsForOnePosition(board, move);
         this.lc0Last8Inputs.add(new Lc0Last8Inputs(inputs, move));
     }
@@ -208,18 +213,18 @@ public class Lc0InputsManagerImpl extends InputsManager {
         final Board board = inputRecord.abstractGame().getBoard();
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
         tmp.addAll(this.getLc0Last8Inputs());
-//        int size = this.getLc0Last8Inputs().size();
-//        Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
-//        boolean addInputs = true;
-//        if (lastMove != null && inputRecord.move() != null) {
-//            if (lastMove.equals(inputRecord.move())) {
-//                addInputs = false;
-//            }
-//        }
-//        if (addInputs) {
-//            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, null);
-//            tmp.add(new Lc0Last8Inputs(lastInput1, null));
-//        }
+        int size = this.getLc0Last8Inputs().size();
+        Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
+        boolean addInputs = true;
+        if (lastMove != null && inputRecord.move() != null) {
+            if (lastMove.equals(inputRecord.move())) {
+                addInputs = false;
+            }
+        }
+        if (addInputs && inputRecord.move() != null) {
+            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, inputRecord.move());
+            tmp.add(new Lc0Last8Inputs(lastInput1, inputRecord.move()));
+        }
         for (Lc0Last8Inputs lastInput : tmp) {
             System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
             destinationOffset += SIZE_POSITION;

@@ -192,14 +192,14 @@ public abstract class AbstractGame {
     }
 
     /**
-     * Add to the lastInputs the given move
+     * Add to moves the given move, and to the inputManager the calculated NN inputs
      *
      * @param move
      */
     public void registerMove(final Move move) {
         if (move == null) return;
         this.moves.add(move);
-        this.inputsManager.processPlay(getLastBoard(), move);
+        this.inputsManager.registerInput(getLastBoard(), move);
     }
 
     public String toPGN() {

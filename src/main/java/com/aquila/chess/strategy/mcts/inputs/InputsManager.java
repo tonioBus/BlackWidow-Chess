@@ -1,7 +1,6 @@
 package com.aquila.chess.strategy.mcts.inputs;
 
 import com.aquila.chess.AbstractGame;
-import com.aquila.chess.Game;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
 public abstract class InputsManager {
 
     final private Map<Alliance, CircularFifoQueue<Integer>> lastHashs = new HashMap<>();
-    // final private CircularFifoQueue<Integer> last6HashCodesAllegiance = new CircularFifoQueue<>(13);
 
     public abstract int getNbFeaturesPlanes();
 
@@ -101,7 +99,12 @@ public abstract class InputsManager {
         return sb.toString().hashCode();
     }
 
-    public abstract void processPlay(final Board board, final Move move);
+    /**
+     * Register the input calculated using the given board and the given move
+     * @param board
+     * @param move
+     */
+    public abstract void registerInput(final Board board, final Move move);
 
     public List<Integer> getHashs(final Alliance alliance) {
         List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList());

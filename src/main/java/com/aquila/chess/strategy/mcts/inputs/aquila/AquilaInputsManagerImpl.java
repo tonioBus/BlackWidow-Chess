@@ -238,7 +238,7 @@ public class AquilaInputsManagerImpl extends InputsManager {
     }
 
     @Override
-    public void processPlay(Board board, Move move) {
+    public void registerInput(Board board, Move move) {
 
     }
 
