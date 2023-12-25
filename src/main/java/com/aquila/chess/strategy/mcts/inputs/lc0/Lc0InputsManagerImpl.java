@@ -16,9 +16,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -54,6 +52,9 @@ public class Lc0InputsManagerImpl extends InputsManager {
 
     @Getter
     protected final CircularFifoQueue<Lc0Last8Inputs> lc0Last8Inputs = new CircularFifoQueue<>(8);
+
+    private final Map<Board, Board> whitePositions = new HashMap<>();
+    private final Map<Board, Board> blackPositions = new HashMap<>();
 
     @Override
     public int getNbFeaturesPlanes() {
@@ -137,6 +138,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
     public InputsManager clone() {
         Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
         lc0InputsManagerImpl.lc0Last8Inputs.addAll(this.getLc0Last8Inputs());
+        lc0InputsManagerImpl.whitePositions.putAll(this.whitePositions);
+        lc0InputsManagerImpl.blackPositions.putAll(this.blackPositions);
         return lc0InputsManagerImpl;
     }
 
@@ -254,18 +257,14 @@ public class Lc0InputsManagerImpl extends InputsManager {
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
         }
-        final Board board2use = board;
         board.getAllPieces().stream().forEach(currentPiece -> {
-            Player player = switch (currentPiece.getPieceAllegiance()) {
-                case WHITE -> board2use.whitePlayer();
-                case BLACK -> board2use.blackPlayer();
-            };
             // coordinate calculated from the point of view of the player
             Coordinate coordinate = new Coordinate(currentPiece);
             int currentPieceIndex = getPlanesIndex(currentPiece);
             // Position 0 (6+6 planes)
             nbIn[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
         });
+        // Repeat plan
         return new Lc0InputsOneNN(nbIn);
     }
 

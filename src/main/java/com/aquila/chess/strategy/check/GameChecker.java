@@ -22,7 +22,6 @@ import static com.chess.engine.classic.board.Board.createStandardBoard;
 
 @Slf4j
 public class GameChecker extends AbstractGame {
-    private final List<Move> moves = new ArrayList<>();
 
     public GameChecker(final InputsManager inputsManager) {
         super(inputsManager, createStandardBoard());
