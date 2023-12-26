@@ -26,7 +26,7 @@ public class FixStrategy implements Strategy {
     }
 
     @Override
-    public Move play(final Game game, final Move opponentMove, final List<Move> moves) throws Exception {
+    public Move evaluateNextMove(final Game game, final Move opponentMove, final List<Move> moves) throws Exception {
         final Move move = this.nextMove;
         this.nextMove = null;
         if(move != null) {

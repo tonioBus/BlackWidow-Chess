@@ -11,12 +11,13 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
-import com.chess.engine.classic.player.Player;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -53,13 +54,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Getter
     protected final CircularFifoQueue<Lc0Last8Inputs> lc0Last8Inputs = new CircularFifoQueue<>(8);
 
-    private final Map<Alliance, Map<Integer, Integer>> hashPositions = new HashMap<>();
-
     public Lc0InputsManagerImpl() {
-        Map<Integer, Integer> whitePositions = new HashMap<>();
-        Map<Integer, Integer> blackPositions = new HashMap<>();
-        hashPositions.put(Alliance.WHITE, whitePositions);
-        hashPositions.put(Alliance.BLACK, blackPositions);
     }
 
     @Override
@@ -110,8 +105,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
 
     @Override
     public void startMCTSStep(final AbstractGame abstractGame) {
+        Move move = abstractGame.getLastMove();
         if (log.isDebugEnabled()) {
-            Move move = abstractGame.getLastMove();
             if (move.getMovedPiece() == null)
                 log.info("INIT POSITION");
             else
@@ -120,7 +115,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         int nbMoves = abstractGame.getMoves().size();
         if (nbMoves == 0 && this.lc0Last8Inputs.size() == 0) {
             final Board board = abstractGame.getLastBoard();
-            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null);
+            final Lc0InputsOneNN inputs = this.createInputsForOnePosition(abstractGame.getLastBoard(), null, isRepeatMove(move));
             log.debug("push inputs init");
             Move.InitMove initMove = switch (board.currentPlayer().getAlliance()) {
                 case WHITE -> new Move.InitMove(board, Alliance.BLACK);
@@ -130,12 +125,12 @@ public class Lc0InputsManagerImpl extends InputsManager {
         } else {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.lc0Last8Inputs.clear();
-            abstractGame.getMoves().stream().skip(skipMoves).forEach(move -> {
-                final Lc0InputsOneNN inputs = move.hashCode() == -1 ?
-                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null) :
-                        this.createInputsForOnePosition(move.getBoard(), move);
-                log.debug("push input after init move:{}:\n{}", move, inputs);
-                this.add(move, inputs);
+            abstractGame.getMoves().stream().skip(skipMoves).forEach(currentMove -> {
+                final Lc0InputsOneNN inputs = currentMove.hashCode() == -1 ?
+                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null, isRepeatMove(currentMove)) :
+                        this.createInputsForOnePosition(currentMove.getBoard(), currentMove, isRepeatMove(currentMove));
+                log.debug("push input after init move:{}:\n{}", currentMove, inputs);
+                this.add(currentMove, inputs);
             });
         }
     }
@@ -143,18 +138,23 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Override
     public InputsManager clone() {
         Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
+        doClone(lc0InputsManagerImpl);
         lc0InputsManagerImpl.lc0Last8Inputs.addAll(this.getLc0Last8Inputs());
-        lc0InputsManagerImpl.hashPositions.get(Alliance.WHITE).putAll(hashPositions.get(Alliance.WHITE));
-        lc0InputsManagerImpl.hashPositions.get(Alliance.BLACK).putAll(hashPositions.get(Alliance.BLACK));
         return lc0InputsManagerImpl;
     }
 
     @Override
     public void registerInput(final Board board, final Move move) {
-        // final Board newBoard = move.execute();
-        Lc0InputsOneNN inputs = this.createInputsForOnePosition(board, move);
-        this.lc0Last8Inputs.add(new Lc0Last8Inputs(inputs, move));
-        hashPositions.get(move.getAllegiance()).put(Utils.hashCode1Alliance(move.getBoard(), move.getAllegiance()), 0);
+        Lc0InputsOneNN inputs = this.createInputsForOnePosition(board, move, isRepeatMove(move));
+        this.lc0Last8Inputs.add(new Lc0Last8Inputs(inputs, move, isRepeatMove(move)));
+    }
+
+    private synchronized boolean isRepeatMove(final Move move) {
+        if (move.isInitMove()) return false;
+        final Board destBoard = move.execute();
+        int key = Utils.hashCode1Alliance(destBoard, move.getAllegiance());
+        boolean ret = super.lastHashs.get(move.getAllegiance()).containsKey(key);
+        return ret;
     }
 
     /**
@@ -233,8 +233,9 @@ public class Lc0InputsManagerImpl extends InputsManager {
             }
         }
         if (addInputs && inputRecord.move() != null) {
-            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, inputRecord.move());
-            tmp.add(new Lc0Last8Inputs(lastInput1, inputRecord.move()));
+            boolean isRepeat = isRepeatMove(inputRecord.move());
+            Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, inputRecord.move(), isRepeat);
+            tmp.add(new Lc0Last8Inputs(lastInput1, inputRecord.move(), isRepeat));
         }
         for (Lc0Last8Inputs lastInput : tmp) {
             System.arraycopy(lastInput.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
@@ -255,12 +256,13 @@ public class Lc0InputsManagerImpl extends InputsManager {
     }
 
     /**
-     * @param board - the board on which we apply the move
-     * @param move  - the move to apply or null if nothing should be applied
+     * @param board    - the board on which we apply the move
+     * @param move     - the move to apply or null if nothing should be applied
+     * @param isRepeat
      * @return the normalize board for 1 position using board and move. dimensions:
      * [13][NB_COL][NB_COL]
      */
-    public Lc0InputsOneNN createInputsForOnePosition(Board board, final Move move) {
+    public Lc0InputsOneNN createInputsForOnePosition(Board board, final Move move, boolean isRepeat) {
         final var nbIn = new double[SIZE_POSITION][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         if (move != null && move.getDestinationCoordinate() != -1) {
             board = move.execute();
@@ -273,6 +275,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
             nbIn[currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
         });
         // Repeat plan
+        fill(nbIn[SIZE_POSITION - 1], isRepeat ? 1.0 : 0.0);
         return new Lc0InputsOneNN(nbIn);
     }
 
@@ -327,11 +330,11 @@ public class Lc0InputsManagerImpl extends InputsManager {
                 sb.append(String.format("%s=%d,", piece.getPieceType(), position));
             }
         }
-        sb.append("\nM:");
+        sb.append("\n");
         sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
-        sb.append("\nC:");
+        sb.append("\n");
         sb.append(moveColor);
-        sb.append("\nR:");
+        sb.append("\n");
         sb.append(MovesUtils.nbMovesRepeat(inputRecord.moves()));
         return sb.toString();
     }
@@ -349,7 +352,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
                 }
             }
         }
-        this.lc0Last8Inputs.add(new Lc0Last8Inputs(lc0InputsOneNN, move));
+        this.lc0Last8Inputs.add(new Lc0Last8Inputs(lc0InputsOneNN, move, this.isRepeatMove(move)));
     }
 
 }

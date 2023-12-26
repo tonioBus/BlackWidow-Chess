@@ -26,7 +26,7 @@ public class RandomStrategy implements Strategy {
     }
 
     @Override
-    public Move play(final Game game, final Move opponentMove, final List<Move> moves) {
+    public Move evaluateNextMove(final Game game, final Move opponentMove, final List<Move> moves) {
         long skip = moves.isEmpty() ? 0 : rand.nextInt(moves.size());
         Move move = moves.stream().skip(skip).findFirst().get();
         log.info("[{}] {} nextPlay() -> {}", this.nbStep, this, move);

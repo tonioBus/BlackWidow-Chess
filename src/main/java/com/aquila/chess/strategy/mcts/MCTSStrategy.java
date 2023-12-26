@@ -101,9 +101,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     @Override
-    public Move play(final Game game,
-                     final Move moveOpponent,
-                     final List<Move> possibleMoves) throws InterruptedException {
+    public Move evaluateNextMove(final Game game,
+                                 final Move moveOpponent,
+                                 final List<Move> possibleMoves) throws InterruptedException {
         this.directRoot = null;
         createRootNode(originalGame, moveOpponent, possibleMoves);
         assert (directRoot != null);

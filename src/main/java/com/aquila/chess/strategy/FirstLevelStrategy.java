@@ -27,7 +27,7 @@ public class FirstLevelStrategy implements Strategy {
     }
 
     @Override
-    public Move play(final Game game, final Move opponentMove, final List<Move> moves) {
+    public Move evaluateNextMove(final Game game, final Move opponentMove, final List<Move> moves) {
 		Piece attackedPiece=null;
 		Move attackingMove=null;
         for(Move move:moves) {

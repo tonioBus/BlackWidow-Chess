@@ -23,7 +23,7 @@ public class HungryStrategy implements Strategy {
     }
 
     @Override
-    public Move play(final Game game, final Move opponentMove, final List<Move> moves) {
+    public Move evaluateNextMove(final Game game, final Move opponentMove, final List<Move> moves) {
         Move bestAttackMove = null;
         Move bestUnpositionMove = null;
         int bestPiece = 0;

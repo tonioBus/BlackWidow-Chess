@@ -31,11 +31,12 @@ public class GameChecker extends AbstractGame {
     public Game.GameStatus play(String givenMove) throws Exception {
         final Collection<Move> currentMoves = super.getNextPlayer().getLegalMoves();
         if (!givenMove.equals(Move.INIT_MOVE)) {
-            Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove.toString())).findFirst();
+            Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove)).findFirst();
             if (currentMoveOpt.isEmpty()) {
-                log.error("no legal move found for: {}", givenMove);
-                log.error("possible moves:{}", currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-                log.error("game:nb step:{}\n{}\n{}", super.getNbStep(), super.toPGN(), super.getBoard().toString());
+                Alliance alliance = super.getNextPlayer().getAlliance();
+                log.error("[{}] no legal move found for: {}", alliance, givenMove);
+                log.error("[{}] possible moves:{}", alliance, currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                log.error("[{}] game:nb step:{}\n{}\n{}", alliance, super.getNbStep(), super.toPGN(), super.getBoard().toString());
                 if (super.getNbStep() >= 300) return Game.GameStatus.DRAW_300;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }

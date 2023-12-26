@@ -35,7 +35,7 @@ public class StaticStrategy implements Strategy {
     }
 
     @Override
-    public Move play(Game game, Move moveOpponent, List<Move> moves) throws Exception {
+    public Move evaluateNextMove(Game game, Move moveOpponent, List<Move> moves) throws Exception {
         String nextMoveSz = moveSzs.get(sequenceNumber++);
         Optional<Move> nextMove = BoardUtils.getMove(nextMoveSz, moves);
         if (nextMove.isEmpty()) throw new RuntimeException(String.format("Incorrect move:%s", nextMoveSz));

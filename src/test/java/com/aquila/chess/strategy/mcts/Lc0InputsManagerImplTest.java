@@ -75,7 +75,7 @@ class Lc0InputsManagerImplTest {
                 .withDirichlet(dirichlet);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
-        Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null);
+        Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(board, null, false);
         String boartdSz = inputs.toString();
         log.info("board.string:\n{}", board.toString());
         assertEquals(board.toString(), boartdSz);

@@ -7,6 +7,7 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.pieces.Piece;
+import com.chess.engine.classic.player.Player;
 import lombok.extern.slf4j.Slf4j;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
@@ -67,15 +68,12 @@ public class Utils {
     public static boolean isDebuggerPresent() {
         // Get ahold of the Java Runtime Environment (JRE) management interface
         RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
-
         // Get the command line arguments that we were originally passed in
         List<String> args = runtime.getInputArguments();
-
         // Check if the Java Debug Wire Protocol (JDWP) agent is used.
         // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
         // We're looking for the string "jdwp".
         boolean jdwpPresent = args.toString().contains("jdwp");
-
         return jdwpPresent;
     }
 
@@ -93,7 +91,7 @@ public class Utils {
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);
             if (piece != null && piece.getPieceAllegiance() == alliance) {
-                sb.append(String.format("%s=%d,", piece.getPieceType(), position));
+                sb.append(String.format("%s=%d", piece.getPieceType(), position));
             }
         }
         return sb.toString().hashCode();

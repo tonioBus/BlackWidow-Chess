@@ -19,21 +19,20 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class InputsManager {
 
-    final private Map<Alliance, CircularFifoQueue<Integer>> lastHashs = new HashMap<>();
+    final protected Map<Alliance, Map<Integer, String>> lastHashs = new HashMap<>();
 
     public abstract int getNbFeaturesPlanes();
 
     public InputsManager() {
-        lastHashs.put(Alliance.WHITE, new CircularFifoQueue<>(13));
-        lastHashs.put(Alliance.BLACK, new CircularFifoQueue<>(13));
+        lastHashs.put(Alliance.WHITE, new HashMap<>());
+        lastHashs.put(Alliance.BLACK, new HashMap<>());
     }
 
     /**
-     * @param board      - the board on which we apply the move
-     * @param move       - the move to apply or null if nothing need to be applied,
-     *                   the complementary of the color of the move will be used as moveColor
-     * @param moveColor the color that will play, used only if move is not defined
+     *
+     * @param inputRecord
      * @return
+     * @param <T>
      */
     public abstract <T extends InputsFullNN> T createInputs(InputRecord inputRecord);
 
@@ -45,14 +44,20 @@ public abstract class InputsManager {
 
     public abstract InputsManager clone();
 
-    public void updateHashsTables(Board board, final Alliance alliance) {
-        this.lastHashs.get(alliance).add(Utils.hashCode1Alliance(board, alliance));
+    protected void doClone(InputsManager inputsManager2clone) {
+        inputsManager2clone.lastHashs.get(Alliance.WHITE).putAll(lastHashs.get(Alliance.WHITE));
+        inputsManager2clone.lastHashs.get(Alliance.BLACK).putAll(lastHashs.get(Alliance.BLACK));
+    }
+
+    public void updateHashsTables(Board board, final Move move) {
+        Alliance alliance = move.getAllegiance();
+        this.lastHashs.get(alliance).put(Utils.hashCode1Alliance(board, alliance), move.toString());
     }
 
     public int getNbRepeat(final Alliance alliance) {
         int ret = 0;
         if(lastHashs.get(alliance)==null) return 0;
-        List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
+        List<Integer> hashs = lastHashs.get(alliance).keySet().stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
         Collections.reverse(hashs);
         if (hashs.size() > 3) {
             ret = hashs.get(0).intValue() == hashs.get(2).intValue()
@@ -97,7 +102,7 @@ public abstract class InputsManager {
     public abstract void registerInput(final Board board, final Move move);
 
     public List<Integer> getHashs(final Alliance alliance) {
-        List<Integer> hashs = lastHashs.get(alliance).stream().collect(Collectors.toList());
+        List<Integer> hashs = lastHashs.get(alliance).keySet().stream().collect(Collectors.toList());
         Collections.reverse(hashs);
         return hashs;
     }

@@ -69,7 +69,7 @@ class DeepLearningAGZTest {
             if (status != Game.GameStatus.IN_PROGRESS) break;
             Move move = game.getMoves().get(0);
             MCTSGame mctsGame = new MCTSGame(game);
-            Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move, false);
             assertNotNull(inputs);
         }
         long end = System.currentTimeMillis();
@@ -94,7 +94,7 @@ class DeepLearningAGZTest {
         final List<Move> moves = game.getPlayer(Alliance.WHITE).getLegalMoves(Move.MoveStatus.DONE);
         MCTSGame mctsGame = new MCTSGame(game);
         for (final Move move : moves) {
-            final Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move);
+            final Lc0InputsOneNN inputs = inputsManager.createInputsForOnePosition(mctsGame.getLastBoard(), move, false);
             log.info("{}\n{}", move == null ? "Na" : move, inputs);
         }
     }

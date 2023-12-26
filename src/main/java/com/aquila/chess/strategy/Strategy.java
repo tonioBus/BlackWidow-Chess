@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface Strategy {
 
-    Move play(final Game game, final Move moveOpponent, final List<Move> moves) throws Exception ;
+    Move evaluateNextMove(final Game game, final Move moveOpponent, final List<Move> moves) throws Exception ;
 
     String getName();
 

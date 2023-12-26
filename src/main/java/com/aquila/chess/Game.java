@@ -2,12 +2,9 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.Strategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
-import com.chess.engine.classic.pieces.Piece;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -20,10 +17,6 @@ public class Game extends AbstractGame {
     @Builder
     public Game(InputsManager inputsManager, Board board) {
         super(inputsManager, board);
-    }
-
-    public boolean isLogBoard() {
-        return true;
     }
 
     public void playAll() {
@@ -41,14 +34,14 @@ public class Game extends AbstractGame {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
-        this.inputsManager.updateHashsTables(board, nextStrategy.getAlliance());
+        this.inputsManager.updateHashsTables(board, this.getLastMove());
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         log.info("[{}] current player:[{}] legal move:[{}] {}",
                 this.moves.size(),
                 getNextPlayer().getAlliance(),
                 possibleMoves.size(),
                 possibleMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-        Move move = nextStrategy.play(this, moveOpponent, possibleMoves);
+        Move move = nextStrategy.evaluateNextMove(this, moveOpponent, possibleMoves);
         if (possibleMoves.stream().filter(move1 -> move1.toString().equals(move.toString())).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
         }
