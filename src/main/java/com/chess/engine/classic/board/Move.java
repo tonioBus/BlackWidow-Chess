@@ -142,7 +142,6 @@ public abstract class Move {
         builder.setMoveTransition(this);
         builder.setCheckBoard(board.isCheckBoard());
         return builder.build();
-
     }
 
     public Board undo() {

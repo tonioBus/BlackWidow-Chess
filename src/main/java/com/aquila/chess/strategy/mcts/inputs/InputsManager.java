@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts.inputs;
 
 import com.aquila.chess.AbstractGame;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -45,7 +46,7 @@ public abstract class InputsManager {
     public abstract InputsManager clone();
 
     public void updateHashsTables(Board board, final Alliance alliance) {
-        this.lastHashs.get(alliance).add(hashCode1Alliance(board, alliance));
+        this.lastHashs.get(alliance).add(Utils.hashCode1Alliance(board, alliance));
     }
 
     public int getNbRepeat(final Alliance alliance) {
@@ -86,17 +87,6 @@ public abstract class InputsManager {
                     hashs.get(6));
         }
         return ret;
-    }
-
-    private int hashCode1Alliance(final Board board, final Alliance alliance) {
-        StringBuffer sb = new StringBuffer();
-        for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
-            Piece piece = board.getPiece(position);
-            if (piece != null && piece.getPieceAllegiance() == alliance) {
-                sb.append(String.format("%s=%d,", piece.getPieceType(), position));
-            }
-        }
-        return sb.toString().hashCode();
     }
 
     /**

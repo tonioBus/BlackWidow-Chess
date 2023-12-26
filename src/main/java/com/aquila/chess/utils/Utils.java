@@ -3,6 +3,10 @@
  */
 package com.aquila.chess.utils;
 
+import com.chess.engine.classic.Alliance;
+import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.BoardUtils;
+import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
@@ -82,6 +86,17 @@ public class Utils {
     public static String toSha1(String text) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-1");
         return UUID.nameUUIDFromBytes(md.digest(text.getBytes())).toString();
+    }
+
+    public static int hashCode1Alliance(final Board board, final Alliance alliance) {
+        StringBuffer sb = new StringBuffer();
+        for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
+            Piece piece = board.getPiece(position);
+            if (piece != null && piece.getPieceAllegiance() == alliance) {
+                sb.append(String.format("%s=%d,", piece.getPieceType(), position));
+            }
+        }
+        return sb.toString().hashCode();
     }
 
 }

@@ -53,8 +53,14 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Getter
     protected final CircularFifoQueue<Lc0Last8Inputs> lc0Last8Inputs = new CircularFifoQueue<>(8);
 
-    private final Map<Board, Board> whitePositions = new HashMap<>();
-    private final Map<Board, Board> blackPositions = new HashMap<>();
+    private final Map<Alliance, Map<Integer, Integer>> hashPositions = new HashMap<>();
+
+    public Lc0InputsManagerImpl() {
+        Map<Integer, Integer> whitePositions = new HashMap<>();
+        Map<Integer, Integer> blackPositions = new HashMap<>();
+        hashPositions.put(Alliance.WHITE, whitePositions);
+        hashPositions.put(Alliance.BLACK, blackPositions);
+    }
 
     @Override
     public int getNbFeaturesPlanes() {
@@ -95,7 +101,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Override
     public long hashCode(final InputRecord inputRecord) {
         String hashCodeString = getHashCodeString(inputRecord);
-        long ret = hash(hashCodeString);
+        long ret = Utils.hash(hashCodeString);
         log.debug("[{}] HASHCODE:{}\n{}", inputRecord.moveColor(), ret, hashCodeString);
         if (log.isDebugEnabled())
             log.warn("HASHCODE-1() -> [{}] MOVE:{} nbMaxBits:{} - {}", inputRecord.moveColor(), inputRecord.move(), Utils.nbMaxBits(ret), ret);
@@ -138,15 +144,17 @@ public class Lc0InputsManagerImpl extends InputsManager {
     public InputsManager clone() {
         Lc0InputsManagerImpl lc0InputsManagerImpl = new Lc0InputsManagerImpl();
         lc0InputsManagerImpl.lc0Last8Inputs.addAll(this.getLc0Last8Inputs());
-        lc0InputsManagerImpl.whitePositions.putAll(this.whitePositions);
-        lc0InputsManagerImpl.blackPositions.putAll(this.blackPositions);
+        lc0InputsManagerImpl.hashPositions.get(Alliance.WHITE).putAll(hashPositions.get(Alliance.WHITE));
+        lc0InputsManagerImpl.hashPositions.get(Alliance.BLACK).putAll(hashPositions.get(Alliance.BLACK));
         return lc0InputsManagerImpl;
     }
 
     @Override
     public void registerInput(final Board board, final Move move) {
+        // final Board newBoard = move.execute();
         Lc0InputsOneNN inputs = this.createInputsForOnePosition(board, move);
         this.lc0Last8Inputs.add(new Lc0Last8Inputs(inputs, move));
+        hashPositions.get(move.getAllegiance()).put(Utils.hashCode1Alliance(move.getBoard(), move.getAllegiance()), 0);
     }
 
     /**
@@ -342,15 +350,6 @@ public class Lc0InputsManagerImpl extends InputsManager {
             }
         }
         this.lc0Last8Inputs.add(new Lc0Last8Inputs(lc0InputsOneNN, move));
-    }
-
-    private long hash(String str) {
-        long hash = 5381;
-        byte[] data = str.getBytes();
-        for (byte b : data) {
-            hash = ((hash << 5) + hash) + b;
-        }
-        return hash;
     }
 
 }
