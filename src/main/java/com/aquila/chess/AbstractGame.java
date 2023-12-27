@@ -198,8 +198,8 @@ public abstract class AbstractGame {
      */
     public void registerMove(final Move move) {
         if (move == null) return;
-        this.moves.add(move);
         this.inputsManager.registerInput(getLastBoard(), move);
+        this.moves.add(move);
     }
 
     public String toPGN() {

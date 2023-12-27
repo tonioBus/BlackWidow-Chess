@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.strategy.mcts.inputs.InputRecord;
+import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsOneNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
@@ -35,7 +37,7 @@ class Lc0InputsManagerImplTest {
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;
 
     @Test
-    void createInputsForOnePosition() {
+    void createInputsForOnePosition() throws Exception {
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         final Lc0InputsManagerImpl inputsManager = new Lc0InputsManagerImpl();
@@ -80,5 +82,8 @@ class Lc0InputsManagerImplTest {
         log.info("board.string:\n{}", board.toString());
         assertEquals(board.toString(), boartdSz);
         log.info("BOARD:[{}]", boartdSz);
+        game.play();
+        Lc0InputsFullNN inputsFull = inputsManager.createInputs(new InputRecord(game, game.getMoves(), game.getLastMove(), game.getLastMove().getAllegiance()));
+        log.info("inputsFull:\n{}", inputsFull.toString());
     }
 }

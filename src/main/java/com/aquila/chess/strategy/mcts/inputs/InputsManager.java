@@ -4,11 +4,8 @@ import com.aquila.chess.AbstractGame;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
-import com.chess.engine.classic.pieces.Piece;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,7 +16,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class InputsManager {
 
-    final protected Map<Alliance, Map<Integer, String>> lastHashs = new HashMap<>();
+    final protected Map<Alliance, Map<Integer, Integer>> lastHashs = new HashMap<>();
 
     public abstract int getNbFeaturesPlanes();
 
@@ -49,14 +46,33 @@ public abstract class InputsManager {
         inputsManager2clone.lastHashs.get(Alliance.BLACK).putAll(lastHashs.get(Alliance.BLACK));
     }
 
-    public void updateHashsTables(Board board, final Move move) {
+    public void updateHashsTables(final Move move) {
         Alliance alliance = move.getAllegiance();
-        this.lastHashs.get(alliance).put(Utils.hashCode1Alliance(board, alliance), move.toString());
+        Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
+        int key = Utils.hashCode1Alliance(move.execute(), alliance);
+        if (hashs.containsKey(key)) {
+            log.info("updateHash to 1 move:{}, key:{}", move, key);
+            hashs.put(key, 1);
+        } else {
+            hashs.put(key, 0);
+        }
+    }
+
+    public boolean isRepeatMove(final Move move) {
+        if (move.isInitMove()) return false;
+        final Board destBoard = move.execute();
+        Alliance alliance = move.getAllegiance();
+        Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
+        int key = Utils.hashCode1Alliance(destBoard, alliance);
+        if (!hashs.containsKey(key)) return false;
+        int ret = hashs.get(key).intValue();
+        log.info("move:{} key:{} ret:{}", move, key, ret);
+        return ret == 1;
     }
 
     public int getNbRepeat(final Alliance alliance) {
         int ret = 0;
-        if(lastHashs.get(alliance)==null) return 0;
+        if (lastHashs.get(alliance) == null) return 0;
         List<Integer> hashs = lastHashs.get(alliance).keySet().stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
         Collections.reverse(hashs);
         if (hashs.size() > 3) {

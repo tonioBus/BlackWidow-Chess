@@ -34,7 +34,7 @@ public class Game extends AbstractGame {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
-        this.inputsManager.updateHashsTables(board, this.getLastMove());
+        this.inputsManager.updateHashsTables(this.getLastMove());
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         log.info("[{}] current player:[{}] legal move:[{}] {}",
                 this.moves.size(),
