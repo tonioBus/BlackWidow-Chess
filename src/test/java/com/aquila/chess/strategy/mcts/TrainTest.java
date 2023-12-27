@@ -119,18 +119,6 @@ public class TrainTest {
             assertFalse(true, "Exception:" + e);
         }
         log.info("statistics:{}", statisticsFit);
-//        for (int i = 0; i < savedGames.size(); i++) {
-//            int num = savedGames.get(i);
-//            Game game = games.get(i);
-//            // game.playAll();
-//            TrainGame loadTrainGame = TrainGame.load("train-test", num);
-//            try {
-//                deepLearningWhite.train(loadTrainGame);
-//            } catch (IOException e) {
-//                log.info("Game:\n{}", game);
-//                assertFalse(true, "Exception:" + e);
-//            }
-//        }
     }
 
     @Test

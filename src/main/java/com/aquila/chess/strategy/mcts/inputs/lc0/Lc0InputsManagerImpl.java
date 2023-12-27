@@ -126,9 +126,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
             int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
             this.lc0Last8Inputs.clear();
             abstractGame.getMoves().stream().skip(skipMoves).forEach(currentMove -> {
-                final Lc0InputsOneNN inputs = currentMove.hashCode() == -1 ?
-                        this.createInputsForOnePosition(abstractGame.getLastBoard(), null, isRepeatMove(currentMove)) :
-                        this.createInputsForOnePosition(currentMove.getBoard(), currentMove, isRepeatMove(currentMove));
+                boolean isRepeat = isRepeatMove(currentMove);
+                final Lc0InputsOneNN inputs = this.createInputsForOnePosition(currentMove.getBoard(), currentMove, isRepeat);
                 log.debug("push input after init move:{}:\n{}", currentMove, inputs);
                 this.add(currentMove, inputs);
             });
