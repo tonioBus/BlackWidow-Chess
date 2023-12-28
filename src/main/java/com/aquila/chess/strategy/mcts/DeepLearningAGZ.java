@@ -196,9 +196,6 @@ public class DeepLearningAGZ {
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
                 log.debug("[{}] CREATE ROOT CACHE VALUE:{} move:root label:{}", moveColor, key, label);
-            String lastMoves = mctsGame.getMoves().stream().map(
-                            move -> move == null ? "-" : move.toString()).
-                    collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, "ROOT");
             cacheValues.create(key, labelCacheValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;

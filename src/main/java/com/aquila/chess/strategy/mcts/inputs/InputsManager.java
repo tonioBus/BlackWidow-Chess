@@ -42,8 +42,12 @@ public abstract class InputsManager {
     public abstract InputsManager clone();
 
     protected void doClone(InputsManager inputsManager2clone) {
-        inputsManager2clone.lastHashs.get(Alliance.WHITE).putAll(lastHashs.get(Alliance.WHITE));
-        inputsManager2clone.lastHashs.get(Alliance.BLACK).putAll(lastHashs.get(Alliance.BLACK));
+        lastHashs.get(Alliance.WHITE).entrySet().stream().forEach(entry -> {
+            inputsManager2clone.lastHashs.get(Alliance.WHITE).put(Integer.valueOf(entry.getKey()), Integer.valueOf(entry.getValue()));
+        });
+        lastHashs.get(Alliance.BLACK).entrySet().stream().forEach(entry -> {
+            inputsManager2clone.lastHashs.get(Alliance.BLACK).put(Integer.valueOf(entry.getKey()), Integer.valueOf(entry.getValue()));
+        });
     }
 
     public void updateHashsTables(final Move move) {
@@ -63,6 +67,7 @@ public abstract class InputsManager {
         final Board destBoard = move.execute();
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
+        log.info("isRepeatMove: move:{}", move);
         int key = Utils.hashCode1Alliance(destBoard, alliance);
         if (!hashs.containsKey(key)) return false;
         int ret = hashs.get(key).intValue();

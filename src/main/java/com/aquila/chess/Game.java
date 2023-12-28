@@ -34,7 +34,6 @@ public class Game extends AbstractGame {
 
     public GameStatus play() throws Exception {
         assert (nextStrategy != null);
-        this.inputsManager.updateHashsTables(this.getLastMove());
         List<Move> possibleMoves = getNextPlayer().getLegalMoves(Move.MoveStatus.DONE);
         log.info("[{}] current player:[{}] legal move:[{}] {}",
                 this.moves.size(),
@@ -45,6 +44,7 @@ public class Game extends AbstractGame {
         if (possibleMoves.stream().filter(move1 -> move1.toString().equals(move.toString())).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
         }
+        this.inputsManager.updateHashsTables(move);
         board = getNextPlayer().executeMove(move);
         this.status = calculateStatus(board, move);
         this.nextStrategy = opponentStrategy(this.nextStrategy);
