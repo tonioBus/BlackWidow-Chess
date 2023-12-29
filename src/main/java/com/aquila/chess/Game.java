@@ -44,12 +44,12 @@ public class Game extends AbstractGame {
         if (possibleMoves.stream().filter(move1 -> move1.toString().equals(move.toString())).findFirst().isEmpty()) {
             throw new RuntimeException(String.format("move:%s not in possible move:%s", move, possibleMoves));
         }
-        this.inputsManager.updateHashsTables(move);
         board = getNextPlayer().executeMove(move);
+        this.inputsManager.updateHashsTables(move, board);
         this.status = calculateStatus(board, move);
         this.nextStrategy = opponentStrategy(this.nextStrategy);
         moveOpponent = move;
-        registerMove(move);
+        registerMove(move, board);
         return this.status;
     }
 
@@ -80,9 +80,15 @@ public class Game extends AbstractGame {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
-        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", inputsManager.getNbRepeat(getCurrentPLayerColor().complementary()), this.nbMoveNoAttackAndNoPawn));
+        long nbRepeat = getNbRepeat();
+        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", nbRepeat, this.nbMoveNoAttackAndNoPawn));
         sb.append(this.board);
         return sb.toString();
     }
 
+    public long getNbRepeat() {
+        int nbMoves = moves.size();
+        int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+        return moves.stream().skip(skipMoves).filter(move -> inputsManager.isRepeatMove(move)).count();
+    }
 }

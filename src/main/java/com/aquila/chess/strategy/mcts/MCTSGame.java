@@ -4,6 +4,7 @@ import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
+import com.chess.engine.classic.player.Player;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -15,7 +16,7 @@ public class MCTSGame extends AbstractGame {
         this.nbMoveNoAttackAndNoPawn = abstractGame.getNbMoveNoAttackAndNoPawn();
         this.moves.addAll(abstractGame.getMoves());
         this.status = abstractGame.calculateStatus(board, null);
-        this.inputsManager.startMCTSStep(abstractGame);
+        // this.inputsManager.startMCTSStep(abstractGame);
     }
 
     public Game.GameStatus play(final Move move) {
@@ -24,10 +25,11 @@ public class MCTSGame extends AbstractGame {
             this.nbMoveNoAttackAndNoPawn++;
         else
             this.nbMoveNoAttackAndNoPawn = 0;
-        inputsManager.updateHashsTables(move);
-        board = move.execute();
+        Player player = getPlayer(move.getAllegiance());
+        board = player.executeMove(move);
+        inputsManager.updateHashsTables(move, board);
         this.status = calculateStatus(board, move);
-        registerMove(move);
+        registerMove(move, board);
         return this.status;
     }
 

@@ -211,7 +211,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         Move lastMove = size == 0 ? null : this.getLc0Last8Inputs().get(size - 1).move();
         boolean addInputs = true;
         if (lastMove != null && inputRecord.move() != null) {
-            if (lastMove.equals(inputRecord.move())) {
+            if (lastMove.toString().equals(inputRecord.move().toString())) {
                 addInputs = false;
             }
         }

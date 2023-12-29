@@ -44,14 +44,17 @@ public class GameChecker extends AbstractGame {
             switch (super.getCurrentPLayerColor()) {
                 case WHITE -> {
                     ((FixStrategy) strategyWhite).setNextMove(currentMove);
+                    board = getPlayer(Alliance.WHITE).executeMove(currentMove);
                 }
                 case BLACK -> {
                     ((FixStrategy) strategyBlack).setNextMove(currentMove);
+                    board = getPlayer(Alliance.BLACK).executeMove(currentMove);
                 }
             }
-            super.board = currentMove.execute();
+            // super.board = currentMove.execute();
+            inputsManager.updateHashsTables(currentMove, board);
             Game.GameStatus gameStatus = calculateStatus(board, currentMove);
-            registerMove(currentMove);
+            registerMove(currentMove, board);
             return gameStatus;
         }
         return Game.GameStatus.IN_PROGRESS;

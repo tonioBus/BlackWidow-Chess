@@ -76,7 +76,7 @@ public abstract class AbstractGame {
             case BLACK -> new Move.InitMove(board, Alliance.WHITE);
         };
         moveOpponent = initMove;
-        registerMove(moveOpponent);
+        registerMove(moveOpponent, board);
     }
 
     public Alliance getCurrentPLayerColor() {
@@ -196,9 +196,9 @@ public abstract class AbstractGame {
      *
      * @param move
      */
-    public void registerMove(final Move move) {
+    public void registerMove(final Move move, final Board board) {
         if (move == null) return;
-        this.inputsManager.registerInput(getLastBoard(), move);
+        this.inputsManager.registerInput(board, move);
         this.moves.add(move);
     }
 

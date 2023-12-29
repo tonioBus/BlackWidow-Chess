@@ -44,8 +44,7 @@ class InputsManagerTest {
             play(game, mctsGame);
             log.info("hashs:{}", inputsManager.getHashs(game.getLastMove().getAllegiance()));
         }
-        assertEquals(2, inputsManager.getNbRepeat(WHITE));
-        assertEquals(3, inputsManager.getNbRepeat(BLACK));
+        assertEquals(8, game.getNbRepeat());
     }
 
     private void play(final Game game, final MCTSGame mctsGame) throws Exception {
@@ -56,7 +55,7 @@ class InputsManagerTest {
             log.info("[{}] move:{} nbRepeat:{}",
                     move.getAllegiance(),
                     move,
-                    game.getInputsManager().getNbRepeat(move.getAllegiance()));
+                    game.getNbRepeat());
         }
         game.play();
         move = game.getLastMove();
@@ -64,6 +63,6 @@ class InputsManagerTest {
         log.info("[{}] move:{} status:{} nbRepeat:{}",
                 move.getAllegiance(),
                 move,
-                status, game.getInputsManager().getNbRepeat(move.getAllegiance()));
+                status, game.getNbRepeat());
     }
 }

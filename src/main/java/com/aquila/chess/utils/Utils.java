@@ -94,7 +94,7 @@ public class Utils {
                 sb.append(String.format("%s=%d", piece.getPieceType(), position));
             }
         }
-        log.info("hashCode1Alliance alliance:{}\n{}", alliance, sb);
+        log.debug("hashCode1Alliance alliance:{}\n{}", alliance, sb);
         return sb.toString().hashCode();
     }
 

@@ -50,12 +50,13 @@ public abstract class InputsManager {
         });
     }
 
-    public void updateHashsTables(final Move move) {
+    public void updateHashsTables(final Move move, final Board board) {
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
-        int key = Utils.hashCode1Alliance(move.execute(), alliance);
+        int key = Utils.hashCode1Alliance(board, alliance);
+        log.debug("updateHash move:{}, key:{}", move, key);
         if (hashs.containsKey(key)) {
-            log.info("updateHash to 1 move:{}, key:{}", move, key);
+            log.debug("updateHash SET TO 1 move:{}, key:{}", move, key);
             hashs.put(key, 1);
         } else {
             hashs.put(key, 0);
@@ -67,52 +68,12 @@ public abstract class InputsManager {
         final Board destBoard = move.execute();
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
-        log.info("isRepeatMove: move:{}", move);
+        log.debug("isRepeatMove: move:{}", move);
         int key = Utils.hashCode1Alliance(destBoard, alliance);
         if (!hashs.containsKey(key)) return false;
         int ret = hashs.get(key).intValue();
-        log.info("move:{} key:{} ret:{}", move, key, ret);
+        log.debug("move:{} key:{} ret:{}", move, key, ret);
         return ret == 1;
-    }
-
-    public int getNbRepeat(final Alliance alliance) {
-        int ret = 0;
-        if (lastHashs.get(alliance) == null) return 0;
-        List<Integer> hashs = lastHashs.get(alliance).keySet().stream().collect(Collectors.toList()); //6HashCodesAllegiance.stream().collect(Collectors.toList());
-        Collections.reverse(hashs);
-        if (hashs.size() > 3) {
-            ret = hashs.get(0).intValue() == hashs.get(2).intValue()
-                    ? 1 : 0;
-            if (ret > 0) log.debug("[{}] hash0:{} hash2:{}",
-                    alliance,
-                    hashs.get(0),
-                    hashs.get(2));
-        }
-        if (hashs.size() > 5) {
-            ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
-                    hashs.get(0).intValue() == hashs.get(4).intValue()
-                    ? 1 : 0;
-            if (ret > 0) log.debug("[{}] hash0:{} hash2:{} hash4:{}",
-                    alliance,
-                    hashs.get(0),
-                    hashs.get(2),
-                    hashs.get(4));
-        }
-        if (hashs.size() > 7) {
-            //log.info("hash0:{} hash2:{} hash4:{} hash6:{}",
-            //        hashs.get(0), hashs.get(2), hashs.get(4), hashs.get(6)); // FIXME to remove
-            ret += hashs.get(0).intValue() == hashs.get(2).intValue() &&
-                    hashs.get(0).intValue() == hashs.get(4).intValue() &&
-                    hashs.get(0).intValue() == hashs.get(6).intValue()
-                    ? 1 : 0;
-            if (ret > 0) log.debug("[{}] hash0:{} hash2:{} hash4:{} hash6:{}",
-                    alliance,
-                    hashs.get(0),
-                    hashs.get(2),
-                    hashs.get(4),
-                    hashs.get(6));
-        }
-        return ret;
     }
 
     /**
@@ -123,8 +84,6 @@ public abstract class InputsManager {
     public abstract void registerInput(final Board board, final Move move);
 
     public List<Integer> getHashs(final Alliance alliance) {
-        List<Integer> hashs = lastHashs.get(alliance).keySet().stream().collect(Collectors.toList());
-        Collections.reverse(hashs);
-        return hashs;
+        return lastHashs.get(alliance).keySet().stream().collect(Collectors.toList());
     }
 }
