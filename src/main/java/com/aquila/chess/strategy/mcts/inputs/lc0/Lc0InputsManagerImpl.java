@@ -3,7 +3,6 @@ package com.aquila.chess.strategy.mcts.inputs.lc0;
 import com.aquila.chess.AbstractGame;
 import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.utils.MovesUtils;
 import com.aquila.chess.utils.Coordinate;
 import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
@@ -321,8 +320,6 @@ public class Lc0InputsManagerImpl extends InputsManager {
         sb.append(repeats8inputs.stream().map(repeat -> repeat ? "1" : "0").collect(Collectors.joining(",")));
         sb.append("\n");
         sb.append(moveColor);
-        sb.append("\n");
-        sb.append(MovesUtils.nbMovesRepeat(inputRecord.moves()));
         return sb.toString();
     }
 
