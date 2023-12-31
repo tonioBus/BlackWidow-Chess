@@ -221,6 +221,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return move;
     }
 
+    @Deprecated
     public static double rewardWithLogVisit(final MCTSNode mctsNode) {
         return mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
     }
@@ -245,7 +246,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 bestNodes.add(mctsNode);
                 break;
             }
-            log.debug("FINDBEST: expectedReward:{} visitsDelta:{} node:{}", mctsNode.getExpectedReward(false), Math.log(1 + Math.sqrt(mctsNode.getVisits())), mctsNode);
             double rewardsLogVisits = withLogVisit ? rewardWithLogVisit(mctsNode) : mctsNode.getExpectedReward(false);
             if (rewardsLogVisits > maxExpectedReward) {
                 maxExpectedReward = rewardsLogVisits;

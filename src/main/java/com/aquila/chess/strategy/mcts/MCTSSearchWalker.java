@@ -344,7 +344,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
                     MCTSNode parentOpponentNode = opponentNode.getParent();
                     double initValue = parentOpponentNode == null ?
-                             opponentNode.getExpectedReward(false) :
+                            opponentNode.getExpectedReward(false) :
                             parentOpponentNode.getExpectedReward(false);
                     initValue -= MCTSConfig.mctsConfig.getFpuReduction();
                     long key = deepLearning.addState(mctsGame, label, initValue, possibleMove, statistic);
@@ -405,7 +405,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
      * @return
      */
     static public double exploration(final MCTSNode opponentNode, double puctConstant, int childVisits, double policy) {
-        return policy * puctConstant * Math.sqrt((puctConstant * Math.log(opponentNode.getVisits())) / (1 + childVisits));
+        return puctConstant * policy * Math.sqrt(opponentNode.getVisits()) / (1 + childVisits);
     }
 
     public SearchResult returnEndOfSimulatedGame(final MCTSNode node,
