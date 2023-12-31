@@ -188,7 +188,6 @@ public class MCTSSearchMultiThread implements IMCTSSearch {
                 updateCpuct,
                 updateDirichlet,
                 rand);
-        // gameOriginal.isInitialPosition();
         return MCTSSearchWalker;
     }
 }

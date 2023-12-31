@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
+import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
 import com.aquila.chess.utils.DotGenerator;
 import com.aquila.chess.utils.Utils;
@@ -205,7 +206,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             final Collection<Move> moves = opponentNode.getChildMoves();
             assert moves.size() > 0;
             final List<Move> movesCreatingLeaf = new ArrayList<>();
-            for(Move possibleMove: moves) {
+            for (Move possibleMove : moves) {
                 final Player childPlayer = possibleMove.execute().currentPlayer();
                 final List<Move> currentAllLegalMoves = childPlayer.getLegalMoves(Move.MoveStatus.DONE);
                 if (currentAllLegalMoves.isEmpty()) {
@@ -341,7 +342,12 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 final MCTSNode.ChildNode childNode = opponentNode.findChildNode(possibleMove);
                 if (childNode == null || childNode.node == null) {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-                    long key = deepLearning.addState(mctsGame, label, opponentNode.getCacheValue().getValue(), possibleMove, statistic);
+                    MCTSNode parentOpponentNode = opponentNode.getParent();
+                    double initValue = parentOpponentNode == null ?
+                             opponentNode.getExpectedReward(false) :
+                            parentOpponentNode.getExpectedReward(false);
+                    initValue -= MCTSConfig.mctsConfig.getFpuReduction();
+                    long key = deepLearning.addState(mctsGame, label, initValue, possibleMove, statistic);
                     CacheValue cacheValue = deepLearning.getCacheValues().get(key);
                     log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
