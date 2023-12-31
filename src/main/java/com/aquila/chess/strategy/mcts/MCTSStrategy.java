@@ -112,7 +112,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        log.info("[{}] PIECES VALUES | RATIO:{}  | WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
+        log.info("[{}] Using as FPU: {}", this.getAlliance(), this.parentReward);
+        log.info("[{}] PIECES VALUES | RATIO:{} WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
         log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.nbStep++;
@@ -136,7 +137,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(finalOneStepRecord);
         }
-        this.parentReward = directRoot.getChildNodes().get(move).getNode().getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
+        // this.parentReward = directRoot.getChildNodes().get(move).getNode().getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
+        this.parentReward = directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
         return move;
     }
 
@@ -158,7 +160,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         CacheValue cacheValue = deepLearning.getCacheValues().get(key);
         cacheValue.verifyAlliance(alliance.complementary());
         this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);
-        log.info("[{}] this.directRoot == null:directRoot:{}", this.alliance, directRoot);
     }
 
     protected Move mctsStep(final Move moveOpponent,
