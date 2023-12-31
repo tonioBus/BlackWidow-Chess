@@ -460,7 +460,7 @@ public class MCTSNode {
                 this.leaf,
                 this.visits, //
                 this.getExpectedReward(true), //
-                this.getCacheValue() == null ? CacheValue.NOT_INITIALIZED_VALUE : this.getCacheValue().getValue(),
+                this.getCacheValue() == null ? -1 : this.getCacheValue().getValue(),
                 this.parent != null, //
                 this.childNodes == null ? -1 : this.childNodes.size(), //
                 this.nbPropagationsToExecute,

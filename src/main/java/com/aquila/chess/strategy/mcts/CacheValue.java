@@ -18,10 +18,8 @@ import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 @Slf4j
 public class CacheValue implements Serializable {
 
-    public static final float NOT_INITIALIZED_VALUE = -1.0F;
-
-    static final CacheValue getNotInitialized(final String label) {
-        return new CacheValue(NOT_INITIALIZED_VALUE, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
+    static final CacheValue getNotInitialized(final String label, final double initValue) {
+        return new CacheValue(initValue, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
     }
 
     @Getter

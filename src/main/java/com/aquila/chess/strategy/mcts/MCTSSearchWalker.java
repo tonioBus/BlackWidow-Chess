@@ -331,7 +331,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 mctsGame.getNbStep(),
                 depth,
                 opponentNode.getMove() == null ? "Move(null)" : opponentNode.getMove().toString());
-        long key = deepLearning.addState(mctsGame,
+        deepLearning.addState(mctsGame,
                 label,
                 opponentNode,
                 statistic);
@@ -341,7 +341,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 final MCTSNode.ChildNode childNode = opponentNode.findChildNode(possibleMove);
                 if (childNode == null || childNode.node == null) {
                     label = String.format("[S:%d|D:%d] PARENT:%s CHILD-SELECTION:%s", mctsGame.getNbStep(), depth, opponentNode.getMove(), possibleMove == null ? "BasicMove(null)" : possibleMove.toString());
-                    key = deepLearning.addState(mctsGame, label, possibleMove, statistic);
+                    long key = deepLearning.addState(mctsGame, label, opponentNode.getCacheValue().getValue(), possibleMove, statistic);
                     CacheValue cacheValue = deepLearning.getCacheValues().get(key);
                     log.debug("GET CACHE VALUE[key:{}] possibleMove:{}", key, possibleMove);
                     exploitation = cacheValue.getValue();
@@ -393,8 +393,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
      * From https://colab.research.google.com/github/es2mac/SwiftDigger/blob/master/TetrisField.ipynb
      *
      * @param opponentNode
-     * @param cpuct
-     * @param visits
+     * @param puctConstant
+     * @param childVisits
      * @param policy
      * @return
      */

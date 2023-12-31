@@ -149,9 +149,9 @@ public class DeepLearningAGZ {
      */
     public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
         if (node.getMove() == null)
-            return addRootCacheValue(mctsGame, label, node.getColorState().complementary(), statistic);
+            return addRootCacheValue(mctsGame, label, node.getCacheValue().getValue(), node.getColorState().complementary(), statistic);
         final Move possibleMove = node.getMove();
-        return addState(mctsGame, label, possibleMove, statistic);
+        return addState(mctsGame, label, node.getCacheValue().getValue(), possibleMove, statistic);
     }
 
     /**
@@ -162,7 +162,7 @@ public class DeepLearningAGZ {
      * @param possibleMove the move for this state
      * @return the key used to store the job and the related cacheValue
      */
-    public synchronized long addState(final MCTSGame mctsGame, final String label, final Move possibleMove, final Statistic statistic) {
+    public synchronized long addState(final MCTSGame mctsGame, final String label, final double initValue, final Move possibleMove, final Statistic statistic) {
         if (log.isDebugEnabled()) log.debug("[{}] BEGIN addState", Thread.currentThread().getName());
         Alliance moveColor = possibleMove.getAllegiance();
         long key = mctsGame.hashCode(possibleMove);
@@ -173,7 +173,7 @@ public class DeepLearningAGZ {
 //                            move -> move == null ? "-" : move.toString()).
 //                    collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, possibleMove == null ? "ROOT" : possibleMove);
-            cacheValues.create(key, labelCacheValue);
+            cacheValues.create(key, labelCacheValue, initValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, possibleMove, moveColor, mctsGame, false, false);
         } else {
@@ -190,14 +190,14 @@ public class DeepLearningAGZ {
      * @param statistic
      * @return
      */
-    public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final Alliance moveColor, final Statistic statistic) {
+    public synchronized long addRootCacheValue(final MCTSGame mctsGame, final String label, final double initValue, final Alliance moveColor, final Statistic statistic) {
         log.debug("[{}] BEGIN addRootState:{}", Thread.currentThread().getName(), label);
         long key = mctsGame.hashCode(moveColor);
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
                 log.debug("[{}] CREATE ROOT CACHE VALUE:{} move:root label:{}", moveColor, key, label);
             final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, "ROOT");
-            cacheValues.create(key, labelCacheValue);
+            cacheValues.create(key, labelCacheValue, initValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
             serviceNN.submit(key, null, moveColor, mctsGame, true, true);
         } else {

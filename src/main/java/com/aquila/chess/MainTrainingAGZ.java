@@ -20,7 +20,7 @@ public class MainTrainingAGZ {
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         if (nbStep <= 30) return 2.5;
-        else return 0.00025;
+        else return 0.0000025;
     };
 
     private static final Dirichlet dirichlet = nbStep -> true;

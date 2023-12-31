@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
+import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
 import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
@@ -53,6 +54,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     @Getter
     private TrainGame trainGame;
+    private double parentReward = MCTSConfig.mctsConfig.getNewNodeValue();
 
     public MCTSStrategy(
             final Game originalGame,
@@ -104,8 +106,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public Move evaluateNextMove(final Game game,
                                  final Move moveOpponent,
                                  final List<Move> possibleMoves) throws InterruptedException {
-        this.directRoot = null;
-        createRootNode(originalGame, moveOpponent, possibleMoves);
+        createRootNode(originalGame, moveOpponent, parentReward, possibleMoves);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
@@ -135,7 +136,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             );
             trainGame.add(finalOneStepRecord);
         }
-        this.directRoot.setState(MCTSNode.State.INTERMEDIATE);
+        this.parentReward = directRoot.getChildNodes().get(move).getNode().getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
         return move;
     }
 
@@ -147,13 +148,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
      * @param possibleMoves
      * @return
      */
-    protected void createRootNode(final Game game, final Move opponentMove, final List<Move> possibleMoves) {
+    protected void createRootNode(final Game game, final Move opponentMove, final double parentReward, final List<Move> possibleMoves) {
         assert opponentMove != null;
         assert opponentMove.isInitMove() || opponentMove.getAllegiance() != this.alliance;
         log.info("[{}] opponentMove:{} directRoot:{}", this.alliance, opponentMove, directRoot);
         deepLearning.getServiceNN().clearAll();
         this.mctsGame = new MCTSGame(game);
-        long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", alliance.complementary(), statistic);
+        long key = deepLearning.addRootCacheValue(mctsGame, "STRATEGY-ROOT", parentReward, alliance.complementary(), statistic);
         CacheValue cacheValue = deepLearning.getCacheValues().get(key);
         cacheValue.verifyAlliance(alliance.complementary());
         this.directRoot = MCTSNode.createRootNode(possibleMoves, opponentMove, key, cacheValue);

@@ -3,7 +3,6 @@ package com.aquila.chess.config;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileInputStream;
@@ -24,6 +23,12 @@ public class MCTSConfig {
     private int waitInSeconds = 120;
 
     @Getter
+    private double newNodeValue = -0.5;
+
+    @Getter
+    private double fpuReduction = 0.0;
+
+    @Getter
     private MCTSStrategyConfig mctsWhiteStrategyConfig;
 
     @Getter
@@ -35,6 +40,8 @@ public class MCTSConfig {
             InputStream in = new FileInputStream(dir);
             properties.loadFromXML(in);
             this.waitInSeconds = get("waitInSeconds", Integer.class, waitInSeconds);
+            this.newNodeValue = get("newNodeValue", Double.class, newNodeValue);
+            this.fpuReduction = get("fpuReduction", Double.class, fpuReduction);
             mctsWhiteStrategyConfig = new MCTSStrategyConfig("white", properties);
             mctsBlackStrategyConfig = new MCTSStrategyConfig("black", properties);
         } catch (IOException e) {
@@ -62,7 +69,7 @@ public class MCTSConfig {
             return get(property, clazz);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
-            log.error("Error getting property:"+property, e);
+            log.error("Error getting property:" + property + " returning default value:" + defaultValue, e);
             return defaultValue;
         }
     }
