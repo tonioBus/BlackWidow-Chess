@@ -69,7 +69,7 @@ public class MCTSConfig {
             return get(property, clazz);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
-            log.error("Error getting property:" + property + " returning default value:" + defaultValue, e);
+            log.warn("Error getting property:{} using default value:{}", property, defaultValue);
             return defaultValue;
         }
     }

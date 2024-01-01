@@ -184,7 +184,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final long endTime = System.currentTimeMillis();
         final long length = endTime > startTime ? endTime - startTime : Long.MIN_VALUE;
         final long speed = (nbNumberSearchCalls * 1000) / length;
-        final MCTSNode bestNode = findBestReward(directRoot, currentPossibleMoves, false);
+        final MCTSNode bestNode = findBestReward(directRoot, currentPossibleMoves);
         if (bestNode == null) {
             log.error("!!! no bestnodes found: return random move from the list{}", currentPossibleMoves);
             log.error("!!! MCTSTree nodes:{}",
@@ -221,12 +221,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return move;
     }
 
-    @Deprecated
-    public static double rewardWithLogVisit(final MCTSNode mctsNode) {
-        return mctsNode.getExpectedReward(false) + Math.log(1 + Math.sqrt(mctsNode.getVisits()));
-    }
-
-    public MCTSNode findBestReward(final MCTSNode opponentNode, final Collection<Move> currentPossibleMoves, boolean withLogVisit) {
+    public MCTSNode findBestReward(final MCTSNode opponentNode, final Collection<Move> currentPossibleMoves) {
         assert !currentPossibleMoves.isEmpty();
         log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
@@ -246,14 +241,22 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 bestNodes.add(mctsNode);
                 break;
             }
-            double rewardsLogVisits = withLogVisit ? rewardWithLogVisit(mctsNode) : mctsNode.getExpectedReward(false);
-            if (rewardsLogVisits > maxExpectedReward) {
-                maxExpectedReward = rewardsLogVisits;
+            double expectedReward = mctsNode.getExpectedReward(false);
+            if (expectedReward > maxExpectedReward) {
+                maxExpectedReward = expectedReward;
                 bestNodes.clear();
                 bestNodes.add(mctsNode);
-            } else if (rewardsLogVisits == maxExpectedReward) {
+            } else if (expectedReward == maxExpectedReward) {
                 bestNodes.add(mctsNode);
             }
+//            double visits = mctsNode.getVisits();
+//            if (visits > maxExpectedReward) {
+//                maxExpectedReward = visits;
+//                bestNodes.clear();
+//                bestNodes.add(mctsNode);
+//            } else if (visits == maxExpectedReward) {
+//                bestNodes.add(mctsNode);
+//            }
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;
