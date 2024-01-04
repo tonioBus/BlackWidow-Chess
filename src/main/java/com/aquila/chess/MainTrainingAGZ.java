@@ -31,10 +31,10 @@ public class MainTrainingAGZ {
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
         if (gameManager.stopDetected(true)) System.exit(-1);
+        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
+        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
         while (!gameManager.stopDetected(true)) {
             final InputsManager inputsManager = new Lc0InputsManagerImpl();
-            INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
-            INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
             DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                     .nn(nnWhite)
                     .inputsManager(inputsManager)
@@ -101,8 +101,6 @@ public class MainTrainingAGZ {
             final String filename = trainGame.saveBatch(trainDir, gameStatus);
             gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
             if (!gameManager.stopDetected(false)) {
-                nnWhite.close();
-                nnBlack.close();
                 System.gc();
                 MCTSConfig.reload();
                 log.info("Waiting for {} seconds (param: waitInSeconds)", MCTSConfig.mctsConfig.getWaitInSeconds());
