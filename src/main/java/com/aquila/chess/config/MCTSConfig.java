@@ -34,6 +34,10 @@ public class MCTSConfig {
     @Getter
     private MCTSStrategyConfig mctsBlackStrategyConfig;
 
+    public static void reload() {
+        mctsConfig = new MCTSConfig();
+    }
+
     public MCTSConfig() {
         String dir = "config/mctsConfig.xml";
         try {
