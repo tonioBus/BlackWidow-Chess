@@ -44,10 +44,21 @@ public class TrainGame implements Serializable {
         return ret;
     }
 
+    public static TrainGame load(File file) throws IOException, ClassNotFoundException {
+        FileInputStream fileInputStream
+                = new FileInputStream(file);
+        ObjectInputStream objectInputStream
+                = new ObjectInputStream(fileInputStream);
+        TrainGame ret = (TrainGame) objectInputStream.readObject();
+        objectInputStream.close();
+        return ret;
+    }
+
     /**
      * Save a new game in the given folder with the given name
-     * @param trainDir the folder where to save the game
-     * @param num the game number
+     *
+     * @param trainDir   the folder where to save the game
+     * @param num        the game number
      * @param resultGame the result of the game
      * @return the saved file name
      * @throws IOException

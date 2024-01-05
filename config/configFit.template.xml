@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<fit
+        updateLr="4.5E-4"
+        nnReference="../AGZ_NN/AGZ.reference"
+>
+    <configDirs directory="train" startNumber="0" endNumber="15"/>
+    <configDirs directory="train-rog" startNumber="16" endNumber="30"/>
+    <configDirs directory="train-grospc" startNumber="30" endNumber="35"/>
+</fit>

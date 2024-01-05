@@ -105,7 +105,7 @@ public class GameManager {
     public boolean stopDetected(boolean delete) {
         File file = new File(STOP_FILE);
         if (file.isFile()) {
-            if(delete) log.warn("Stop file detected: removing {} sucess:{}", STOP_FILE, file.delete());
+            if(delete) log.warn("Stop file detected: removing {} success:{}", STOP_FILE, file.delete());
             return true;
         }
         return false;
