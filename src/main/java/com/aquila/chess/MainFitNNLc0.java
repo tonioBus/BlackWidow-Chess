@@ -84,6 +84,7 @@ public class MainFitNNLc0 {
             }
         };
         abstractFit.run(trainFile, statistics);
+        saveIt.set(true);
         try {
             log.info("Saving NN: do not stop the JVM ...");
             ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
