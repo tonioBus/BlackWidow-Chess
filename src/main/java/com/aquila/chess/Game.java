@@ -80,15 +80,20 @@ public class Game extends AbstractGame {
                 .map(move -> move.toString())
                 .collect(Collectors.joining(","))));
         sb.append(String.format("nbStep:%d\n", moves.size()));
-        long nbRepeat = getNbRepeat();
-        sb.append(String.format("Repetition:%d  |  50 draws counter:%d\n", nbRepeat, this.nbMoveNoAttackAndNoPawn));
+        String repetition = getRepetition();
+        sb.append(String.format("Repetition:%s  |  50 draws counter:%d\n", repetition, this.nbMoveNoAttackAndNoPawn));
         sb.append(this.board);
         return sb.toString();
     }
 
-    public long getNbRepeat() {
+    public String getRepetition() {
         int nbMoves = moves.size();
         int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
-        return moves.stream().skip(skipMoves).filter(move -> inputsManager.isRepeatMove(move)).count();
+        return moves
+                .stream()
+                .skip(skipMoves)
+                .filter(move -> inputsManager.isRepeatMove(move))
+                .map(move -> String.format("%s-%s", move.getAllegiance(), move))
+                .collect(Collectors.joining(","));
     }
 }
