@@ -46,7 +46,7 @@ class ConfigFitTest {
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);
         Marshaller mar = context.createMarshaller();
         mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        mar.marshal(configFit, new File("test/configFit.xml"));
+        mar.marshal(configFit, new File("config/configFit.template.xml"));
     }
 
 }

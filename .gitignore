@@ -3,4 +3,6 @@
 *.settings
 build/
 /target/
-/train/
+/train-aquila*/
+/config/configFit.xml
+/config/mctsConfig.xml

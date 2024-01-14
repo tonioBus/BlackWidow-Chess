@@ -10,10 +10,7 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -46,19 +43,25 @@ public class TrainTest {
 
         }
     };
-    InputsManager inputsManager = new Lc0InputsManagerImpl();
-    final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
-            .nn(nnWhite)
-            .inputsManager(inputsManager)
-            .batchSize(128)
-            .train(true)
-            .build();
-    final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
-            .nn(nnBlack)
-            .inputsManager(inputsManager)
-            .batchSize(128)
-            .train(false)
-            .build();
+    private Lc0InputsManagerImpl inputsManager;
+    private DeepLearningAGZ deepLearningWhite,deepLearningBlack;
+
+    @BeforeEach
+    void beforeEach() {
+        inputsManager = new Lc0InputsManagerImpl();
+        deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnWhite)
+                .inputsManager(inputsManager)
+                .batchSize(128)
+                .train(true)
+                .build();
+        deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnBlack)
+                .inputsManager(inputsManager)
+                .batchSize(128)
+                .train(false)
+                .build();
+    }
 
     @AfterEach
     void tearDown() {
@@ -124,7 +127,7 @@ public class TrainTest {
     @Test
     void testLoad() throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load("train-test-load", 1);
-        StatisticsFit statisticsFit = new StatisticsFit(1,1);
+        StatisticsFit statisticsFit = new StatisticsFit(1, 1);
         deepLearningWhite.train(trainGame, statisticsFit);
         log.info("statistics:{}", statisticsFit);
     }
@@ -133,7 +136,7 @@ public class TrainTest {
     @Disabled
     void testPunctualLoad() throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
-        StatisticsFit statisticsFit = new StatisticsFit(1060,1060);
+        StatisticsFit statisticsFit = new StatisticsFit(1060, 1060);
         deepLearningWhite.train(trainGame, statisticsFit);
         log.info("statistics:{}", statisticsFit);
     }

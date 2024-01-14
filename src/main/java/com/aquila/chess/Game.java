@@ -86,6 +86,16 @@ public class Game extends AbstractGame {
         return sb.toString();
     }
 
+    public int getNbRepeat() {
+        int nbMoves = moves.size();
+        int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;
+        return (int) moves
+                .stream()
+                .skip(skipMoves)
+                .filter(move -> inputsManager.isRepeatMove(move))
+                .count();
+    }
+
     public String getRepetition() {
         int nbMoves = moves.size();
         int skipMoves = nbMoves < 8 ? 0 : nbMoves - 8;

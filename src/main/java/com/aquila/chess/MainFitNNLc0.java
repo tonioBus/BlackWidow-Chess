@@ -45,14 +45,19 @@ public class MainFitNNLc0 {
     }
 
     public static void main(final String[] args) throws Exception {
-        InputsManager inputsManager = new Lc0InputsManagerImpl();
-        final AbstractFit abstractFit = new AbstractFit("config/configFit.xml");
-        INN nnWhite = new NNDeep4j(abstractFit.getConfigFit().getNnReference(), true, inputsManager.getNbFeaturesPlanes(), 20);
+        final AbstractFit abstractFit = new AbstractFit("config/configFit.template.xml");
+        INN nnWhite = new NNDeep4j(abstractFit.getConfigFit().getNnReference(), true, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         log.info("SET UPDATE LR:{}", abstractFit.getConfigFit().getUpdateLr());
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
         nnWhite.setUpdateLr(updateLr, 1);
+        final Map<String, StatisticsFit> statistics = new HashMap<>();
+        abstractFit.getConfigFit().getConfigDirs().forEach(dir -> {
+            statistics.put(dir.getDirectory(), new StatisticsFit(dir.getStartNumber(), dir.getEndNumber()));
+        });
+        AtomicBoolean saveIt = new AtomicBoolean(true);
+        InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
                 .nn(nnWhite)
@@ -60,11 +65,6 @@ public class MainFitNNLc0 {
                 .batchSize(10)
                 .inputsManager(inputsManager)
                 .build();
-        final Map<String, StatisticsFit> statistics = new HashMap<>();
-        abstractFit.getConfigFit().getConfigDirs().forEach(dir -> {
-            statistics.put(dir.getDirectory(), new StatisticsFit(dir.getStartNumber(), dir.getEndNumber()));
-        });
-        AtomicBoolean saveIt = new AtomicBoolean(true);
         TrainFile trainFile = (file, statistics1) -> {
             log.info("train file:{}", file);
             try {
