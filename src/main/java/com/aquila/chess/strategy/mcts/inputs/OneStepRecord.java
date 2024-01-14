@@ -14,4 +14,10 @@ public record OneStepRecord(InputsFullNN inputs,
                             String move,
                             Alliance moveColor,
                             Map<Integer, Double> policies) implements Serializable {
+
+    @Override
+    public String toString() {
+        if (inputs == null) return null;
+        return inputs.toString();
+    }
 }

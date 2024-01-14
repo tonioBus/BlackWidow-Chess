@@ -287,7 +287,7 @@ public final class Board {
         }
 
         public Board build() {
-            Board ret =  new Board(this, checkBoard);
+            Board ret = new Board(this, checkBoard);
             return ret;
         }
 
