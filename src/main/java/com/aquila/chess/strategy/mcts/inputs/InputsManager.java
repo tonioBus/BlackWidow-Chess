@@ -5,6 +5,8 @@ import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
+import com.chess.engine.classic.pieces.Piece;
+import com.twelvemonkeys.util.LRUMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class InputsManager {
 
-    final protected Map<Alliance, Map<Integer, Integer>> lastHashs = new HashMap<>();
+    final protected Map<Alliance, Map<Integer, Integer>> lastHashs = new LRUMap<>(8);
 
     public abstract int getNbFeaturesPlanes();
 
@@ -49,7 +51,8 @@ public abstract class InputsManager {
     }
 
     public void updateHashsTables(final Move move, final Board board) {
-        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.isInitMove()) return;
+        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.getMovedPiece().getPieceType() == Piece.PieceType.PAWN)
+            return;
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
         int key = Utils.hashCode1Alliance(board, alliance);
@@ -63,7 +66,8 @@ public abstract class InputsManager {
     }
 
     public boolean isRepeatMove(final Move move) {
-        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.isInitMove()) return false;
+        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.getMovedPiece().getPieceType() == Piece.PieceType.PAWN)
+            return false;
         final Board destBoard = move.execute();
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
