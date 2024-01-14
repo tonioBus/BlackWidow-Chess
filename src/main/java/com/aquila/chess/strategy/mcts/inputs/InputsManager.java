@@ -7,7 +7,6 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +25,9 @@ public abstract class InputsManager {
     }
 
     /**
-     *
      * @param inputRecord
-     * @return
      * @param <T>
+     * @return
      */
     public abstract <T extends InputsFullNN> T createInputs(InputRecord inputRecord);
 
@@ -51,6 +49,7 @@ public abstract class InputsManager {
     }
 
     public void updateHashsTables(final Move move, final Board board) {
+        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.isInitMove()) return;
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
         int key = Utils.hashCode1Alliance(board, alliance);
@@ -64,7 +63,7 @@ public abstract class InputsManager {
     }
 
     public boolean isRepeatMove(final Move move) {
-        if (move.isInitMove()) return false;
+        if (move.isInitMove() || move.isAttack() || move.isCastlingMove() || move.isInitMove()) return false;
         final Board destBoard = move.execute();
         Alliance alliance = move.getAllegiance();
         Map<Integer, Integer> hashs = this.lastHashs.get(alliance);
@@ -78,6 +77,7 @@ public abstract class InputsManager {
 
     /**
      * Register the input calculated using the given board and the given move
+     *
      * @param board
      * @param move
      */
