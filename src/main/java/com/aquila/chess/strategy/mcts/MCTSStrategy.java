@@ -138,7 +138,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(finalOneStepRecord);
         }
         // this.parentReward = directRoot.getChildNodes().get(move).getNode().getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
-        this.parentReward = directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
+        this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
         return move;
     }
 
