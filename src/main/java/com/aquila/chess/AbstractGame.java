@@ -23,6 +23,7 @@ import java.util.ListIterator;
 @Slf4j
 public abstract class AbstractGame {
 
+    private static final int NUMBER_OF_MAX_STEPS = 500;
     @Getter
     protected Move moveOpponent = null;
 
@@ -139,7 +140,7 @@ public abstract class AbstractGame {
         if (board.whitePlayer().isInCheckMate()) return Game.GameStatus.WHITE_CHESSMATE;
         if (board.blackPlayer().isInCheckMate()) return Game.GameStatus.BLACK_CHESSMATE;
         if (board.currentPlayer().isInStaleMate()) return Game.GameStatus.PAT;
-        if (moves.size() >= 300) return Game.GameStatus.DRAW_300;
+        if (moves.size() >= NUMBER_OF_MAX_STEPS) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
         if (MovesUtils.is3MovesRepeat(moves)) return Game.GameStatus.DRAW_3;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return Game.GameStatus.DRAW_50;
         if (!isThereEnoughMaterials(board)) return Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
@@ -222,7 +223,7 @@ public abstract class AbstractGame {
                     result = "1-0";
                     break;
                 case DRAW_50:
-                case DRAW_300:
+                case DRAW_TOO_MUCH_STEPS:
                 case PAT:
                 case DRAW_3:
                 case DRAW_NOT_ENOUGH_PIECES:

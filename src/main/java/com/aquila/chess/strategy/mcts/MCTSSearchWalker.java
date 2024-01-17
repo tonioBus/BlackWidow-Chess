@@ -457,7 +457,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             case DRAW_NOT_ENOUGH_PIECES:
                 node.setState(MCTSNode.State.NOT_ENOUGH_PIECES);
                 break;
-            case DRAW_300:
+            case DRAW_TOO_MUCH_STEPS:
                 node.setState(MCTSNode.State.NB_MOVES_300);
                 break;
             default:

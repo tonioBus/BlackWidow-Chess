@@ -114,7 +114,7 @@ public class MainTrainingAGZTest {
                 Move move = game.getLastMove();
                 log.warn("game:\n{}", game);
                 if(sequence.nbStep > 20) {
-                    gameStatus= Game.GameStatus.DRAW_300;
+                    gameStatus= Game.GameStatus.DRAW_TOO_MUCH_STEPS;
                 }
             } while (gameStatus == Game.GameStatus.IN_PROGRESS);
             log.info("#########################################################################");

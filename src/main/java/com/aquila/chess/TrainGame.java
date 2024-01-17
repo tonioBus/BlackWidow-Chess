@@ -79,7 +79,7 @@ public class TrainGame implements Serializable {
 
     public ResultGame getResultGame(final Game.GameStatus gameStatus) {
         return switch (gameStatus) {
-            case IN_PROGRESS, PAT, DRAW_3, DRAW_50, DRAW_300, DRAW_NOT_ENOUGH_PIECES -> new ResultGame(1, 1);
+            case IN_PROGRESS, PAT, DRAW_3, DRAW_50, DRAW_TOO_MUCH_STEPS, DRAW_NOT_ENOUGH_PIECES -> new ResultGame(1, 1);
             case WHITE_CHESSMATE -> new ResultGame(0, 1);
             case BLACK_CHESSMATE -> new ResultGame(1, 0);
             default -> null;

@@ -3,18 +3,12 @@ package com.aquila.chess.strategy.check;
 import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
-import com.aquila.chess.strategy.mcts.inputs.InputRecord;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,7 +31,7 @@ public class GameChecker extends AbstractGame {
                 log.error("[{}] no legal move found for: {}", alliance, givenMove);
                 log.error("[{}] possible moves:{}", alliance, currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("[{}] game:nb step:{}\n{}\n{}", alliance, super.getNbStep(), super.toPGN(), super.getBoard().toString());
-                if (super.getNbStep() >= 300) return Game.GameStatus.DRAW_300;
+                if (super.getNbStep() >= 300) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();

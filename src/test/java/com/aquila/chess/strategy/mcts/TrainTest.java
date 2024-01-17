@@ -2,8 +2,6 @@ package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
-import com.aquila.chess.strategy.mcts.inputs.InputsManager;
-import com.aquila.chess.strategy.mcts.inputs.aquila.AquilaInputsManagerImpl;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
@@ -107,7 +105,7 @@ public class TrainTest {
         log.info("#########################################################################");
         log.info("END OF game :\n{}\n{}", gameStatus, game);
         log.info("#########################################################################");
-        if (gameStatus != Game.GameStatus.DRAW_300 && game.getMoves().size() != trainGame.getOneStepRecordList().size()) {
+        if (gameStatus != Game.GameStatus.DRAW_TOO_MUCH_STEPS && game.getMoves().size() != trainGame.getOneStepRecordList().size()) {
             log.error("game moves:{} <-> {} train moves", game.getMoves().size(), trainGame.getOneStepRecordList().size());
             assertTrue(false);
         }

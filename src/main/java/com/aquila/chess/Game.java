@@ -66,7 +66,7 @@ public class Game extends AbstractGame {
         WHITE_CHESSMATE,
         BLACK_CHESSMATE,
         DRAW_50,
-        DRAW_300,
+        DRAW_TOO_MUCH_STEPS,
         DRAW_3,
         DRAW_NOT_ENOUGH_PIECES
     }

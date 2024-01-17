@@ -70,7 +70,7 @@ public class Record {
         switch (gameStatus) {
             case WHITE_CHESSMATE -> this.blackWin = 1;
             case BLACK_CHESSMATE -> this.whiteWin = 1;
-            case DRAW_50, DRAW_300, DRAW_3, DRAW_NOT_ENOUGH_PIECES, PAT -> this.drawn = 1;
+            case DRAW_50, DRAW_TOO_MUCH_STEPS, DRAW_3, DRAW_NOT_ENOUGH_PIECES, PAT -> this.drawn = 1;
         }
         if (lastRecord != null) {
             if (status == Status.SWITCHING) {
