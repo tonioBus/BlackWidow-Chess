@@ -79,7 +79,7 @@ public class MainTrainingAquilaSimulNN {
                     deepLearningBlack,
                     seed,
                     updateCpuct,
-                    -1 )
+                    -1)
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(NB_STEP)
                     .withDirichlet(dirichlet);
@@ -93,7 +93,8 @@ public class MainTrainingAquilaSimulNN {
                 Move move = game.getLastMove();
                 gameChecker.play(move.toString());
                 log.info("move:{} game:\n{}", move, game);
-            } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+            } while (gameStatus.isTheEnd());
+            game.end(game.getLastMove());
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");

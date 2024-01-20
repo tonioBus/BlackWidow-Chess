@@ -55,26 +55,6 @@ class GameTest {
         }
     }
 
-    @Test
-    public void testEntireGamesPoliciesUtils() throws Exception {
-        final Board board = Board.createStandardBoard();
-        final Game game = Game.builder().board(board).build();
-        while (game.getStatus() == Game.GameStatus.IN_PROGRESS) {
-            List<Move> moves = game.getNextPlayer().getLegalMoves();
-//            List<Move> filteredMoves = moves.stream().filter(move -> index == PolicyUtils.indexFromMove(move)).collect(Collectors.toList());
-//            if (filteredMoves.isEmpty()) {
-//                log.error("Index : {} not found on possible moves", index);
-//                return String.format("Index:%s not found", index);
-//            }
-//            if (filteredMoves.size() != 1) {
-//                log.error("Index : {} get multiple moves: {}", filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-//                return String.format("Index:%s not found in %s", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
-//            }
-//            return String.format("Move:%s", filteredMoves.get(0).toString());
-
-        }
-    }
-
     class ThreadGetPossibleMove implements Callable<Integer> {
 
         final String label;

@@ -128,13 +128,20 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
-        this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
         return move;
     }
+//        if (trainGame != null && currentGameStatus.isTheEnd()) {
+//            OneStepRecord finalOneStepRecord = createStepTraining(
+//                    move,
+//                    move.getAllegiance(),
+//                    null
+//            );
+//            trainGame.add(finalOneStepRecord);
+//        }
 
+    @Override
     public void end(final Move move) {
         if (trainGame != null) {
-            log.info("[{}] END save move:{}-{}", this.alliance, move.getAllegiance(), move);
             OneStepRecord finalOneStepRecord = createStepTraining(
                     move,
                     move.getAllegiance(),

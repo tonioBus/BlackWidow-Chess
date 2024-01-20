@@ -9,7 +9,6 @@ import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
-import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -82,7 +81,8 @@ public class MainTrainingLc0SimulNN {
                     gameStatus = game.play();
                     sequence.play();
                     log.warn("game:\n{}", game);
-                } while (gameStatus == Game.GameStatus.IN_PROGRESS);
+                } while (gameStatus.isTheEnd());
+                game.end(game.getLastMove());
             } catch (RuntimeException e) {
                 log.error("game canceled, restarting a new one", e);
                 continue;
