@@ -90,7 +90,7 @@ public class MainTrainingAGZ {
                     gameStatus = game.play();
                     sequence.play();
                     log.warn("game:\n{}", game);
-                } while (gameStatus.isTheEnd());
+                } while (!gameStatus.isTheEnd());
                 game.end(game.getLastMove());
             } catch (RuntimeException e) {
                 log.error("game canceled, restarting a new one", e);

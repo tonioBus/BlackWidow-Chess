@@ -93,7 +93,7 @@ public class MainTrainingAquilaSimulNN {
                 Move move = game.getLastMove();
                 gameChecker.play(move.toString());
                 log.info("move:{} game:\n{}", move, game);
-            } while (gameStatus.isTheEnd());
+            } while (!gameStatus.isTheEnd());
             game.end(game.getLastMove());
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
