@@ -60,6 +60,13 @@ public class Game extends AbstractGame {
         };
     }
 
+    public void end(final Move move) {
+        switch (move.getAllegiance()) {
+            case BLACK -> strategyWhite.end(move);
+            case WHITE -> strategyBlack.end(move);
+        }
+    }
+
     public enum GameStatus {
         IN_PROGRESS,
         PAT,
@@ -73,7 +80,9 @@ public class Game extends AbstractGame {
         public boolean isTheEnd() {
             return this != IN_PROGRESS;
         }
-    };
+    }
+
+    ;
 
     @Override
     public String toString() {

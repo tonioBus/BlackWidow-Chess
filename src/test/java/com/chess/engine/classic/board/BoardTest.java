@@ -1,5 +1,6 @@
 package com.chess.engine.classic.board;
 
+import com.aquila.chess.AbstractGame;
 import com.chess.engine.classic.Alliance;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -22,22 +22,22 @@ class BoardTest {
     void testRandomPlayer(int seed) {
         Board board = Board.createStandardBoard();
         Random rand = new Random(seed);
-        int nbStep=0;
-        while(true) {
-            if(nbStep % 10 == 0) System.out.printf(".");
-            if(nbStep % 400 == 0) System.out.printf("\n");
+        int nbStep = 0;
+        while (true) {
+            if (nbStep % 10 == 0) System.out.printf(".");
+            if (nbStep % 400 == 0) System.out.printf("\n");
             nbStep++;
             Collection<Move> whiteMoves = board.whitePlayer().getLegalMoves(Move.MoveStatus.DONE);
             long skip = whiteMoves.isEmpty() ? 0 : rand.nextInt(whiteMoves.size());
             Move moveWhite = whiteMoves.stream().skip(skip).findFirst().get();
             board = board.whitePlayer().executeMove(moveWhite);
-            if(BoardUtils.isEndGame(board) || nbStep >=300) break;
+            if (BoardUtils.isEndGame(board) || nbStep >= AbstractGame.NUMBER_OF_MAX_STEPS) break;
             nbStep++;
             Collection<Move> blackMoves = board.blackPlayer().getLegalMoves(Move.MoveStatus.DONE);
             skip = whiteMoves.isEmpty() ? 0 : rand.nextInt(blackMoves.size());
             Move moveBlack = blackMoves.stream().skip(skip).findFirst().get();
             board = board.blackPlayer().executeMove(moveBlack);
-            if(BoardUtils.isEndGame(board) || nbStep >=300) break;
+            if (BoardUtils.isEndGame(board) || nbStep >= AbstractGame.NUMBER_OF_MAX_STEPS) break;
         }
         log.info("nbStep:{}", nbStep);
         log.info("currentPlayer:{} inCheckMate:{} inStaleMate:{}",
@@ -47,7 +47,7 @@ class BoardTest {
         log.info("End Board:\n{}", board);
     }
 
-        @Test
+    @Test
     void testGenerateMoves() {
         Board board = Board.createStandardBoard();
         final long start = System.currentTimeMillis();

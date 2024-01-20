@@ -69,7 +69,7 @@ public class TrainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8})
+    @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
     void testTrain(int seed) throws Exception {
         List<Game> games = new ArrayList<>();
         List<Integer> savedGames = new ArrayList<>();
@@ -104,14 +104,17 @@ public class TrainTest {
             Move previousMove = game.getLastMove();
             gameStatus = game.play();
             Move lastMove = game.getLastMove();
-            if (gameStatus.isTheEnd()) break;
+            if (gameStatus.isTheEnd()) {
+                game.end(lastMove);
+                break;
+            }
             if (legalMoves.stream().filter(legalMove -> legalMove.toString().equals(lastMove.toString())).count() == 0) {
                 log.error("legalMoves:{}", legalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("lastMove:{}", lastMove);
                 assertTrue(false);
             }
             String lastTrainMove = trainGame.getOneStepRecordList().getLast().move();
-            if (!gameStatus.isTheEnd() && !previousMove.toString().equals(lastTrainMove)) {
+            if (!previousMove.toString().equals(lastTrainMove)) {
                 log.error("previous move:{} <-> {}:train move", previousMove, lastTrainMove);
                 assertTrue(false);
             }
@@ -137,9 +140,10 @@ public class TrainTest {
         log.info("statistics:{}", statisticsFit);
     }
 
-    @Test
-    void testLoad() throws IOException, ClassNotFoundException, TrainException {
-        TrainGame trainGame = TrainGame.load("train-test-load", 1);
+    @ParameterizedTest
+    @ValueSource(ints={12345})
+    void testLoad(int num) throws IOException, ClassNotFoundException, TrainException {
+        TrainGame trainGame = TrainGame.load("train-test-load", num);
         StatisticsFit statisticsFit = new StatisticsFit(1, 1);
         deepLearningWhite.train(trainGame, statisticsFit);
         log.info("statistics:{}", statisticsFit);

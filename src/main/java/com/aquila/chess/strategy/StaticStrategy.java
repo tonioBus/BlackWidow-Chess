@@ -53,6 +53,11 @@ public class StaticStrategy implements Strategy {
     }
 
     @Override
+    public void end(Move move) {
+
+    }
+
+    @Override
     public String toString() {
         return String.format("%s{nextMoveSz=%s,alliance=%s}",
                 this.getClass().getSimpleName(),

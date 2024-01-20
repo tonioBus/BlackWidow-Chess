@@ -43,6 +43,11 @@ public class RandomStrategy implements Strategy {
     }
 
     @Override
+    public void end(Move move) {
+
+    }
+
+    @Override
     public String toString() {
         return getName();
     }

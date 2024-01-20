@@ -28,10 +28,12 @@ public class GameChecker extends AbstractGame {
             Optional<Move> currentMoveOpt = currentMoves.stream().filter(move -> move.toString().equals(givenMove)).findFirst();
             if (currentMoveOpt.isEmpty()) {
                 Alliance alliance = super.getNextPlayer().getAlliance();
-                log.error("[{}] no legal move found for: {}", alliance, givenMove);
+                final Collection<Move> opponentMoves = getPlayer(alliance.complementary()).getLegalMoves();
+                log.error("[{}] no legal move found for steps:{} -> {}", alliance, this.getNbStep(), givenMove);
                 log.error("[{}] possible moves:{}", alliance, currentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                log.error("[{}] possible opponentMoves:{}", alliance, opponentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("[{}] game:nb step:{}\n{}\n{}", alliance, super.getNbStep(), super.toPGN(), super.getBoard().toString());
-                if (super.getNbStep() >= 300) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
+                if (super.getNbStep() >= AbstractGame.NUMBER_OF_MAX_STEPS) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
                 throw new RuntimeException("no legal move found for: " + givenMove);
             }
             Move currentMove = currentMoveOpt.get();

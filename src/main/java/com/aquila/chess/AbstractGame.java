@@ -23,7 +23,7 @@ import java.util.ListIterator;
 @Slf4j
 public abstract class AbstractGame {
 
-    private static final int NUMBER_OF_MAX_STEPS = 500;
+    public static final int NUMBER_OF_MAX_STEPS = 500;
     @Getter
     protected Move moveOpponent = null;
 
@@ -46,7 +46,7 @@ public abstract class AbstractGame {
     protected int nbMoveNoAttackAndNoPawn = 0;
 
     @Getter
-    protected Game.GameStatus status;
+    protected Game.GameStatus status = Game.GameStatus.IN_PROGRESS;
 
     @Getter
     protected Board board;

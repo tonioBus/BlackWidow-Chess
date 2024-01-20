@@ -43,6 +43,11 @@ public class FixStrategy implements Strategy {
     }
 
     @Override
+    public void end(Move move) {
+
+    }
+
+    @Override
     public String toString() {
         return String.format("%s{nextMoveSz=%s,nextMove=%s,alliance=%s}",
                 this.getClass().getSimpleName(),

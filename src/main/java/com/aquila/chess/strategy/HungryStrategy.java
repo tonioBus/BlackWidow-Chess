@@ -53,4 +53,9 @@ public class HungryStrategy implements Strategy {
     public String getName() {
         return this.getClass().getName();
     }
+
+    @Override
+    public void end(Move move) {
+
+    }
 }

@@ -13,4 +13,6 @@ public interface Strategy {
     String getName();
 
     Alliance getAlliance();
+
+    void end(Move move);
 }

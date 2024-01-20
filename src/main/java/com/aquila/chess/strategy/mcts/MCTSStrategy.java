@@ -119,8 +119,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.nbStep++;
 
         if (trainGame != null) {
+            log.info("[{}] PROGRESS save move:{}-{}", this.alliance, moveOpponent.getAllegiance(), moveOpponent);
             OneStepRecord lastOneStepRecord = createStepTraining(
-                    this.mctsGame,
                     moveOpponent,
                     moveOpponent.getAllegiance(),
                     this.directRoot
@@ -128,18 +128,20 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
-        if (trainGame != null && currentGameStatus.isTheEnd()) {
+        this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
+        return move;
+    }
+
+    public void end(final Move move) {
+        if (trainGame != null) {
+            log.info("[{}] END save move:{}-{}", this.alliance, move.getAllegiance(), move);
             OneStepRecord finalOneStepRecord = createStepTraining(
-                    this.mctsGame,
                     move,
                     move.getAllegiance(),
                     null
             );
             trainGame.add(finalOneStepRecord);
         }
-        // this.parentReward = directRoot.getChildNodes().get(move).getNode().getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
-        this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
-        return move;
     }
 
     /**
@@ -249,14 +251,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             } else if (expectedReward == maxExpectedReward) {
                 bestNodes.add(mctsNode);
             }
-//            double visits = mctsNode.getVisits();
-//            if (visits > maxExpectedReward) {
-//                maxExpectedReward = visits;
-//                bestNodes.clear();
-//                bestNodes.add(mctsNode);
-//            } else if (visits == maxExpectedReward) {
-//                bestNodes.add(mctsNode);
-//            }
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;
@@ -338,9 +332,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     }
 
     /**
-     *
      * @param stepNode
-     * @param move used only if stepNode == null, usefull for the last move of a game, when we do not need to retrieve the rootNode but just checkMate
+     * @param move     used only if stepNode == null, usefull for the last move of a game, when we do not need to retrieve the rootNode but just checkMate
      * @return
      */
     private static Map<Integer, Double> calculatePolicies(final MCTSNode stepNode, final Move move) {
@@ -367,8 +360,9 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return probabilities;
     }
 
-    private static OneStepRecord createStepTraining(final MCTSGame mctsGame, final Move move,
-                                                    final Alliance alliance, final MCTSNode directParent) {
+    private static OneStepRecord createStepTraining(final Move move,
+                                                    final Alliance alliance,
+                                                    final MCTSNode directParent) {
         final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent, move);
         OneStepRecord lastOneStepRecord = new OneStepRecord(

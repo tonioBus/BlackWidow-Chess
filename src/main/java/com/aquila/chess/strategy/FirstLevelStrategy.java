@@ -134,7 +134,12 @@ public class FirstLevelStrategy implements Strategy {
                 this.seed);
     }
 
-    @Override
+	@Override
+	public void end(Move move) {
+
+	}
+
+	@Override
     public String toString() {
         return getName();
     }
