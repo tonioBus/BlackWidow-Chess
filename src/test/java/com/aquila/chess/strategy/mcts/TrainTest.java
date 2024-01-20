@@ -6,6 +6,7 @@ import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
+import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,7 +44,7 @@ public class TrainTest {
         }
     };
     private Lc0InputsManagerImpl inputsManager;
-    private DeepLearningAGZ deepLearningWhite,deepLearningBlack;
+    private DeepLearningAGZ deepLearningWhite, deepLearningBlack;
 
     @BeforeEach
     void beforeEach() {
@@ -98,8 +100,21 @@ public class TrainTest {
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         do {
+            List<Move> legalMoves = game.getNextPlayer().getLegalMoves();
+            Move previousMove = game.getLastMove();
             gameStatus = game.play();
-            if (gameStatus != Game.GameStatus.IN_PROGRESS) break;
+            Move lastMove = game.getLastMove();
+            if (gameStatus.isTheEnd()) break;
+            if (legalMoves.stream().filter(legalMove -> legalMove.toString().equals(lastMove.toString())).count() == 0) {
+                log.error("legalMoves:{}", legalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+                log.error("lastMove:{}", lastMove);
+                assertTrue(false);
+            }
+            String lastTrainMove = trainGame.getOneStepRecordList().getLast().move();
+            if (!gameStatus.isTheEnd() && !previousMove.toString().equals(lastTrainMove)) {
+                log.error("previous move:{} <-> {}:train move", previousMove, lastTrainMove);
+                assertTrue(false);
+            }
             log.info(game.toString());
         } while (true);
         log.info("#########################################################################");

@@ -68,8 +68,12 @@ public class Game extends AbstractGame {
         DRAW_50,
         DRAW_TOO_MUCH_STEPS,
         DRAW_3,
-        DRAW_NOT_ENOUGH_PIECES
-    }
+        DRAW_NOT_ENOUGH_PIECES;
+
+        public boolean isTheEnd() {
+            return this != IN_PROGRESS;
+        }
+    };
 
     @Override
     public String toString() {

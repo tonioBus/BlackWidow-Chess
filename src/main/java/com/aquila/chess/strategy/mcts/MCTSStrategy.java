@@ -128,7 +128,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
-        if (trainGame != null && currentGameStatus != Game.GameStatus.IN_PROGRESS) {
+        if (trainGame != null && currentGameStatus.isTheEnd()) {
             OneStepRecord finalOneStepRecord = createStepTraining(
                     this.mctsGame,
                     move,

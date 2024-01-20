@@ -70,7 +70,12 @@ public class MCTSConfig {
 
     private <T> T get(String property, Class<T> clazz, T defaultValue) {
         try {
-            return get(property, clazz);
+            T value = get(property, clazz);
+            if (value == null) {
+                log.warn("");
+                return defaultValue;
+            }
+            return value;
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
                  IllegalAccessException e) {
             log.warn("Error getting property:{} using default value:{}", property, defaultValue);
@@ -80,6 +85,7 @@ public class MCTSConfig {
 
     private <T> T get(String property, Class<T> clazz) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String value = properties.getProperty(property);
+        if (value == null) return null;
         Method method = clazz.getDeclaredMethod("valueOf", String.class);
         return clazz.cast(method.invoke(null, value));
     }
