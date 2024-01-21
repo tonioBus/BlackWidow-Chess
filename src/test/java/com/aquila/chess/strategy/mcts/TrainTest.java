@@ -142,9 +142,9 @@ public class TrainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {12345})
-    void testLoad(int num) throws IOException, ClassNotFoundException, TrainException {
-        TrainGame trainGame = TrainGame.load("train-test-load", num);
+    @ValueSource(strings = {"/train-test-load/12345", "train/10"})
+    void testLoad(String fileName) throws IOException, ClassNotFoundException, TrainException {
+        TrainGame trainGame = TrainGame.load(new File(fileName));
         StatisticsFit statisticsFit = new StatisticsFit(1, 1);
         deepLearningWhite.train(trainGame, FIT_CHUNK, statisticsFit);
         log.info("statistics:{}", statisticsFit);
