@@ -15,8 +15,10 @@ import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,6 +47,7 @@ public class MainFitNNLc0 {
     }
 
     public static void main(final String[] args) throws Exception {
+        final Date startDate = new Date();
         final AbstractFit abstractFit = new AbstractFit("config/configFit.xml");
         INN nnWhite;
         boolean simulation = abstractFit.getConfigFit().isSimulation();
@@ -98,7 +101,11 @@ public class MainFitNNLc0 {
                 log.error("Error when saving NN", e);
             }
         }
+        final Date endDate = new Date();
+        long diffInMillies = Math.abs(startDate.getTime() - endDate.getTime());
+        String formattedText = formatElapsedTime(diffInMillies / 1000);
         log.info("----------------------------------------------------------------------------------------------------");
+        log.info("Training time: {}", formattedText);
         log.info("Training config:{}", abstractFit.getFile());
         log.info("Training using UpdateLR:{}", abstractFit.getConfigFit().getUpdateLr());
         log.info("Train done in directories:\n{}",
@@ -109,4 +116,14 @@ public class MainFitNNLc0 {
         });
     }
 
+    public static String formatElapsedTime(long seconds) {
+
+        long hours = TimeUnit.SECONDS.toHours(seconds);
+        seconds -= TimeUnit.HOURS.toSeconds(hours);
+
+        long minutes = TimeUnit.SECONDS.toMinutes(seconds);
+        seconds -= TimeUnit.MINUTES.toSeconds(minutes);
+
+        return String.format("%dhr:%dmin:%dsec", hours, minutes, seconds);
+    }
 }

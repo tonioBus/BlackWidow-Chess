@@ -301,11 +301,12 @@ public class DeepLearningAGZ {
     }
 
     /**
-     * Train the NN by sending batches of FIT_CHUNK size
-     *
+     * Train the NN by sending batches of fitChunk size
      * @param trainGame
+     * @param fitChunk
      * @param statisticsFit
      * @throws IOException
+     * @throws TrainException
      */
     public void train(final TrainGame trainGame, final int fitChunk, final StatisticsFit statisticsFit) throws IOException, TrainException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
