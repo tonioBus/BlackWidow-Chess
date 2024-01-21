@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ConfigDir {
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private String directory;
 
     @XmlAttribute

@@ -40,7 +40,9 @@ class ConfigFitTest {
         configDirs.add(configDir2);
         ConfigFit configFit = new ConfigFit(
                 4.5e-4,
+                40,
                 "../AGZ_NN/AGZ.reference",
+                true,
                 configDirs
         );
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);

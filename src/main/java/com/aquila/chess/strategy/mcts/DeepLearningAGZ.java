@@ -270,9 +270,9 @@ public class DeepLearningAGZ {
         return sb.toString();
     }
 
-    private LinkedList<OneStepRecord> checkGame(final TrainGame trainGame) {
-        log.info("Check training size: {}", trainGame.getOneStepRecordList().size());
-        final GameChecker gameChecker = new GameChecker(inputsManager);
+    private LinkedList<OneStepRecord> checkGame(final TrainGame trainGame, final String label) throws TrainException {
+        log.info("Check training size: {}", trainGame.getOneStepRecordList().size(), label);
+        final GameChecker gameChecker = new GameChecker(inputsManager, label);
         LinkedList<OneStepRecord> ret = new LinkedList<>();
         try {
             for (OneStepRecord oneStepRecord : trainGame.getOneStepRecordList()) {
@@ -287,6 +287,8 @@ public class DeepLearningAGZ {
                         oneStepRecord.policies());
                 ret.add(newOneStepRecord);
             }
+        } catch (TrainException e) {
+            throw e;
         } catch (RuntimeException e) {
             log.error("Bad saved game", e);
             log.error("!! Error during loading of game: only using {} steps", ret.size());
@@ -305,17 +307,17 @@ public class DeepLearningAGZ {
      * @param statisticsFit
      * @throws IOException
      */
-    public void train(final TrainGame trainGame, final StatisticsFit statisticsFit) throws IOException, TrainException {
+    public void train(final TrainGame trainGame, final int fitChunk, final StatisticsFit statisticsFit) throws IOException, TrainException {
         if (!train) throw new RuntimeException("DeepLearningAGZ not in train mode");
-        LinkedList<OneStepRecord> correctStepRecord = checkGame(trainGame);
+        LinkedList<OneStepRecord> correctStepRecord = checkGame(trainGame, String.valueOf(trainGame.getNum()));
         int nbCorrectStep = correctStepRecord.size();
         final int nbStep = trainGame.getOneStepRecordList().size();
         log.info("Current Check:{} <-> {}:Correct Step", nbCorrectStep, nbStep);
         trainGame.setOneStepRecordList(correctStepRecord);
         this.nn.train(true);
         log.info("NETWORK TO FIT[{}]: {}", nbCorrectStep, trainGame.getValue());
-        int nbChunk = nbCorrectStep / FIT_CHUNK;
-        int restChunk = nbCorrectStep % FIT_CHUNK;
+        int nbChunk = nbCorrectStep / fitChunk;
+        int restChunk = nbCorrectStep % fitChunk;
         switch (trainGame.getValue().intValue()) {
             case 1 -> {
                 statisticsFit.nbWin++;
@@ -328,7 +330,7 @@ public class DeepLearningAGZ {
             }
         }
         for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
-            trainChunk(indexChunk, FIT_CHUNK, trainGame, statisticsFit);
+            trainChunk(indexChunk, fitChunk, trainGame, statisticsFit);
         }
         if (restChunk > 0) {
             trainChunk(nbChunk, restChunk, trainGame, statisticsFit);
@@ -369,7 +371,7 @@ public class DeepLearningAGZ {
         log.info("NETWORK score: {}", score);
         if ("NaN".equals(score + "")) {
             log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");
-            throw new TrainException("NN score not defined (0 / 0 ?)");
+            throw new TrainException("NN score not defined (0 / 0 ?)", String.valueOf(trainGame.getNum()));
         }
     }
 

@@ -6,6 +6,7 @@ import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
+import com.aquila.chess.strategy.mcts.nnImpls.NNSimul;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
@@ -16,7 +17,6 @@ import org.nd4j.jita.conf.CudaEnvironment;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,10 +45,16 @@ public class MainFitNNLc0 {
     }
 
     public static void main(final String[] args) throws Exception {
-        final AbstractFit abstractFit = new AbstractFit("config/configFit.template.xml");
-        INN nnWhite = new NNDeep4j(abstractFit.getConfigFit().getNnReference(), true, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
-        settingsCuda();
-        ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
+        final AbstractFit abstractFit = new AbstractFit("config/configFit.xml");
+        INN nnWhite;
+        boolean simulation = abstractFit.getConfigFit().isSimulation();
+        if (simulation) {
+            nnWhite = new NNSimul(1);
+        } else {
+            nnWhite = new NNDeep4j(abstractFit.getConfigFit().getNnReference(), true, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
+            settingsCuda();
+            ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
+        }
         log.info("SET UPDATE LR:{}", abstractFit.getConfigFit().getUpdateLr());
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
         nnWhite.setUpdateLr(updateLr, 1);
@@ -56,7 +62,6 @@ public class MainFitNNLc0 {
         abstractFit.getConfigFit().getConfigDirs().forEach(dir -> {
             statistics.put(dir.getDirectory(), new StatisticsFit(dir.getStartNumber(), dir.getEndNumber()));
         });
-        AtomicBoolean saveIt = new AtomicBoolean(true);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
@@ -67,42 +72,41 @@ public class MainFitNNLc0 {
                 .build();
         TrainFile trainFile = (file, statistics1) -> {
             log.info("train file:{}", file);
+            String parent = file.toPath().getParent().toString();
+            final TrainGame trainGame = TrainGame.load(file);
             try {
-                String parent = file.toPath().getParent().toString();
-                TrainGame trainGame = TrainGame.load(file);
                 StatisticsFit statisticsFit = statistics.get(parent);
-                deepLearningWhite.train(trainGame, statisticsFit);
+                deepLearningWhite.train(trainGame, abstractFit.getConfigFit().getFitChunk(), statisticsFit);
             } catch (TrainException e) {
-                log.error("TrainException: stopping ...", e);
-                saveIt.set(false);
-            } catch (IOException | ClassNotFoundException e) {
-                log.error("Exception: stopping ...", e);
-                saveIt.set(false);
+                log.error("TrainException: ", e);
+                statistics1.get(parent).listErrorTrain.add(String.valueOf(trainGame.getNum()));
+            } catch (IOException e) {
+                log.error("Exception, we will close without saving", e);
+                System.exit(-1);
             } catch (RuntimeException e) {
                 log.error("RuntimeException, we will close without saving", e);
-                saveIt.set(false);
+                System.exit(-1);
             }
         };
         abstractFit.run(trainFile, statistics);
-        saveIt.set(true);
-        try {
-            log.info("Saving NN: do not stop the JVM ...");
-            ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
-            deepLearningWhite.save();
-        } catch (IOException e) {
-            log.error("Error when saving NN", e);
+        if (!simulation) {
+            try {
+                log.info("Saving NN: do not stop the JVM ...");
+                ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+                deepLearningWhite.save();
+            } catch (IOException e) {
+                log.error("Error when saving NN", e);
+            }
         }
+        log.info("----------------------------------------------------------------------------------------------------");
+        log.info("Training config:{}", abstractFit.getFile());
         log.info("Training using UpdateLR:{}", abstractFit.getConfigFit().getUpdateLr());
         log.info("Train done in directories:\n{}",
                 abstractFit.getConfigFit().getConfigDirs().stream().map(configDir -> configDir.getDirectory()).collect(Collectors.joining("\n- ", "- ", "")));
         statistics.entrySet().forEach(entry -> {
             String subDir = entry.getKey();
-            log.info("------------------------------------\nSUBDIR:{}\n{}", subDir, entry.getValue());
+            log.info("SUBDIR:{}\n{}", subDir, entry.getValue());
         });
-        if (!saveIt.get()) {
-            log.error("!!! Error: nothing saved.");
-            System.exit(-1);
-        }
     }
 
 }

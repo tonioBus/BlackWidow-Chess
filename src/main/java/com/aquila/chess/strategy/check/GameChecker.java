@@ -3,6 +3,7 @@ package com.aquila.chess.strategy.check;
 import com.aquila.chess.AbstractGame;
 import com.aquila.chess.Game;
 import com.aquila.chess.strategy.FixStrategy;
+import com.aquila.chess.strategy.mcts.TrainException;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Move;
@@ -17,8 +18,11 @@ import static com.chess.engine.classic.board.Board.createStandardBoard;
 @Slf4j
 public class GameChecker extends AbstractGame {
 
-    public GameChecker(final InputsManager inputsManager) {
+    private final String label;
+
+    public GameChecker(final InputsManager inputsManager, final String label) {
         super(inputsManager, createStandardBoard());
+        this.label=label;
         setup(new FixStrategy(Alliance.WHITE), new FixStrategy(Alliance.BLACK));
     }
 
@@ -34,7 +38,7 @@ public class GameChecker extends AbstractGame {
                 log.error("[{}] possible opponentMoves:{}", alliance, opponentMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
                 log.error("[{}] game:nb step:{}\n{}\n{}", alliance, super.getNbStep(), super.toPGN(), super.getBoard().toString());
                 if (super.getNbStep() >= AbstractGame.NUMBER_OF_MAX_STEPS) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
-                throw new RuntimeException("no legal move found for: " + givenMove);
+                throw new TrainException("no legal move found for: " + givenMove, label);
             }
             Move currentMove = currentMoveOpt.get();
             switch (super.getCurrentPLayerColor()) {
