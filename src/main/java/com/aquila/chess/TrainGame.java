@@ -19,6 +19,9 @@ public class TrainGame implements Serializable {
     static final long serialVersionUID = -2638786203240540104L;
 
     @Getter
+    private int num;
+
+    @Getter
     Double value = null;
 
     @Setter
@@ -40,6 +43,7 @@ public class TrainGame implements Serializable {
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         TrainGame ret = (TrainGame) objectInputStream.readObject();
+        ret.num = num;
         objectInputStream.close();
         return ret;
     }
@@ -50,6 +54,7 @@ public class TrainGame implements Serializable {
         ObjectInputStream objectInputStream
                 = new ObjectInputStream(fileInputStream);
         TrainGame ret = (TrainGame) objectInputStream.readObject();
+        ret.num = Integer.parseInt(file.toPath().getFileName().toString());
         objectInputStream.close();
         return ret;
     }

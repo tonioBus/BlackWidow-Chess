@@ -76,7 +76,7 @@ public class NNSimul extends NNConstants {
 
     @Override
     public void fit(double[][][][] inputs, double[][] policies, double[][] values) {
-        throw new RuntimeException("fit not allow with this implementation");
+        log.info("FIT SIMULATED [{}]", inputs.length);
     }
 
     @Override

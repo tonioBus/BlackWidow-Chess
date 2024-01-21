@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 public class TrainTest {
 
+    private static final int FIT_CHUNK = 40;
     private static final UpdateCpuct updateCpuct = nbStep -> {
         if (nbStep <= 30) return 2.5;
         else return 0.0025;
@@ -132,7 +133,7 @@ public class TrainTest {
         TrainGame loadTrainGame = TrainGame.load("train-test", num);
         StatisticsFit statisticsFit = new StatisticsFit(seed, seed);
         try {
-            deepLearningWhite.train(loadTrainGame, statisticsFit);
+            deepLearningWhite.train(loadTrainGame, FIT_CHUNK, statisticsFit);
         } catch (IOException e) {
             log.info("Game:\n{}", game);
             assertFalse(true, "Exception:" + e);
@@ -141,11 +142,11 @@ public class TrainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints={12345})
-    void testLoad(int num) throws IOException, ClassNotFoundException, TrainException {
-        TrainGame trainGame = TrainGame.load("train-test-load", num);
+    @ValueSource(strings = {"/train-test-load/12345", "train/10"})
+    void testLoad(String fileName) throws IOException, ClassNotFoundException, TrainException {
+        TrainGame trainGame = TrainGame.load(new File(fileName));
         StatisticsFit statisticsFit = new StatisticsFit(1, 1);
-        deepLearningWhite.train(trainGame, statisticsFit);
+        deepLearningWhite.train(trainGame, FIT_CHUNK, statisticsFit);
         log.info("statistics:{}", statisticsFit);
     }
 
@@ -154,7 +155,7 @@ public class TrainTest {
     void testPunctualLoad() throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
         StatisticsFit statisticsFit = new StatisticsFit(1060, 1060);
-        deepLearningWhite.train(trainGame, statisticsFit);
+        deepLearningWhite.train(trainGame, FIT_CHUNK, statisticsFit);
         log.info("statistics:{}", statisticsFit);
     }
 

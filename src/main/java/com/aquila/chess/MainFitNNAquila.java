@@ -181,7 +181,7 @@ public class MainFitNNAquila implements Runnable {
             try {
                 TrainGame trainGame = TrainGame.load(subDir, numGame);
                 if(filters == null || Arrays.stream(filters).mapToDouble(Double::valueOf).filter(filter -> filter==trainGame.getValue()).count()==0)
-                    deepLearningWhite.train(trainGame, statisticsFit);
+                    deepLearningWhite.train(trainGame, 40, statisticsFit);
                 else statisticsFit.listFilteredTrain.add(""+numGame);
             } catch (Exception e) {
                 log.error(String.format("Error for the training game: %s/%s", subDir, numGame), e);

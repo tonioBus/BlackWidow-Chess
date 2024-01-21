@@ -15,13 +15,19 @@ import java.util.List;
 @XmlRootElement(name = "fit")
 public class ConfigFit {
 
-    @XmlAttribute
+    @XmlAttribute(required = true)
     private double updateLr;
 
-    @XmlAttribute
+    @XmlAttribute(required = false)
+    private int fitChunk = 40;
+
+    @XmlAttribute(required = true)
     private String nnReference;
 
-    @XmlElement
+    @XmlAttribute
+    private boolean simulation;
+
+    @XmlElement(required = true)
     private List<ConfigDir> configDirs;
 
 }

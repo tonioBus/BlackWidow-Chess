@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
@@ -18,11 +19,14 @@ import java.util.stream.Collectors;
 public class AbstractFit {
 
     @Getter
+    private final File file;
+
+    @Getter
     ConfigFit configFit;
 
     public AbstractFit(String configFile) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);
-        File file = new File(configFile);
+        file = new File(configFile);
         this.configFit = (ConfigFit) context.createUnmarshaller().unmarshal(file);
     }
 
@@ -35,7 +39,13 @@ public class AbstractFit {
                 .collect(Collectors.joining("\n"))
         );
         files.values().stream().forEach(file -> {
-            trainFile.train(file, statistics);
+            try {
+                trainFile.train(file, statistics);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
