@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<fit updateLr="4.5E-4" nnReference="../AGZ_NN/AGZ.reference">
+<fit updateLr="4.5E-4" fitChunk="40" nnReference="../AGZ_NN/AGZ.reference" simulation="true">
     <configDirs directory="train" startNumber="0" endNumber="100"/>
     <configDirs directory="train-rog" startNumber="0" endNumber="60"/>
     <configDirs directory="train-grospc" startNumber="54" endNumber="234"/>

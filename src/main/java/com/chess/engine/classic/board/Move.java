@@ -6,7 +6,9 @@ import com.chess.engine.classic.pieces.Pawn;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.pieces.Rook;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public abstract class Move {
 
     public final static String INIT_MOVE = "INIT-MOVE";
@@ -158,7 +160,11 @@ public abstract class Move {
         for (final Move move : this.board.currentPlayer().getLegalMoves()) {
             if (move.getDestinationCoordinate() == this.destinationCoordinate && !this.equals(move) &&
                     this.movedPiece.getPieceType().equals(move.getMovedPiece().getPieceType())) {
-                return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0, 1);
+                if (BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0, 1)
+                        .equals(BoardUtils.INSTANCE.getPositionAtCoordinate(move.movedPiece.getPiecePosition()).substring(0, 1)))
+                    return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(1, 2);
+                else
+                    return BoardUtils.INSTANCE.getPositionAtCoordinate(this.movedPiece.getPiecePosition()).substring(0, 1);
             }
         }
         return "";

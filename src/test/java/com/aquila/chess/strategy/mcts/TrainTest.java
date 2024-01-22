@@ -142,7 +142,7 @@ public class TrainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/train-test-load/12345", "train/10"})
+    @ValueSource(strings = {"train-test-load/10"})
     void testLoad(String fileName) throws IOException, ClassNotFoundException, TrainException {
         TrainGame trainGame = TrainGame.load(new File(fileName));
         StatisticsFit statisticsFit = new StatisticsFit(1, 1);
