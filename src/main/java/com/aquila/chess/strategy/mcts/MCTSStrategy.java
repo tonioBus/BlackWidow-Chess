@@ -119,7 +119,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         this.nbStep++;
 
         if (trainGame != null) {
-            log.info("[{}] PROGRESS save move:{}-{}", this.alliance, moveOpponent.getAllegiance(), moveOpponent);
             OneStepRecord lastOneStepRecord = createStepTraining(
                     moveOpponent,
                     moveOpponent.getAllegiance(),

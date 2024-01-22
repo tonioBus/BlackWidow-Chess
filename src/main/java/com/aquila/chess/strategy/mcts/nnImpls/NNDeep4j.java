@@ -1,6 +1,8 @@
 package com.aquila.chess.strategy.mcts.nnImpls;
 
-import com.aquila.chess.strategy.mcts.*;
+import com.aquila.chess.strategy.mcts.INN;
+import com.aquila.chess.strategy.mcts.OutputNN;
+import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
+import org.nd4j.common.config.ND4JEnvironmentVars;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
@@ -47,10 +50,10 @@ public class NNDeep4j implements INN {
                 // cross-device access is used for faster model averaging over pcie
                 .allowCrossDeviceAccess(false) //
                 .setNumberOfGcThreads(4)
-               // .setMaximumBlockSize(-1)
+                // .setMaximumBlockSize(-1)
                 .setMaximumGridSize(256)
-               // .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
-               // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
+                // .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
+                // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
                 //.setMaximumHostCache(8L * 1024 * 1024 * 1024L)
                 .setNoGcWindowMs(100)
@@ -70,6 +73,8 @@ public class NNDeep4j implements INN {
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
+        log.info("Model datatype:{}", network.getConfiguration().getDataType());
+        // network.getConfiguration().setDataType(DataType.INT16);
         log.debug("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
     }
 
