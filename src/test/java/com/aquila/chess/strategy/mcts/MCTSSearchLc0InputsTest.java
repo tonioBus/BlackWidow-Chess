@@ -27,7 +27,8 @@ import java.util.stream.Collectors;
 import static com.aquila.chess.Game.GameStatus.IN_PROGRESS;
 import static com.chess.engine.classic.Alliance.BLACK;
 import static com.chess.engine.classic.Alliance.WHITE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class MCTSSearchLc0InputsTest {
@@ -221,7 +222,80 @@ public class MCTSSearchLc0InputsTest {
     }
 
     /**
-     * [a] [b] [c] [d] [e] [f] [g] [h]
+     * @formatter:off <pre>
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * 8  --- --- --- --- --- --- --- K-B  8
+     * 7  --- --- --- --- --- --- --- P-B  7
+     * 6  --- --- --- --- --- N-W --- ---  6
+     * 5  --- --- --- --- --- R-W --- ---  5
+     * 4  --- --- --- --- --- P-W --- ---  4
+     * 3  --- P-B --- --- --- --- --- ---  3
+     * 2  --- --- P-B --- --- --- --- ---  2
+     * 1  K-W --- --- --- --- --- --- ---  1
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
+     * </pre>
+     * @formatter:on
+     */
+    @ParameterizedTest
+    @ValueSource(ints = {100, 200, 400, 800})
+    @DisplayName("MCTS tree should avoid white should avoid loess in 1 when it can win in 2")
+    void testConflictLossWin(int nbSearchCalls) throws Exception {
+        final Board board = Board.createBoard("Ka1,f1,Nf6,RF5", "b3,c2,h7,kh8", WHITE);
+        final InputsManager inputsManager = new Lc0InputsManagerImpl();
+        final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+        final NNConstants nnConstant = new NNConstants(1);
+        final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                .nn(nnConstant)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(160)
+                .build();
+        final MCTSStrategy whiteStrategy = new MCTSStrategy(
+                game,
+                WHITE,
+                deepLearningWhite,
+                1,
+                updateCpuct,
+                -1)
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbSearchCalls);
+        final DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                .nn(nnConstant)
+                .inputsManager(inputsManager)
+                .train(false)
+                .batchSize(160)
+                .build();
+        final MCTSStrategy blackStrategy = new MCTSStrategy(
+                game,
+                BLACK,
+                deepLearningBlack,
+                1,
+                updateCpuct,
+                -1)
+                .withNbThread(NB_THREAD)
+                .withNbSearchCalls(nbSearchCalls);
+        game.setup(whiteStrategy, blackStrategy);
+        Game.GameStatus status = game.play();
+        Move move = game.getLastMove();
+        log.info("Move: {}", move);
+        assertEquals(IN_PROGRESS, status);
+        assertTrue(move.toString().equals("Rc5") || move.toString().equals("Kb2"));
+        List<MCTSNode> lossNodes = whiteStrategy.getDirectRoot().search(MCTSNode.State.LOOSE);
+        log.info("[{}}] Wins/loss EndNodes ({}): {}", whiteStrategy.getAlliance(), lossNodes.size(), lossNodes.stream().map(node -> String.format("%s:%s", node.getState(), node.getMove().toString())).collect(Collectors.joining(",")));
+        if (log.isInfoEnabled()) log.info(whiteStrategy.mctsTree4log(nbSearchCalls < 200, 5));
+        Helper.checkMCTSTree(whiteStrategy);
+        assertTrue(lossNodes.size() > 0, "We should have some loss nodes detected for white (to avoid chessmate)");
+        log.warn("game:{}", game.toPGN());
+        status = game.play();
+        move = game.getLastMove();
+        log.warn("game:{}", game);
+        log.warn("move:{}", move);
+        log.warn("status:{}", status);
+        assertEquals(IN_PROGRESS, status);
+    }
+
+    /**
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
      * 8  --- --- --- --- --- --- --- ---  8
      * 7  --- --- --- --- --- --- --- ---  7
      * 6  --- --- --- --- --- --- --- ---  6
@@ -230,7 +304,7 @@ public class MCTSSearchLc0InputsTest {
      * 3  --- --- --- --- --- --- K-B ---  3
      * 2  P-B --- --- --- --- --- --- ---  2
      * 1  --- --- --- --- --- --- K-W ---  1
-     * [a] [b] [c] [d] [e] [f] [g] [h]
+     *    [a] [b] [c] [d] [e] [f] [g] [h]
      * </pre>
      */
     @ParameterizedTest
