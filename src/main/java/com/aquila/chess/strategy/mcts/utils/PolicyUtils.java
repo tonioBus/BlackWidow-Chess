@@ -73,11 +73,9 @@ public class PolicyUtils {
     public static String moveFromIndex(int index, Collection<Move> moves) {
         List<Move> filteredMoves = moves.stream().filter(move -> index == indexFromMove(move)).collect(Collectors.toList());
         if (filteredMoves.isEmpty()) {
-            // log.error("Index : {} not found on possible moves", index);
             return moves.stream().findAny().get().toString();
         }
         if (filteredMoves.size() != 1) {
-            // log.error("Index : {} get multiple moves: {}", index, filteredMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
             return filteredMoves.get(0).toString();
         }
         return filteredMoves.get(0).toString();
@@ -198,25 +196,11 @@ public class PolicyUtils {
      * @return - list of indexes using policies coding ([1 - 45XX])
      */
     public static int[] getIndexesFilteredPolicies(Collection<Move> moves) {
-        return moves.stream().filter((move) -> move != null).mapToInt((move) -> PolicyUtils.indexFromMove(move)).toArray();
-    }
-
-    public static double[] normalise(double[] policies) {
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-        for (double policy : policies) {
-            if (policy < min)
-                min = policy;
-            if (policy > max)
-                max = policy;
-        }
-        double maxMin = max - min;
-        if (maxMin > 0) {
-            for (int i = 0; i < policies.length; i++) {
-                policies[i] = (policies[i] - min) / maxMin;
-            }
-        }
-        return policies;
+        return moves
+                .stream()
+                .filter((move) -> move != null)
+                .mapToInt((move) -> PolicyUtils.indexFromMove(move))
+                .toArray();
     }
 
     /**
@@ -253,12 +237,6 @@ public class PolicyUtils {
                 double newP = (1 - epsilon) * p + epsilon * d[index.getAndIncrement()];
                 entry.setValue(newP);
             });
-//            for (int i = 0; i < ret.length; i++) {
-//                p = ret[i];
-//                double newP = (1 - epsilon) * p + epsilon * d[index];
-//                ret[i] = (float) newP;
-//                index++;
-//            }
             if (log.isWarnEnabled()) {
                 logPolicies("DIRICHLET", ret.values().stream().toList(), indexes, moves);
             }
