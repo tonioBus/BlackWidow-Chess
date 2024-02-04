@@ -362,15 +362,13 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     private static OneStepRecord createStepTraining(final Move move,
                                                     final Alliance alliance,
                                                     final MCTSNode directParent) {
-        final InputsFullNN inputs = null; //mctsGame.getInputsManager().createInputs(mctsGame.getLastBoard(), move, alliance);
         Map<Integer, Double> policies = calculatePolicies(directParent, move);
         OneStepRecord lastOneStepRecord = new OneStepRecord(
-                inputs,
+                null,
                 move.toString(),
                 alliance,
                 policies);
         log.debug("CREATE STEP TRAINING -> Save inputs:{}", policies.size());
-        log.debug("CREATE STEP TRAINING ->[{}] INPUTS:\n{}", alliance, inputs);
         return lastOneStepRecord;
     }
 

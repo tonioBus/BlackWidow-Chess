@@ -72,11 +72,10 @@ public abstract class AbstractGame {
                 case BLACK -> strategyBlack;
             };
         }
-        Move.InitMove initMove = switch (this.board.currentPlayer().getAlliance()) {
+        moveOpponent = switch (this.board.currentPlayer().getAlliance()) {
             case WHITE -> new Move.InitMove(board, Alliance.BLACK);
             case BLACK -> new Move.InitMove(board, Alliance.WHITE);
         };
-        moveOpponent = initMove;
         registerMove(moveOpponent, board);
     }
 

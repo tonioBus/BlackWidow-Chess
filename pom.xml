@@ -39,12 +39,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.12</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.12</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.7.0</version>
+            <version>4.7.3</version>
         </dependency>
 
     </dependencies>
@@ -160,9 +160,9 @@
                     <release>17</release>
                     <annotationProcessorPaths>
                         <path>
-                            <groupId>org.projectlombok</groupId>
+                            <groupId>org.project-lombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.20</version>
+                            <version>1.18.30</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>--enable-preview</compilerArgs>
@@ -186,39 +186,6 @@
                     </includes>
                 </configuration>
             </plugin>
-            <!--            <plugin>-->
-            <!--                <groupId>org.graalvm.buildtools</groupId>-->
-            <!--                <artifactId>native-maven-plugin</artifactId>-->
-            <!--                <version>${native.maven.plugin.version}</version>-->
-            <!--                <extensions>true</extensions>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <id>build-native</id>-->
-            <!--                        <goals>-->
-            <!--                            <goal>build</goal>-->
-            <!--                        </goals>-->
-            <!--                        <phase>package</phase>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--                <configuration>-->
-            <!--                    <skip>false</skip>-->
-            <!--                    <imageName>MCTSTrain</imageName>-->
-            <!--                    <mainClass>com.aquila.chess.MainTrainingAGZ</mainClass>-->
-            <!--                    <buildArgs>-->
-            <!--                        <buildArg>&#45;&#45;no-fallback</buildArg>-->
-            <!--                        <buildArg>&#45;&#45;report-unsupported-elements-at-runtime</buildArg>-->
-            <!--                        <buildArg>&#45;&#45;diagnostics-mode</buildArg>-->
-            <!--                        <buildArg>&#45;&#45;initialize-at-build-time</buildArg>-->
-            <!--                        <buildArg>-O0</buildArg>-->
-            <!--                        <buildArg>&#45;&#45;initialize-at-run-time=java.util.Random</buildArg>-->
-            <!--                        &lt;!&ndash; buildArg>report-unsupported-elements-at-compile</buildArg &ndash;&gt;-->
-            <!--                    </buildArgs>-->
-            <!--                    <jvmArgs>-->
-            <!--                        <arg>-Xmx30G</arg>-->
-            <!--                        <arg>-XX:-UseGCOverheadLimit</arg>-->
-            <!--                    </jvmArgs>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
         </plugins>
     </build>
 

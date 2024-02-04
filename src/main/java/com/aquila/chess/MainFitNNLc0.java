@@ -13,6 +13,8 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
+import org.nd4j.linalg.api.buffer.DataType;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.IOException;
 import java.util.Date;
@@ -31,7 +33,7 @@ public class MainFitNNLc0 {
                 .setFirstMemory(AllocationStatus.HOST)
                 .setAllocationModel(Configuration.AllocationModel.CACHE_ALL)
                 .setMaximumDeviceMemoryUsed(0.90) //
-                .setMemoryModel(Configuration.MemoryModel.IMMEDIATE) //
+                .setMemoryModel(Configuration.MemoryModel.DELAYED) //
                 // cross-device access is used for faster model averaging over pcie
                 .allowCrossDeviceAccess(false) //
                 .setNumberOfGcThreads(4)
@@ -44,6 +46,7 @@ public class MainFitNNLc0 {
                 .setNoGcWindowMs(100)
                 .enableDebug(false)
                 .setVerbose(false);
+        Nd4j.setDefaultDataTypes(DataType.FLOAT, DataType.FLOAT);
     }
 
     public static void main(final String[] args) throws Exception {

@@ -86,7 +86,7 @@ public class TrainTest {
                 -1)
                 .withTrainGame(trainGame)
                 .withNbThread(-1)
-                .withNbSearchCalls(3);
+                .withNbSearchCalls(50);
         // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -97,7 +97,7 @@ public class TrainTest {
                 -1)
                 .withTrainGame(trainGame)
                 .withNbThread(-1)
-                .withNbSearchCalls(2);
+                .withNbSearchCalls(50);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         do {
