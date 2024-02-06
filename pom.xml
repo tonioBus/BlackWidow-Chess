@@ -160,7 +160,7 @@
                     <release>17</release>
                     <annotationProcessorPaths>
                         <path>
-                            <groupId>org.project-lombok</groupId>
+                            <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>1.18.30</version>
                         </path>

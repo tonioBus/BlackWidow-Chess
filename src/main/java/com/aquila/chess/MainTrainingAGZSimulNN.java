@@ -12,7 +12,7 @@ import com.chess.engine.classic.board.Board;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MainTrainingLc0SimulNN {
+public class MainTrainingAGZSimulNN {
 
     private static final UpdateCpuct updateCpuct = nbStep -> {
         if (nbStep <= 30) return 2.5;
@@ -28,22 +28,25 @@ public class MainTrainingLc0SimulNN {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences-simul.csv", 40000, 55);
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(2);
-        InputsManager inputsManager = new Lc0InputsManagerImpl();
-        DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
-                .nn(nnWhite)
-                .inputsManager(inputsManager)
-                .batchSize(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getBatch())
-                .train(false)
-                .build();
-        DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
-                .nn(nnBlack)
-                .inputsManager(inputsManager)
-                .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
-                .train(false)
-                .build();
         while (!gameManager.stopDetected(true)) {
+            InputsManager inputsManager = new Lc0InputsManagerImpl();
+            DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
+                    .nn(nnWhite)
+                    .inputsManager(inputsManager)
+                    .batchSize(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getBatch())
+                    .train(false)
+                    .build();
+            DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
+                    .nn(nnBlack)
+                    .inputsManager(inputsManager)
+                    .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
+                    .train(false)
+                    .build();
             final Board board = Board.createStandardBoard();
-            final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
+            final Game game = Game.builder()
+                    .inputsManager(inputsManager)
+                    .board(board)
+                    .build();
             final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
