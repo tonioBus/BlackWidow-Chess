@@ -27,7 +27,6 @@ public class MainTrainingAGZSimulNN {
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences-simul.csv", 40000, 55);
         INN nnWhite = new NNSimul(1);
-        INN nnBlack = new NNSimul(2);
         while (!gameManager.stopDetected(true)) {
             InputsManager inputsManager = new Lc0InputsManagerImpl();
             DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
@@ -37,7 +36,7 @@ public class MainTrainingAGZSimulNN {
                     .train(false)
                     .build();
             DeepLearningAGZ deepLearningBlack = DeepLearningAGZ.builder()
-                    .nn(nnBlack)
+                    .nn(nnWhite)
                     .inputsManager(inputsManager)
                     .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                     .train(false)
