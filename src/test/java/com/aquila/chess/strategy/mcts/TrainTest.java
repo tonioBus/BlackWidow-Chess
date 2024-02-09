@@ -53,13 +53,13 @@ public class TrainTest {
         deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(12)
                 .train(true)
                 .build();
         deepLearningBlack = DeepLearningAGZ.builder()
                 .nn(nnBlack)
                 .inputsManager(inputsManager)
-                .batchSize(128)
+                .batchSize(12)
                 .train(false)
                 .build();
     }
@@ -86,7 +86,7 @@ public class TrainTest {
                 -1)
                 .withTrainGame(trainGame)
                 .withNbThread(-1)
-                .withNbSearchCalls(50);
+                .withNbSearchCalls(5);
         // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(
                 game,
@@ -97,7 +97,7 @@ public class TrainTest {
                 -1)
                 .withTrainGame(trainGame)
                 .withNbThread(-1)
-                .withNbSearchCalls(50);
+                .withNbSearchCalls(5);
         game.setup(whiteStrategy, blackStrategy);
         Game.GameStatus gameStatus = null;
         do {

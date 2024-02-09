@@ -41,9 +41,9 @@ public class Lc0InputsManagerImpl extends InputsManager {
     // 109: repetitions whitout capture and pawn moves (50 moves rules)
     // 110: 0
     // 111: 1 -> edges detection
-    public static final int FEATURES_PLANES = 112 + 42;
+    public static final int FEATURES_PLANES = 138;
 
-    public static final int PLANE_COLOR = 108 + 46;
+    public static final int PLANE_COLOR = 136;
 
     public static final int PAWN_INDEX = 0;
     public static final int KNIGHT_INDEX = 1;
@@ -223,9 +223,10 @@ public class Lc0InputsManagerImpl extends InputsManager {
         }
         for (Lc0Last8Inputs tmpLc0Last8Inputs : tmp) {
             System.arraycopy(tmpLc0Last8Inputs.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
+            log.info("BOARD[{}] MOVE:{}:\n{}", destinationOffset, inputRecord.move(), Lc0Utils.displayBoard(tmpLc0Last8Inputs.inputs().inputs(), 0));
             destinationOffset += SIZE_POSITION;
         }
-        destinationOffset = 104;
+        destinationOffset = 104; // 13 * 8
         Player player = switch (inputRecord.moveColor()) {
             case WHITE -> board.whitePlayer();
             case BLACK -> board.blackPlayer();
@@ -234,22 +235,19 @@ public class Lc0InputsManagerImpl extends InputsManager {
             // coordinate calculated from the point of view of the player
             Coordinate coordinate = new Coordinate(currentPiece);
             int currentPieceIndex = getPlanesIndex(currentPiece);
-            // Position 0 (6+6 planes)
-            inputs[destinationOffset + currentPieceIndex][coordinate.getXInput()][coordinate.getYInput()] = 1;
             Collection<Move> legalMoves = currentPiece.calculateLegalMoves(board);
-            for( Move move: legalMoves) {
+            for (Move move : legalMoves) {
                 // movesCoordinate calculated from the point of view of the player
-                // Moves 12 (6+6 planes)
                 Coordinate movesCoordinate = Coordinate.destinationCoordinate(move);
-                inputs[destinationOffset + 12 + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
-                // Attacks 24 (6+6 planes)
-                if(move.isAttack()) {
+                inputs[destinationOffset + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+                // + 12 (6 + 6 planes) -> 104 + 12 = 116
+                if (move.isAttack()) {
                     Piece attackingPiece = move.getAttackedPiece();
                     Coordinate attackCoordinate = new Coordinate(attackingPiece);
-                    inputs[destinationOffset + 24 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
+                    inputs[destinationOffset + 12 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
                 }
-            };
-            // Pawn moves 38 (1+1 planes)
+                // + 24 (6 + 6 planes) -> 116 + 12 = 128
+            }
             if (currentPiece.getPieceType() == Piece.PieceType.PAWN) {
                 int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
                 int x = coordinate.getXInput();
@@ -257,22 +255,23 @@ public class Lc0InputsManagerImpl extends InputsManager {
                 Alliance color = currentPiece.getPieceAllegiance();
                 for (int yIndex = y + 1; yIndex < BoardUtils.NUM_TILES_PER_ROW; yIndex++) {
                     if (board.getPiece(new Coordinate(x, yIndex, color).getBoardPosition()) != null) break;
-                    inputs[destinationOffset + 38 + offsetBlack][x][yIndex] = 1;
+                    inputs[destinationOffset + 24 + offsetBlack][x][yIndex] = 1;
                 }
             }
-            // King liberty 36 (1+1 planes)
+            // + 26 (1 + 1 planes) -> 130
             if (currentPiece.getPieceType() == Piece.PieceType.KING && player.isInCheck()) {
                 int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
-                for( Move move: legalMoves) {
+                for (Move move : legalMoves) {
                     Move.MoveStatus status = player.makeMove(move).getMoveStatus();
                     if (status == Move.MoveStatus.DONE) {
                         Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
-                        inputs[40 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
+                        inputs[26 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
                     }
-                };
+                }
             }
+            // + 28 (1 + 1 planes) -> 132
         }
-        destinationOffset += 42;
+        destinationOffset = 132; // 104 + 12 + 12 + 2 + 2 = 104 + 28 -> 132
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
@@ -285,6 +284,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
         fill(inputs[destinationOffset + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], inputRecord.moveColor().isBlack() ? 1.0 : 0.0);
         fill(inputs[destinationOffset + 5], 1.0F);
+        // 132 + 5 = 137
     }
 
     /**
