@@ -16,7 +16,6 @@ public class MCTSGame extends AbstractGame {
         this.nbMoveNoAttackAndNoPawn = abstractGame.getNbMoveNoAttackAndNoPawn();
         this.moves.addAll(abstractGame.getMoves());
         this.status = abstractGame.calculateStatus(board, null);
-        // this.inputsManager.startMCTSStep(abstractGame);
     }
 
     public Game.GameStatus play(final Move move) {

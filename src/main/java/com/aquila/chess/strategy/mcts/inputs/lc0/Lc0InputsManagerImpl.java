@@ -10,13 +10,12 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
+import com.chess.engine.classic.player.Player;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,9 +38,9 @@ public class Lc0InputsManagerImpl extends InputsManager {
     // 109: repetitions whitout capture and pawn moves (50 moves rules)
     // 110: 0
     // 111: 1 -> edges detection
-    public static final int FEATURES_PLANES = 112;
+    public static final int FEATURES_PLANES = 138;
 
-    public static final int PLANE_COLOR = 108;
+    public static final int PLANE_COLOR = 136;
 
     public static final int PAWN_INDEX = 0;
     public static final int KNIGHT_INDEX = 1;
@@ -219,22 +218,78 @@ public class Lc0InputsManagerImpl extends InputsManager {
             Lc0InputsOneNN lastInput1 = this.createInputsForOnePosition(board, inputRecord.move(), isRepeat);
             tmp.add(new Lc0Last8Inputs(lastInput1, inputRecord.move(), isRepeat));
         }
-        for (Lc0Last8Inputs tmpLc0Last8Inputs : tmp) {
+        List<Lc0Last8Inputs> listInputs = new ArrayList<>();
+        listInputs.addAll(tmp);
+        Collections.reverse(listInputs);
+        for (Lc0Last8Inputs tmpLc0Last8Inputs : listInputs) {
             System.arraycopy(tmpLc0Last8Inputs.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
+            // log.info("[{}] MOVE:{} COLOR:{}:\n{}", destinationOffset / SIZE_POSITION, tmpLc0Last8Inputs.move(), tmpLc0Last8Inputs.move().getAllegiance(), Lc0Utils.displayBoard(tmpLc0Last8Inputs.inputs().inputs(), 0));
             destinationOffset += SIZE_POSITION;
         }
+        destinationOffset = 104; // 13 * 8
+        for (Piece currentPiece : board.getAllPieces()) {
+            // coordinate calculated from the point of view of the player
+            Coordinate coordinate = new Coordinate(currentPiece);
+            int currentPieceIndex = getPlanesIndex(currentPiece);
+            Collection<Move> legalMoves = currentPiece.calculateLegalMoves(board);
+            for (Move move : legalMoves) {
+                // [104-115] MOVES Coordinate calculated from the point of view of the player
+                Coordinate movesCoordinate = Coordinate.destinationCoordinate(move);
+                inputs[destinationOffset + currentPieceIndex][movesCoordinate.getXInput()][movesCoordinate.getYInput()] = 1;
+                // + 12 (6 + 6 planes) -> 104 + 12 = 116
+                // [116-127] ATTACK
+                if (move.isAttack()) {
+                    Piece attackingPiece = move.getAttackedPiece();
+                    Coordinate attackCoordinate = new Coordinate(attackingPiece);
+                    inputs[destinationOffset + 12 + getPlanesIndex(attackingPiece)][attackCoordinate.getXInput()][attackCoordinate.getYInput()] = 1;
+                }
+                // + 24 (6 + 6 planes) -> 116 + 12 = 128
+            }
+            // [128-129] pawn moves until obstacles
+            if (currentPiece.getPieceType() == Piece.PieceType.PAWN) {
+                int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
+                int x = coordinate.getXInput();
+                int y = coordinate.getYInput();
+                Alliance color = currentPiece.getPieceAllegiance();
+                for (int yIndex = y + 1; yIndex < BoardUtils.NUM_TILES_PER_ROW; yIndex++) {
+                    if (board.getPiece(new Coordinate(x, yIndex, color).getBoardPosition()) != null) break;
+                    inputs[destinationOffset + 24 + offsetBlack][x][yIndex] = 1;
+                }
+            }
+            // [130-131] king liberty (only when in chess)
+            // + 26 + 1  -> 130
+            if (currentPiece.getPieceType() == Piece.PieceType.KING) {
+                Player player = switch (inputRecord.moveColor()) {
+                    case WHITE -> board.whitePlayer();
+                    case BLACK -> board.blackPlayer();
+                };
+                if (player.isInCheck()) {
+                    int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
+                    for (Move move : legalMoves) {
+                        Move.MoveStatus status = player.makeMove(move).getMoveStatus();
+                        if (status == Move.MoveStatus.DONE) {
+                            Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
+                            inputs[destinationOffset + 26 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
+                        }
+                    }
+                }
+            }
+        }
+        // + 28 (1 + 1 planes) -> 132
+        destinationOffset = 132; // 104 + 12 + 12 + 2 + 2 = 104 + 28 -> 132
         List<Move> moveWhites = board.whitePlayer().getLegalMoves();
         Optional<Move> kingSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleWhite = moveWhites.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
         List<Move> moveBlacks = board.blackPlayer().getLegalMoves();
         Optional<Move> kingSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.KingSideCastleMove).findFirst();
         Optional<Move> queenSideCastleBlack = moveBlacks.stream().filter(m -> m instanceof Move.QueenSideCastleMove).findFirst();
-        fill(inputs[104], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[105], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[106], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
-        fill(inputs[107], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[destinationOffset], !queenSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[destinationOffset + 1], !kingSideCastleWhite.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[destinationOffset + 2], !queenSideCastleBlack.isEmpty() ? 1.0 : 0.0);
+        fill(inputs[destinationOffset + 3], !kingSideCastleBlack.isEmpty() ? 1.0 : 0.0);
         fill(inputs[PLANE_COLOR], inputRecord.moveColor().isBlack() ? 1.0 : 0.0);
-        fill(inputs[111], 1.0F);
+        fill(inputs[destinationOffset + 5], 1.0F);
+        // 132 + 5 = 137
     }
 
     /**
@@ -296,16 +351,18 @@ public class Lc0InputsManagerImpl extends InputsManager {
         List<Move> moves8inputs = this.lc0Last8Inputs.stream().map(in -> in.move()).collect(Collectors.toList());
         List<Boolean> repeats8inputs = this.lc0Last8Inputs.stream().map(in -> in.repeat()).collect(Collectors.toList());
         if (move != null && !move.isInitMove()) {
-            try {
-                board = move.execute();
-                moves8inputs.add(move);
-            } catch (Exception e) {
-                log.error("[{}] move:{}", move.getAllegiance(), move);
-                log.error("\n{}\n{}\n",
-                        "##########################################",
-                        board.toString()
-                );
-                throw e;
+            if (notDuplicate(moves8inputs, move)) {
+                try {
+                    board = move.execute();
+                    moves8inputs.add(move);
+                } catch (Exception e) {
+                    log.error("[{}] move:{}", move.getAllegiance(), move);
+                    log.error("\n{}\n{}\n",
+                            "##########################################",
+                            board.toString()
+                    );
+                    throw e;
+                }
             }
         }
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
@@ -315,7 +372,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
             }
         }
         sb.append("\n");
-        sb.append(moves8inputs.stream().map(Move::toString).collect(Collectors.joining(",")));
+        sb.append(moves8inputs.stream().map(m -> String.format("%s-%s", m.getAllegiance(), m)).collect(Collectors.joining(",")));
         sb.append("\n");
         sb.append(repeats8inputs.stream().map(repeat -> repeat ? "1" : "0").collect(Collectors.joining(",")));
         sb.append("\n");
@@ -323,19 +380,47 @@ public class Lc0InputsManagerImpl extends InputsManager {
         return sb.toString();
     }
 
-    private void add(final Move move, final Lc0InputsOneNN lc0InputsOneNN) {
-        int size = this.getLc0Last8Inputs().size();
-        if (size > 1 && move != null) {
-            Lc0Last8Inputs lastInput = this.getLc0Last8Inputs().get(size - 1);
-            String moves = this.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
-            if (lastInput != null) {
-                if (move.getAllegiance().equals(lastInput.move().getAllegiance()) &&
-                        lastInput.move().toString().equals(move.toString())) {
-                    log.error("Move:{} already inserted as last position, moves:{}", move, moves);
-                    throw new RuntimeException("Move already inserted as last position");
-                }
+    private boolean notDuplicate(List<Move> moves8inputs, Move move) {
+        int size = moves8inputs.size();
+        if (size > 0) {
+            Move move1 = moves8inputs.get(size - 1);
+            if (move1.toString().equals(move.toString())) {
+//                log.error("duplicate in moves detected:{} MOVE to add:{}", moves8inputs.stream().map(m -> String.format("%s-%s", m.getAllegiance(), m))
+//                        .collect(Collectors.joining(",")), move);
+                return false;
             }
         }
+        return true;
+    }
+
+    private void checkMoves(List<Move> moves8inputs) {
+        int size = moves8inputs.size();
+        if (size > 1) {
+            Move move1 = moves8inputs.get(size - 1);
+            Move move2 = moves8inputs.get(size - 2);
+            if (move1.toString().equals(move2.toString())) {
+                log.error("duplicate in moves detected:{}", moves8inputs.stream().map(move -> move.toString())
+                        .collect(Collectors.joining(",")));
+                throw new RuntimeException("duplicate moves found");
+            }
+        }
+    }
+
+    public void checkMoves(String moves) {
+        final Set<String> elements = new HashSet<>();
+        List<String> duplicates = Arrays.stream(moves.split(","))
+                .filter(n -> !elements.add(n))
+                .collect(Collectors.toList());
+        if (duplicates.size() > 0) {
+            log.info("checkMoves moves:{} ", moves);
+            log.info("checkMoves duplicates moves:{} ", duplicates.stream()
+                    .collect(Collectors.joining(",")));
+            throw new RuntimeException("duplicate moves found");
+        }
+    }
+
+
+    private void add(final Move move, final Lc0InputsOneNN lc0InputsOneNN) {
         this.lc0Last8Inputs.add(new Lc0Last8Inputs(lc0InputsOneNN, move, this.isRepeatMove(move)));
     }
 

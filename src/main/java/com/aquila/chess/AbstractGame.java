@@ -109,6 +109,11 @@ public abstract class AbstractGame {
         return alliance.choosePlayerByAlliance(this.board.whitePlayer(), this.board.blackPlayer());
     }
 
+    public long hashCode(final Alliance moveColor,final Move move) {
+        final InputRecord inputRecord = new InputRecord(this, getMoves(), move, moveColor);
+        return inputsManager.hashCode(inputRecord);
+    }
+
     /**
      * @return the game hashcode
      */
@@ -117,15 +122,10 @@ public abstract class AbstractGame {
         return inputsManager.hashCode(inputRecord);
     }
 
-    public synchronized long hashCode(@NonNull final Move move) {
+    public synchronized long hashCode(final Move move) {
         final Alliance moveColor = move.getAllegiance();
         final InputRecord inputRecord = new InputRecord(this, getMoves(), move, moveColor);
         return inputsManager.hashCode(inputRecord);
-    }
-
-    public long hashCode(final Alliance pieceAllegiance, final Move selectedMove) {
-        final InputRecord inputRecord = new InputRecord(this, getMoves(), selectedMove, pieceAllegiance);
-        return this.inputsManager.hashCode(inputRecord);
     }
 
     public Game.GameStatus calculateStatus(final Board board, final Move move) {

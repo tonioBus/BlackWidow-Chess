@@ -146,12 +146,12 @@ public class DeepLearningAGZ {
      * @param statistic
      * @return
      */
-    public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
-        if (node.getMove() == null)
-            return addRootCacheValue(mctsGame, label, node.getCacheValue().getValue(), node.getColorState().complementary(), statistic);
-        final Move possibleMove = node.getMove();
-        return addState(mctsGame, label, node.getCacheValue().getValue(), possibleMove, statistic);
-    }
+//    public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
+//        if (node.getMove() == null)
+//            return addRootCacheValue(mctsGame, label, node.getCacheValue().getValue(), node.getColorState().complementary(), statistic);
+//        final Move possibleMove = node.getMove();
+//        return addState(mctsGame, label, node.getCacheValue().getValue(), possibleMove, statistic);
+//    }
 
     /**
      * Add a new state for the next NN submission
@@ -168,9 +168,6 @@ public class DeepLearningAGZ {
         if (!cacheValues.containsKey(key)) {
             if (log.isDebugEnabled())
                 log.debug("CREATE CACHE VALUE:{} move:{} label:{}", key, possibleMove, label);
-//            String lastMoves = mctsGame.getMoves().stream().map(
-//                            move -> move == null ? "-" : move.toString()).
-//                    collect(Collectors.joining(":"));
             final String labelCacheValue = String.format("Label:%s possibleMove:%s", label, possibleMove == null ? "ROOT" : possibleMove);
             cacheValues.create(key, labelCacheValue, initValue);
             if (!serviceNN.containsJob(key)) statistic.nbSubmitJobs++;
