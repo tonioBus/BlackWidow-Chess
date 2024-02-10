@@ -127,7 +127,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
             // expansion
             if (selectedNode == null) {
-                key = mctsGame.hashCode(selectedMove.getAllegiance(), selectedMove);
+                key = mctsGame.hashCode( selectedMove);
                 CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
                 log.debug("MCTS SEARCH EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
@@ -305,7 +305,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
             log.info("[{}] STOP LOSS NODE {} LOOSE-NODE:{} OLD_VALUE:{}", this.colorStrategy, opponentNode.getMovesFromRootAsString(), opponentNode, opponentNode.getCacheValue().getValue());
             undoPropagation(opponentNode, opponentNode.getColorState(), opponentNode.getMove());
             opponentNode.createLeaf(deepLearning.getCacheValues().getLostCacheValue());
-            // opponentNode.resetExpectedRewardForLeaf(LOOSE_VALUE);
             opponentNode.setPropagated(false);
             opponentNode.setState(LOOSE);
             this.deepLearning.addDefinedNodeToPropagate(opponentNode);
@@ -332,10 +331,10 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 mctsGame.getNbStep(),
                 depth,
                 opponentNode.getMove() == null ? "Move(null)" : opponentNode.getMove().toString());
-        deepLearning.addState(mctsGame,
-                label,
-                opponentNode,
-                statistic);
+//        deepLearning.addState(mctsGame,
+//                label,
+//                opponentNode,
+//                statistic);
         synchronized (moves) {
             for (final Move possibleMove : moves) {
                 int childVisits = 0;

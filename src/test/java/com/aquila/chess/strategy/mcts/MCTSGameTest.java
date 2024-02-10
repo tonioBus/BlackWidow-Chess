@@ -89,9 +89,9 @@ public class MCTSGameTest {
             status = game.play();
             final MCTSGame mctsGame = new MCTSGame(game);
             assertEquals(Math.min(8, game.getNbStep()), inputsManager.getLc0Last8Inputs().size());
-            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor(), null);
+            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor());
             // next test to be sure that hashcode is stateless
-            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor(), null));
+            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor()));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
                 String currentLastMoves = inputsManager.getLc0Last8Inputs().stream().map(input -> input.move().toString()).collect(Collectors.joining(","));
@@ -131,9 +131,9 @@ public class MCTSGameTest {
         do {
             status = game.play();
             final MCTSGame mctsGame = new MCTSGame(game);
-            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor(), null);
+            long hashcode = mctsGame.hashCode(game.getCurrentPLayerColor());
             // next test to be sure that hashcode is stateless
-            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor(), null));
+            assertEquals(hashcode, mctsGame.hashCode(game.getCurrentPLayerColor()));
             if (hashcodes.containsKey(hashcode)) {
                 nbSameHashcode++;
                 MCTSGame oldMctsGame = hashcodes.get(hashcode);
