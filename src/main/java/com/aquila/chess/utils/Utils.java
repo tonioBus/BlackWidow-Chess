@@ -8,7 +8,10 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.player.Player;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.nd4j.linalg.api.ops.Op;
+import org.nd4j.linalg.api.ops.impl.transforms.strict.Log;
 import umontreal.ssj.rng.MRG32k3a;
 import umontreal.ssj.rng.RandomStream;
 
@@ -22,6 +25,25 @@ import java.util.*;
  */
 @Slf4j
 public class Utils {
+
+    @Getter
+    private static boolean isDebuggerPresent = false;
+
+    /**
+     * <h3>Code from StackOverflow: Can a Java application detect that a debugger is attached?</h3>
+     * @see <a href="https://stackoverflow.com/questions/5393403/can-a-java-application-detect-that-a-debugger-is-attached">stackoverflow.com</a>
+     * @return true if a debugger is attached to the current JVM
+     */
+     static {
+        // Get ahold of the Java Runtime Environment (JRE) management interface
+        RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
+        // Get the command line arguments that we were originally passed in
+        List<String> args = runtime.getInputArguments();
+        // Check if the Java Debug Wire Protocol (JDWP) agent is used.
+        // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
+        // We're looking for the string "jdwp".
+        isDebuggerPresent = args.toString().contains("jdwp");
+    }
 
     public static long hash(String str) {
         long hash = 5381;
@@ -58,23 +80,6 @@ public class Utils {
             arr[i] = arr[j];
             arr[j] = temp;
         }
-    }
-
-    /**
-     * <h3>Code from StackOverflow: Can a Java application detect that a debugger is attached?</h3>
-     * @see <a href="https://stackoverflow.com/questions/5393403/can-a-java-application-detect-that-a-debugger-is-attached">stackoverflow.com</a>
-     * @return true if a debugger is attached to the current JVM
-     */
-    public static boolean isDebuggerPresent() {
-        // Get ahold of the Java Runtime Environment (JRE) management interface
-        RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
-        // Get the command line arguments that we were originally passed in
-        List<String> args = runtime.getInputArguments();
-        // Check if the Java Debug Wire Protocol (JDWP) agent is used.
-        // One of the items might contain something like "-agentlib:jdwp=transport=dt_socket,address=9009,server=y,suspend=n"
-        // We're looking for the string "jdwp".
-        boolean jdwpPresent = args.toString().contains("jdwp");
-        return jdwpPresent;
     }
 
     public static int nbMaxBits(long number) {
