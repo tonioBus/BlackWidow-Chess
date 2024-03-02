@@ -25,6 +25,5 @@ public class ConvertValueOutput {
             case 1 -> 1;
             default -> throw new IllegalStateException("Unexpected value: " + (int) value);
         };
-//        return (value + 1) / 2;
     }
 }
