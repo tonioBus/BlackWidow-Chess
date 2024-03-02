@@ -201,6 +201,7 @@ public class Lc0InputsManagerImpl extends InputsManager {
      */
     private void createInputs(final double[][][] inputs,
                               InputRecord inputRecord) {
+        if (Utils.isDebuggerPresent()) log.debug("CREATE INPUT: {} {}", inputRecord.moveColor(), inputRecord.move());
         int destinationOffset = 0;
         final Board board = inputRecord.abstractGame().getBoard();
         CircularFifoQueue<Lc0Last8Inputs> tmp = new CircularFifoQueue<>(8);
@@ -223,7 +224,8 @@ public class Lc0InputsManagerImpl extends InputsManager {
         Collections.reverse(listInputs);
         for (Lc0Last8Inputs tmpLc0Last8Inputs : listInputs) {
             System.arraycopy(tmpLc0Last8Inputs.inputs().inputs(), 0, inputs, destinationOffset, SIZE_POSITION);
-            // log.info("[{}] MOVE:{} COLOR:{}:\n{}", destinationOffset / SIZE_POSITION, tmpLc0Last8Inputs.move(), tmpLc0Last8Inputs.move().getAllegiance(), Lc0Utils.displayBoard(tmpLc0Last8Inputs.inputs().inputs(), 0));
+            if (Utils.isDebuggerPresent())
+                log.debug("[{}] MOVE:{} COLOR:{}:\n{}", destinationOffset / SIZE_POSITION, tmpLc0Last8Inputs.move(), tmpLc0Last8Inputs.move().getAllegiance(), Lc0Utils.displayBoard(tmpLc0Last8Inputs.inputs().inputs(), 0));
             destinationOffset += SIZE_POSITION;
         }
         destinationOffset = 104; // 13 * 8
