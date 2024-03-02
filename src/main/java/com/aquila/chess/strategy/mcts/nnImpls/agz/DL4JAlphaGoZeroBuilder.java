@@ -179,17 +179,6 @@ public class DL4JAlphaGoZeroBuilder {
     }
 
     /**
-     * Building a tower of convolutional blocks.
-     */
-    public String addConvolutionalTower(final int numBlocks, final String inName) {
-        String name = inName;
-        for (int i = 0; i < numBlocks; i++) {
-            name = addConvBatchNormBlock(String.valueOf(i), name, 256, true);
-        }
-        return name;
-    }
-
-    /**
      * Policy head, predicts next moves, so
      * outputs a vector of 8 * 8 = 64 values.
      */

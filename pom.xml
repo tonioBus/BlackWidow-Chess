@@ -80,6 +80,12 @@
             <artifactId>nd4j-cuda-11.6-platform</artifactId>
             <version>${nd4j.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/ai.djl/api -->
+        <dependency>
+            <groupId>ai.djl</groupId>
+            <artifactId>api</artifactId>
+            <version>0.26.0</version>
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.bytedeco</groupId>-->
 <!--            <artifactId>cuda-platform-redist</artifactId>-->
