@@ -95,7 +95,7 @@ public class Utils {
         StringBuffer sb = new StringBuffer();
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);
-            if (piece != null && piece.getPieceAllegiance() == alliance) {
+            if (piece != null) { //  && piece.getPieceAllegiance() == alliance) {
                 sb.append(String.format("%s=%d", piece.getPieceType(), position));
             }
         }
