@@ -13,7 +13,6 @@ import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.WorkspaceMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
-import org.nd4j.common.config.ND4JEnvironmentVars;
 import org.nd4j.jita.allocator.enums.AllocationStatus;
 import org.nd4j.jita.conf.Configuration;
 import org.nd4j.jita.conf.CudaEnvironment;
@@ -164,7 +163,7 @@ public class NNDeep4j implements INN {
         List<OutputNN> ret = new ArrayList<>();
         INDArray[] outputs = output(nbIn);
         for (int i = 0; i < len; i++) {
-            double value = ConvertValueOutput.convertFromSigmoid(outputs[1].getColumn(0).getDouble(i));
+            double value[] = ConvertValueOutput.convertSimulProbabilitiesQValueToSofMax(outputs[1].getColumn(0).getDouble(i));
             double[] policies = outputs[0].getRow(i).toDoubleVector();
             ret.add(new OutputNN(value, policies));
         }

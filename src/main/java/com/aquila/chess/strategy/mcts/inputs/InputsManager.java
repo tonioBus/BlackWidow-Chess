@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public abstract class InputsManager {
 
-    final protected Map<Alliance, Map<Integer, Integer>> lastHashs = new LRUMap<>(8);
+    final protected Map<Alliance, Map<Integer, Integer>> lastHashs = new LRUMap<>(7);
 
     public abstract int getNbFeaturesPlanes();
 

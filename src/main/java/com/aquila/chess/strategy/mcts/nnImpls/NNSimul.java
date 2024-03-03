@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.OutputNN;
 import com.aquila.chess.strategy.mcts.UpdateLr;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.nn.api.NeuralNetwork;
@@ -22,30 +23,32 @@ public class NNSimul extends NNConstants {
     public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value;
+            double value[];
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             if (randomGenerator.nextFloat() > 0.5) {
-                value = mediumValue + (-0.0001F + 0.0002F * randomGenerator.nextFloat());
+                value = ConvertValueOutput.convertSimulProbabilitiesQValueToSofMax(mediumValue + (-0.0001F + 0.0002F * randomGenerator.nextFloat()));
                 for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
                     policies[policyIndex] = mediumPolicies + (-0.000001F + 0.000002F * randomGenerator.nextFloat());
                     if (offsets.containsKey(policyIndex)) {
                         double offset = offsets.get(policyIndex);
-                        if(log.isDebugEnabled()) log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
+                        if (log.isDebugEnabled())
+                            log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
                         policies[policyIndex] += offset;
                     }
                 }
             } else {
-                value = mediumValue;
+                value = ConvertValueOutput.convertSimulProbabilitiesQValueToSofMax(mediumValue);
                 for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
                     policies[policyIndex] = mediumPolicies;
                     if (offsets.containsKey(policyIndex)) {
                         double offset = offsets.get(policyIndex);
-                        if(log.isDebugEnabled()) log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
+                        if (log.isDebugEnabled())
+                            log.debug("add {} to policyIndex:{} move:{}", offset, policyIndex, PolicyUtils.moveFromIndex(policyIndex));
                         policies[policyIndex] += offset;
                     }
                 }
             }
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 double sumPolicies = Arrays.stream(policies).sum();
                 log.debug("[{}] -> value:{} sumPolicies:{}", i, value, sumPolicies);
             }

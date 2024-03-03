@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts.nnImpls;
 
 import com.aquila.chess.strategy.mcts.INN;
 import com.aquila.chess.strategy.mcts.OutputNN;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.chess.engine.classic.board.Board;
@@ -53,7 +54,7 @@ public class NNConstants implements INN {
     public synchronized List<OutputNN> outputs(double[][][][] nbIn, int len) {
         List<OutputNN> ret = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            double value = mediumValue;
+            double value[] =  ConvertValueOutput.convertSimulProbabilitiesQValueToSofMax(mediumValue);
             double[] policies = new double[PolicyUtils.MAX_POLICY_INDEX];
             for (int policyIndex = 0; policyIndex < PolicyUtils.MAX_POLICY_INDEX; policyIndex++) {
                 policies[policyIndex] = mediumPolicies;

@@ -230,7 +230,8 @@ public class DL4JAlphaGoZeroBuilder {
         final Map<String, InputPreProcessor> preProcessorMap = new HashMap<String, InputPreProcessor>();
         preProcessorMap.put(denseName, new CnnToFeedForwardPreProcessor(8, 8, 1));
         conf.setInputPreProcessors(preProcessorMap);
-        conf.addLayer(outputName, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).activation(Activation.SIGMOID).nIn(256).nOut(1).build(), denseName);
+        // conf.addLayer(outputName, new OutputLayer.Builder(LossFunctions.LossFunction.XENT).activation(Activation.SIGMOID).nIn(256).nOut(1).build(), denseName);
+        conf.addLayer(outputName, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(256).nOut(3).build(), denseName);
         return outputName;
     }
 

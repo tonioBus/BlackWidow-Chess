@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts;
 
 import com.aquila.chess.strategy.mcts.inputs.ServiceNNInputsJobs;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
@@ -210,7 +211,7 @@ public class ServiceNN {
                 Move move = entry.getValue().move();
                 Alliance moveColor = entry.getValue().moveColor();
                 long key = entry.getKey();
-                double value = outputsNN.get(index).getValue();
+                double value = ConvertValueOutput.softMax2QValue(outputsNN.get(index).getValue());
                 double[] policies = outputsNN.get(index).getPolicies();
                 CacheValue cacheValue = this.deepLearningAGZ.getCacheValues().updateValueAndPolicies(key, value, policies);
                 synchronized (nodesToPropagate) {
@@ -248,11 +249,11 @@ public class ServiceNN {
      * @param isRootNode
      */
     protected void submit(final long key,
-                                       final Move possibleMove,
-                                       final Alliance moveColor,
-                                       final MCTSGame gameCopy,
-                                       final boolean isDirichlet,
-                                       final boolean isRootNode) {
+                          final Move possibleMove,
+                          final Alliance moveColor,
+                          final MCTSGame gameCopy,
+                          final boolean isDirichlet,
+                          final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
         synchronized (nodesToPropagate) {
             if (nodesToPropagate.containsKey(key)) return;

@@ -339,7 +339,7 @@ public class DeepLearningAGZ {
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame, final StatisticsFit statisticsFit) throws TrainException {
         final TrainInputs inputsForNN = new TrainInputs(chunkSize);
         final var policiesForNN = new double[chunkSize][BoardUtils.NUM_TILES_PER_ROW * BoardUtils.NUM_TILES_PER_ROW * 73];
-        final var valuesForNN = new double[chunkSize][1];
+        final var valuesForNN = new double[chunkSize][3];
         final double value = trainGame.getValue();
         List<OneStepRecord> inputsList = trainGame.getOneStepRecordList();
 
@@ -351,7 +351,8 @@ public class DeepLearningAGZ {
             normalize(policies);
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
-            valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
+            // valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
+            valuesForNN[stepInChunk] = ConvertValueOutput.convertTrainQValueToSofMax(actualRewards);
             if (policies != null) {
                 for (Map.Entry<Integer, Double> entry : policies.entrySet()) {
                     Integer indexFromMove = entry.getKey();
