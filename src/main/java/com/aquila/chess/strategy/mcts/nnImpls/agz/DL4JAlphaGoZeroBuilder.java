@@ -109,7 +109,7 @@ public class DL4JAlphaGoZeroBuilder {
                 .graphBuilder().setInputTypes(InputType.convolutional(8, 8, nbFeaturesPLanes));
     }
 
-    // public DL4JAlphaGoZeroBuilder() {
+    // public DL4JAlphaZeroBuilder() {
     //    this(new int[]{3, 3}, new int[]{1, 1}, ConvolutionMode.Same);
     //}
 

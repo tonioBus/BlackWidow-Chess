@@ -5,6 +5,7 @@ import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
+import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -14,11 +15,12 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @Slf4j
 public class TestSpeedAGZ {
 
-    static private final String NN_TEST = "../AGZ_NN/AGZ.reference.test";
+    static private final String NN_TEST = "../AGZ_NN/AGZ.reference";
 
     public void run() {
         final Board board = Board.createStandardBoard();
@@ -30,7 +32,7 @@ public class TestSpeedAGZ {
         long start, end, delay;
 
         start = System.currentTimeMillis();
-        int length = 150;
+        int length = 1;
         final var nbIn = new double[length][inputManager.getNbFeaturesPlanes()][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         Lc0InputsFullNN inputsFullNN = inputManager.createInputs(
                 new InputRecord(
@@ -47,10 +49,23 @@ public class TestSpeedAGZ {
         log.info("delay:{} ms / {} s", delay, ((double) delay / 1000));
 
         start = System.currentTimeMillis();
-        for (int i = 0; i < 10; i++) {
-            // INDArray inputsArray = Nd4j.create(nbIn);
-            INDArray[] ret = computationGraph.output(inputsArray);
-        }
+        INDArray[] outputs = computationGraph.output(inputsArray);
+        double value = outputs[1].getColumn(0).getDouble(0);
+        double[] policies = outputs[0].getRow(0).toDoubleVector();
+        log.info("PoliciesSum:{}", Arrays.stream(policies).sum());
+        log.info("Policies:{} {} {} {} {} {} {} {} {} {}"
+                , policies[0]
+                , policies[1]
+                , policies[2]
+                , policies[3]
+                , policies[4]
+                , policies[5]
+                , policies[6]
+                , policies[7]
+                , policies[8]
+                , policies[9]
+        );
+        log.info("value:{}", value);
         end = System.currentTimeMillis();
         delay = end - start;
         log.info("delay:{} ms / {} s", delay, ((double) delay / 1000));

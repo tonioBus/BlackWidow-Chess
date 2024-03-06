@@ -66,10 +66,10 @@ public class Lc0InputsManagerImpl extends InputsManager {
     @Override
     public Lc0InputsFullNN createInputs(final InputRecord inputRecord) {
         final AbstractGame abstractGame = inputRecord.abstractGame();
-        final Move move = inputRecord.move();
+        // final Move move = inputRecord.move();
         final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
-        if (move != null && !move.isInitMove())
+        //if (move != null && !move.isInitMove())
             // if we move, the moveColor will be the complementary of the player that just moved
             this.createInputs(
                     inputs,
@@ -79,15 +79,15 @@ public class Lc0InputsManagerImpl extends InputsManager {
                             inputRecord.move(),
                             moveColor)
             );
-        else
-            this.createInputs(
-                    inputs,
-                    new InputRecord(
-                            abstractGame,
-                            inputRecord.moves(),
-                            inputRecord.move(),
-                            moveColor)
-            );
+//        else
+//            this.createInputs(
+//                    inputs,
+//                    new InputRecord(
+//                            abstractGame,
+//                            inputRecord.moves(),
+//                            inputRecord.move(),
+//                            moveColor)
+//            );
         return new Lc0InputsFullNN(inputs);
     }
 
