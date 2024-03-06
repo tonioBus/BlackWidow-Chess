@@ -5,7 +5,7 @@ import com.aquila.chess.strategy.mcts.inputs.InputRecord;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.lc0.Lc0InputsManagerImpl;
 import com.aquila.chess.strategy.mcts.nnImpls.NNDeep4j;
-import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
+import com.aquila.chess.utils.Utils;
 import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
@@ -14,7 +14,6 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
@@ -52,7 +51,7 @@ public class TestSpeedAGZ {
         INDArray[] outputs = computationGraph.output(inputsArray);
         float value = outputs[1].getColumn(0).getFloat(0);
         float[] policies = outputs[0].getRow(0).toFloatVector();
-        // log.info("PoliciesSum:{}", Arrays.stream(policies).sum());
+        log.info("PoliciesSum:{}", Arrays.stream(Utils.convertFloatsToDoubles(policies)).sum());
         log.info("Policies:{} {} {} {} {} {} {} {} {} {}"
                 , policies[0]
                 , policies[1]

@@ -9,7 +9,7 @@ public class ConvertValueOutput {
      * @return
      */
     public static double convertFromSigmoid(double value) {
-        return value * 2 - 1;
+        return value * 2.0 - 1.0;
     }
 
     /**
