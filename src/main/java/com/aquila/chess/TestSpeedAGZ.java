@@ -50,9 +50,9 @@ public class TestSpeedAGZ {
 
         start = System.currentTimeMillis();
         INDArray[] outputs = computationGraph.output(inputsArray);
-        double value = outputs[1].getColumn(0).getDouble(0);
-        double[] policies = outputs[0].getRow(0).toDoubleVector();
-        log.info("PoliciesSum:{}", Arrays.stream(policies).sum());
+        float value = outputs[1].getColumn(0).getFloat(0);
+        float[] policies = outputs[0].getRow(0).toFloatVector();
+        // log.info("PoliciesSum:{}", Arrays.stream(policies).sum());
         log.info("Policies:{} {} {} {} {} {} {} {} {} {}"
                 , policies[0]
                 , policies[1]
