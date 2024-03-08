@@ -25,8 +25,7 @@ public class AbstractFit {
     ConfigFit configFit;
 
     SortedMap<Long, File> drawGames = new TreeMap<>();
-    SortedMap<Long, File> winGames = new TreeMap<>();
-    SortedMap<Long, File> lostGames = new TreeMap<>();
+    SortedMap<Long, File> winLostGames = new TreeMap<>();
 
     public AbstractFit(String configFile) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);
@@ -36,19 +35,9 @@ public class AbstractFit {
 
     public void run(TrainFile trainFile, Map<String, StatisticsFit> statistics) {
         retrieveAllFiles();
-        log.info("Win   games:{}", winGames.size());
-        log.info("Lost  games:{}", lostGames.size());
-        log.info("Drawn games:{}", drawGames.size());
-        winGames.values().stream().forEach(file -> {
-            try {
-                trainFile.train(file, statistics);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        lostGames.values().stream().forEach(file -> {
+        log.info("winLostGames  games:{}", winLostGames.size());
+        log.info("Drawn         games:{}", drawGames.size());
+        winLostGames.values().stream().forEach(file -> {
             try {
                 trainFile.train(file, statistics);
             } catch (IOException e) {
@@ -76,12 +65,10 @@ public class AbstractFit {
                     try {
                         TrainGame trainGame = TrainGame.load(file1);
                         Double value = trainGame.getValue();
-                        if (value == -1.0) {
-                            lostGames.put(file1.lastModified(), file1);
+                        if (value == -1.0 || value == 1.0) {
+                            winLostGames.put(file1.lastModified(), file1);
                         } else if (value == 0.0) {
                             drawGames.put(file1.lastModified(), file1);
-                        } else if (value == 1.0) {
-                            winGames.put(file1.lastModified(), file1);
                         } else
                             throw new RuntimeException("Unidentified game value:" + value);
                     } catch (IOException e) {
