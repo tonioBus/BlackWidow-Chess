@@ -11,7 +11,6 @@ import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
 import com.chess.engine.classic.player.Player;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -109,7 +108,7 @@ public abstract class AbstractGame {
         return alliance.choosePlayerByAlliance(this.board.whitePlayer(), this.board.blackPlayer());
     }
 
-    public long hashCode(final Alliance moveColor,final Move move) {
+    public long hashCode(final Alliance moveColor, final Move move) {
         final InputRecord inputRecord = new InputRecord(this, getMoves(), move, moveColor);
         return inputsManager.hashCode(inputRecord);
     }
@@ -174,20 +173,18 @@ public abstract class AbstractGame {
 
     /**
      * Return the ratio of present pieces power between white and black
+     *
      * @return <ul>
-     *     <li>1: full power for the WHITE</li>
-     *     <li>0: full power for the BLACK</li>
+     * <li>1: full power for the WHITE</li>
+     * <li>0: full power for the BLACK</li>
      * </ul>
      */
     public double ratioPlayer() {
         double whiteValue = getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         double blackValue = getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        whiteValue = (whiteValue - 10000) / 10;
-        blackValue = (blackValue - 10000) / 10;
+        whiteValue = (whiteValue - Piece.PieceType.KING.getPieceValue()) / 10;
+        blackValue = (blackValue - Piece.PieceType.KING.getPieceValue()) / 10;
         double ratio = (whiteValue - blackValue) / 386;
-        ratio = (ratio + 1) / 2;
-        if (ratio < 0.0) ratio = 0.0;
-        if (ratio > 1.0) ratio = 1.0;
         return ratio;
     }
 
