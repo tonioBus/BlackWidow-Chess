@@ -176,7 +176,7 @@ public abstract class AbstractGame {
      *
      * @return <ul>
      * <li>1: full power for the WHITE</li>
-     * <li>0: full power for the BLACK</li>
+     * <li>-1: full power for the BLACK</li>
      * </ul>
      */
     public double ratioPlayer() {
@@ -184,8 +184,7 @@ public abstract class AbstractGame {
         double blackValue = getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         whiteValue = (whiteValue - Piece.PieceType.KING.getPieceValue()) / 10;
         blackValue = (blackValue - Piece.PieceType.KING.getPieceValue()) / 10;
-        double ratio = (whiteValue - blackValue) / 386;
-        return ratio;
+        return (whiteValue - blackValue) / 386;
     }
 
     /**

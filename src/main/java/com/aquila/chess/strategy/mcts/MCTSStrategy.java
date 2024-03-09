@@ -109,15 +109,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         createRootNode(originalGame, moveOpponent, parentReward, possibleMoves);
         assert (directRoot != null);
         final Move move = mctsStep(moveOpponent, possibleMoves);
-        log.info("[{}] -------------------------------------------------------", this.getAlliance());
-        int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        log.info("[{}] Using as FPU: {}", this.getAlliance(), this.parentReward);
-        log.info("[{}] PIECES VALUES | RATIO:{} WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
-        log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
-        log.info("[{}] -------------------------------------------------------", this.getAlliance());
-        this.nbStep++;
-
         if (trainGame != null) {
             OneStepRecord lastOneStepRecord = createStepTraining(
                     moveOpponent,
@@ -127,6 +118,14 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
+        this.nbStep++;
+        log.info("[{}] -------------------------------------------------------", this.getAlliance());
+        int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        log.info("[{}] Using as FPU: {}", this.getAlliance(), this.parentReward);
+        log.info("[{}] PIECES VALUES | RATIO:{} WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
+        log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
+        log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
         return move;
     }
