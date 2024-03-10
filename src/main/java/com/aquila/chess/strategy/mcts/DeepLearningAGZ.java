@@ -140,20 +140,6 @@ public class DeepLearningAGZ {
     }
 
     /**
-     * @param mctsGame
-     * @param label
-     * @param node
-     * @param statistic
-     * @return
-     */
-//    public long addState(final MCTSGame mctsGame, final String label, final MCTSNode node, final Statistic statistic) {
-//        if (node.getMove() == null)
-//            return addRootCacheValue(mctsGame, label, node.getCacheValue().getValue(), node.getColorState().complementary(), statistic);
-//        final Move possibleMove = node.getMove();
-//        return addState(mctsGame, label, node.getCacheValue().getValue(), possibleMove, statistic);
-//    }
-
-    /**
      * Add a new state for the next NN submission
      *
      * @param mctsGame     the game entity
@@ -384,7 +370,7 @@ public class DeepLearningAGZ {
             sum += policy;
         }
         if (policyMap.size() > 0 && sum == 0) {
-            final double policy = 1.0 / policyMap.size();
+            final double policy = 0.0 / policyMap.size();
             log.warn("toDistribution(): sum of policies(nb:{})==0 correction:{}", policyMap.size(), policy);
             for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
                 policyEntry.setValue(policy);
