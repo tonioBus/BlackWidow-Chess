@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 public class TrainTest {
@@ -109,15 +108,15 @@ public class TrainTest {
                 game.end(lastMove);
                 break;
             }
-            if (legalMoves.stream().filter(legalMove -> legalMove.toString().equals(lastMove.toString())).count() == 0) {
-                log.error("legalMoves:{}", legalMoves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
+            if (legalMoves.stream().noneMatch(legalMove -> legalMove.toString().equals(lastMove.toString()))) {
+                log.error("legalMoves:{}", legalMoves.stream().map(Object::toString).collect(Collectors.joining(",")));
                 log.error("lastMove:{}", lastMove);
-                assertTrue(false);
+                fail();
             }
             String lastTrainMove = trainGame.getOneStepRecordList().getLast().move();
             if (!previousMove.toString().equals(lastTrainMove)) {
                 log.error("previous move:{} <-> {}:train move", previousMove, lastTrainMove);
-                assertTrue(false);
+                fail();
             }
             log.info(game.toString());
         } while (true);
@@ -126,7 +125,7 @@ public class TrainTest {
         log.info("#########################################################################");
         if (gameStatus != Game.GameStatus.DRAW_TOO_MUCH_STEPS && game.getMoves().size() != trainGame.getOneStepRecordList().size()) {
             log.error("game moves:{} <-> {} train moves", game.getMoves().size(), trainGame.getOneStepRecordList().size());
-            assertTrue(false);
+            fail();
         }
         final String filename = trainGame.saveBatch("train-test", gameStatus);
         final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
@@ -136,7 +135,7 @@ public class TrainTest {
             deepLearningWhite.train(loadTrainGame, FIT_CHUNK, statisticsFit);
         } catch (IOException e) {
             log.info("Game:\n{}", game);
-            assertFalse(true, "Exception:" + e);
+            fail("Exception:" + e);
         }
         log.info("statistics:{}", statisticsFit);
     }

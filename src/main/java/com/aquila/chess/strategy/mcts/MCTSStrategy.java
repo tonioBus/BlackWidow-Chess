@@ -188,7 +188,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         if (bestNode == null) {
             log.error("!!! no bestnodes found: return random move from the list{}", currentPossibleMoves);
             log.error("!!! MCTSTree nodes:{}",
-                    directRoot.getChildsAsCollection().stream().filter(node -> node != null).map(MCTSNode::getMove));
+                    directRoot.getChildsAsCollection().stream().filter(Objects::nonNull).map(MCTSNode::getMove));
             assert false;
         }
         log.warn("[{}] bestNode: {}", this.getAlliance(), bestNode);
@@ -276,7 +276,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             state = "GOOD";
         else if (nbBests == nbChilds)
             state = "BAD";
-        float percentGood = (nbBests * 100) / nbChilds;
+        double percentGood = (nbBests * 100.0) / nbChilds;
         log.warn(
                 "[{}] State: {}:{}% Step:{} nbChilds:{} nbBests:{} | RetNode:{}",
                 getAlliance(), state, percentGood, nbStep, nbChilds, nbBests, ret);
