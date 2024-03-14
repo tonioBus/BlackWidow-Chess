@@ -61,8 +61,6 @@ public class DeepLearningAGZ {
     @Getter
     final private ServiceNN serviceNN;
 
-    static final int FIT_CHUNK = 40;
-
     static final int CACHE_VALUES_SIZE = 40000;
 
     @Getter
@@ -72,7 +70,7 @@ public class DeepLearningAGZ {
     private final int nbFeaturesPlanes;
 
     @Getter
-    private boolean train = false;
+    private boolean train;
 
     @Getter
     final INN nn;
@@ -370,7 +368,7 @@ public class DeepLearningAGZ {
             sum += policy;
         }
         if (policyMap.size() > 0 && sum == 0) {
-            final double policy = 0.0 / policyMap.size();
+            final double policy = 0.0;
             log.warn("toDistribution(): sum of policies(nb:{})==0 correction:{}", policyMap.size(), policy);
             for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
                 policyEntry.setValue(policy);

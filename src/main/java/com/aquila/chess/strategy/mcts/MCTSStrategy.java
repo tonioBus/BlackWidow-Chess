@@ -4,7 +4,6 @@ import com.aquila.chess.Game;
 import com.aquila.chess.TrainGame;
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.FixMCTSTreeStrategy;
-import com.aquila.chess.strategy.mcts.inputs.InputsFullNN;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
 import com.aquila.chess.strategy.mcts.utils.PolicyUtils;
 import com.aquila.chess.strategy.mcts.utils.Statistic;
@@ -120,10 +119,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         currentGameStatus = this.mctsGame.play(move);
         this.nbStep++;
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
-        int whiteValue = game.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        int blackValue = game.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        int whiteValue = mctsGame.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
+        int blackValue = mctsGame.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         log.info("[{}] Using as FPU: {}", this.getAlliance(), this.parentReward);
-        log.info("[{}] PIECES VALUES | RATIO:{} WHITE:{} <-> {}:BLACK", this.getAlliance(), game.ratioPlayer(), whiteValue, blackValue);
+        log.info("[{}] PIECES VALUES | WHITE:{} <-> {}:BLACK --> RATIO:{} ", this.getAlliance(), whiteValue, blackValue, mctsGame.ratioPlayer());
         log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         this.parentReward = -directRoot.getExpectedReward(false) - MCTSConfig.mctsConfig.getFpuReduction();
@@ -346,6 +345,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error(msg);
             throw new RuntimeException(msg);
         }
+        int nbChilds = stepNode.getChildNodes().size();
         stepNode.getChildNodes()
                 .values()
                 .stream()
@@ -353,6 +353,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 .forEach(childNode -> {
                     int index = PolicyUtils.indexFromMove(childNode.node.getMove());
                     double probability = (double) childNode.node.getVisits() / (double) stepNode.getVisits();
+                    if (probability == 0 && childNode.getNode().getState() == MCTSNode.State.WIN)
+                        probability = 1.0 / nbChilds;
                     probabilities.put(index, probability);
                 });
         return probabilities;
