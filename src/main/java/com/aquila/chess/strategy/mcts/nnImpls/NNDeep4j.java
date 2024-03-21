@@ -164,8 +164,8 @@ public class NNDeep4j implements INN {
         List<OutputNN> ret = new ArrayList<>();
         INDArray[] outputs = output(nbIn);
         for (int i = 0; i < len; i++) {
-            double value = ConvertValueOutput.convertFromSigmoid(outputs[1].getColumn(0).getFloat(i));
-            double[] policies = Utils.convertFloatsToDoubles(outputs[0].getRow(i).toFloatVector());
+            double value = ConvertValueOutput.convertFromSigmoid(outputs[1].getColumn(0).getDouble(i));
+            double[] policies = outputs[0].getRow(i).toDoubleVector();
             ret.add(new OutputNN(value, policies));
         }
         return ret;
