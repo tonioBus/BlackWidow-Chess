@@ -48,15 +48,13 @@ public class CacheValue implements Serializable {
         sb.append(String.format("  label=%s\n", this.label));
         sb.append(String.format("  value=%f\n", this.value));
         try {
-            nodes.entrySet().forEach(entry -> {
-                sb.append(String.format("  - node %s -> %s (isLeaf:%b propagated:%b sync:%b)\n",
-                        entry.getKey(),
-                        entry.getValue().getPathFromRoot(),
-                        entry.getValue().isLeaf(),
-                        entry.getValue().isPropagated(),
-                        entry.getValue().isSync()
-                ));
-            });
+            nodes.forEach((key, value1) -> sb.append(String.format("  - node %s -> %s (isLeaf:%b propagated:%b sync:%b)\n",
+                    key,
+                    value1.getPathFromRoot(),
+                    value1.isLeaf(),
+                    value1.isPropagated(),
+                    value1.isSync()
+            )));
         } catch (ConcurrentModificationException e) {
             sb.append(" nodes not available (sync)");
         }
@@ -64,7 +62,7 @@ public class CacheValue implements Serializable {
     }
 
     public synchronized void normalizePolicies() {
-        if (nodes.size() == 0) {
+        if (nodes.isEmpty()) {
             log.debug("Can not normalize policies, not connected to any nodes: {}", this.label);
             return;
         }
@@ -96,9 +94,7 @@ public class CacheValue implements Serializable {
         if (log.isDebugEnabled())
             log.debug("setTrueValuesAndPolicies({} : {} {} {} ..)", value, policies[0], policies[1], policies[2]);
         this.setInitialized(true);
-        if (nodes != null) {
-            setInferenceValuesAndPolicies();
-        }
+        setInferenceValuesAndPolicies();
     }
 
     public void setInferenceValuesAndPolicies() {
@@ -108,18 +104,15 @@ public class CacheValue implements Serializable {
         }
     }
 
-
     public void addNode(final MCTSNode node) {
         assert node != null;
         MCTSNodePath pathFromRoot = node.getPathFromRoot();
         log.debug("addNode({}) currentNodesSize:{}", pathFromRoot, nodes.size());
         try {
-            if (log.isDebugEnabled() && nodes.size() > 0 && !node.isLeaf()) {
+            if (log.isDebugEnabled() && !nodes.isEmpty() && !node.isLeaf()) {
                 log.error("############# adding node: {} -> {}", pathFromRoot, node.getMovesFromRootAsString());
                 log.error("nodes already inserted:");
-                nodes.entrySet().forEach(entry -> {
-                    log.error("  {} -> {}", entry.getKey(), entry.getValue().getMovesFromRootAsString());
-                });
+                nodes.forEach((key, value1) -> log.error("  {} -> {}", key, value1.getMovesFromRootAsString()));
             }
             MCTSNode oldNode = this.nodes.get(pathFromRoot);
             if (oldNode != null) {
@@ -169,7 +162,7 @@ public class CacheValue implements Serializable {
 
     public void verifyAlliance(final Alliance alliance) {
         if (!this.nodes.isEmpty()) {
-            nodes.values().stream().forEach(node -> {
+            nodes.values().forEach(node -> {
                 assert (node.getMove().getAllegiance() == alliance);
             });
         }

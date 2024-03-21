@@ -25,9 +25,9 @@ import static com.aquila.chess.strategy.mcts.MCTSNode.State.*;
 @Slf4j
 @Getter
 public class MCTSSearchWalker implements Callable<Integer> {
-    protected static final float WIN_VALUE = 1;
-    protected static final float LOOSE_VALUE = -1;
-    private static final float DRAWN_VALUE = 0;
+    protected static final double WIN_VALUE = 1;
+    protected static final double LOOSE_VALUE = -1;
+    private static final double DRAWN_VALUE = 0;
 
     private final int numThread;
 
@@ -35,13 +35,9 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
     protected final Statistic statistic;
     protected final DeepLearningAGZ deepLearning;
-    // protected Game gameOriginal;
     protected final Alliance colorStrategy;
-    // private final Game gameOriginal;
     protected final MCTSNode currentRoot;
     private final int nbStep;
-    // protected FixMCTSTreeStrategy whiteStrategy;
-    // protected FixMCTSTreeStrategy blackStrategy;
     protected final UpdateCpuct updateCpuct;
     protected final Dirichlet updateDirichlet;
     protected final Random rand;
@@ -115,7 +111,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
             }
             List<Move> looseMoves = opponentNode.getChildsAsCollection().stream().
                     filter(node -> node != null && node.getState() == LOOSE).
-                    map(node -> node.getMove()).
+                    map(MCTSNode::getMove).
                     collect(Collectors.toList());
             if (looseMoves.size() == opponentNode.getChildNodes().size())
                 return new SearchResult("DETECTED LEAF NODES", 1);
@@ -197,8 +193,8 @@ public class MCTSSearchWalker implements Callable<Integer> {
     private int detectAndCreateLeaf(final MCTSNode opponentNode) {
         if (opponentNode.isContainsChildleaf()) return 0;
         opponentNode.setContainsChildleaf(true);
-        if (opponentNode.getChildNodes().size() == 0) return 0;
-        if (opponentNode.allChildNodes().stream().filter(node -> node.isLeaf()).count() == opponentNode.getChildNodes().size()) {
+        if (opponentNode.getChildNodes().isEmpty()) return 0;
+        if (opponentNode.allChildNodes().stream().filter(MCTSNode::isLeaf).count() == opponentNode.getChildNodes().size()) {
             log.warn("[{}] TERMINAL NODE: {}", this.colorStrategy, opponentNode);
             return -1;
         }

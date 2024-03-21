@@ -38,7 +38,7 @@ public class TestSpeedAGZ {
                         game,
                         game.getMoves(),
                         null,
-                        Alliance.WHITE));
+                        Alliance.BLACK));
         for (int i = 0; i < length; i++) {
             System.arraycopy(inputsFullNN.inputs(), 0, nbIn[i], 0, inputManager.getNbFeaturesPlanes());
         }
