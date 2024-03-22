@@ -13,7 +13,7 @@ class AbstractFitTest {
 
     @Test
     void testAbstractFit() throws JAXBException {
-        AbstractFit abstractFit = new AbstractFit("config/configFit.template.xml");
+        AbstractFit abstractFit = new AbstractFit("config/configFit.test.xml");
         TrainFile trainFile = (file,statisticsFitMap) -> log.info("train file:{}", file);
         final Map<String, StatisticsFit> statistics = new HashMap<>();
         abstractFit.run(trainFile, statistics);

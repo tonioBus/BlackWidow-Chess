@@ -386,6 +386,10 @@ public class DeepLearningAGZ {
 
 
     /**
+     * <ul>
+     * <li>WHITE WIN: value:+1 -> moveColor: WHITE:+1 BLACK:-1</li>
+     * <li>BLACK WIN: value:-1 -> moveColor: WHITE:-1 BLACK:+1</li>
+     * </ul>
      * @param value
      * @param moveColor
      * @return

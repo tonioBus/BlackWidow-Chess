@@ -38,12 +38,15 @@ class ConfigFitTest {
         configDirs.add(configDir0);
         configDirs.add(configDir1);
         configDirs.add(configDir2);
+        ConfigSet configSet = new ConfigSet(configDirs, 0, true);
+        List<ConfigSet> configSets = new ArrayList<>();
+        configSets.add(configSet);
         ConfigFit configFit = new ConfigFit(
                 4.5e-4,
                 40,
                 "../AGZ_NN/AGZ.reference",
                 true,
-                configDirs
+                configSets
         );
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);
         Marshaller mar = context.createMarshaller();
@@ -51,4 +54,8 @@ class ConfigFitTest {
         mar.marshal(configFit, new File("config/configFit.template.xml"));
     }
 
+    @Test
+    void testLoad() {
+
+    }
 }

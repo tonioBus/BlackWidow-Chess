@@ -65,9 +65,17 @@ public class MainFitNNLc0 {
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
         nnWhite.setUpdateLr(updateLr, 1);
         final Map<String, StatisticsFit> statistics = new HashMap<>();
-        abstractFit.getConfigFit().getConfigDirs().forEach(dir -> {
-            statistics.put(dir.getDirectory(), new StatisticsFit(dir.getStartNumber(), dir.getEndNumber()));
-        });
+        abstractFit.getConfigFit().getConfigSets()
+                .stream()
+                .filter(configSet -> configSet.isEnable())
+                .sorted()
+                .forEach(configSet -> {
+                    configSet.getConfigDirs().forEach(
+                            configDir -> {
+                                statistics.put(configDir.getDirectory(), new StatisticsFit(configDir.getStartNumber(), configDir.getEndNumber()));
+                            }
+                    );
+                });
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
@@ -111,8 +119,18 @@ public class MainFitNNLc0 {
         log.info("Training time: {}", formattedText);
         log.info("Training config:{}", abstractFit.getFile());
         log.info("Training using UpdateLR:{}", abstractFit.getConfigFit().getUpdateLr());
-        log.info("Train done in directories:\n{}",
-                abstractFit.getConfigFit().getConfigDirs().stream().map(configDir -> configDir.getDirectory()).collect(Collectors.joining("\n- ", "- ", "")));
+        abstractFit.getConfigFit()
+                .getConfigSets()
+                .stream()
+                .filter(configSet -> configSet.isEnable())
+                .sorted()
+                .forEach(configSet ->
+                        log.info("Train done in directories:\n{}",
+                                configSet.getConfigDirs()
+                                        .stream()
+                                        .map(configDir -> configDir.getDirectory())
+                                        .collect(Collectors.joining("\n- ", "- ", "")))
+                );
         statistics.entrySet().forEach(entry -> {
             String subDir = entry.getKey();
             log.info("SUBDIR:{}\n{}", subDir, entry.getValue());

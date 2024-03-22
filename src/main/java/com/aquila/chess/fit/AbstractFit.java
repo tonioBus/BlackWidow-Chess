@@ -58,27 +58,34 @@ public class AbstractFit {
     }
 
     private void retrieveAllFiles() {
-        this.configFit.getConfigDirs().forEach(configDir -> {
-            File[] trainFiles = getFiles(configDir);
-            if (trainFiles != null) {
-                Arrays.stream(trainFiles).forEach(file1 -> {
-                    try {
-                        TrainGame trainGame = TrainGame.load(file1);
-                        Double value = trainGame.getValue();
-                        if (value == -1.0 || value == 1.0) {
-                            winLostGames.put(file1.lastModified(), file1);
-                        } else if (value == 0.0) {
-                            drawGames.put(file1.lastModified(), file1);
-                        } else
-                            throw new RuntimeException("Unidentified game value:" + value);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
+        this.configFit
+                .getConfigSets()
+                .stream()
+                .filter(configSet -> configSet.isEnable())
+                .sorted()
+                .forEach(configSet -> {
+                    configSet.getConfigDirs().forEach(configDir -> {
+                        File[] trainFiles = getFiles(configDir);
+                        if (trainFiles != null) {
+                            Arrays.stream(trainFiles).forEach(file1 -> {
+                                try {
+                                    TrainGame trainGame = TrainGame.load(file1);
+                                    Double value = trainGame.getValue();
+                                    if (value == -1.0 || value == 1.0) {
+                                        winLostGames.put(file1.lastModified(), file1);
+                                    } else if (value == 0.0) {
+                                        drawGames.put(file1.lastModified(), file1);
+                                    } else
+                                        throw new RuntimeException("Unidentified game value:" + value);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                } catch (ClassNotFoundException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+                        }
+                    });
                 });
-            }
-        });
     }
 
     private static File[] getFiles(ConfigDir configDir) {

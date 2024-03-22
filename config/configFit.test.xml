@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<fit updateLr="1E-4" fitChunk="40" nnReference="../AGZ_NN/AGZ.reference" simulation="true">
+    <configSets sequence="1" enable="true">
+        <configDirs directory="train" startNumber="11" endNumber="12"/>
+        <configDirs directory="train-rog" startNumber="11" endNumber="13"/>
+        <configDirs directory="train-grospc" startNumber="11" endNumber="14"/>
+    </configSets>
+    <configSets sequence="0" enable="true">
+        <configDirs directory="train" startNumber="0" endNumber="1"/>
+        <configDirs directory="train-rog" startNumber="0" endNumber="2"/>
+        <configDirs directory="train-grospc" startNumber="0" endNumber="3"/>
+    </configSets>
+    <configSets sequence="2" enable="true">
+        <configDirs directory="train" startNumber="21" endNumber="22"/>
+        <configDirs directory="train-rog" startNumber="21" endNumber="23"/>
+        <configDirs directory="train-grospc" startNumber="21" endNumber="24"/>
+    </configSets>
+</fit>

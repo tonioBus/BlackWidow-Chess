@@ -28,6 +28,6 @@ public class ConfigFit {
     private boolean simulation;
 
     @XmlElement(required = true)
-    private List<ConfigDir> configDirs;
+    private List<ConfigSet> configSets;
 
 }
