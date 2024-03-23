@@ -1,6 +1,7 @@
 package com.aquila.chess;
 
 import com.aquila.chess.fit.AbstractFit;
+import com.aquila.chess.fit.ConfigSet;
 import com.aquila.chess.fit.TrainFile;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
@@ -67,7 +68,7 @@ public class MainFitNNLc0 {
         final Map<String, StatisticsFit> statistics = new HashMap<>();
 //        abstractFit.getConfigFit().getConfigSets()
 //                .stream()
-//                .filter(configSet -> configSet.isEnable())
+//                .filter(ConfigSet::isEnable)
 //                .sorted()
 //                .forEach(configSet -> {
 //                    configSet.getConfigDirs().forEach(
