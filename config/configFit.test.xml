@@ -5,7 +5,7 @@
         <configDirs directory="train-rog" startNumber="11" endNumber="13"/>
         <configDirs directory="train-grospc" startNumber="11" endNumber="14"/>
     </configSets>
-    <configSets sequence="0" enable="false">
+    <configSets sequence="1" enable="true">
         <configDirs directory="train" startNumber="0" endNumber="1"/>
         <configDirs directory="train-rog" startNumber="0" endNumber="2"/>
         <configDirs directory="train-grospc" startNumber="0" endNumber="3"/>

@@ -10,13 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class AbstractFit {
+
+    class Sequence {
+        SortedMap<Long, File> drawGames = new TreeMap<>();
+        SortedMap<Long, File> winLostGames = new TreeMap<>();
+    }
+
+    final List<Sequence> sequences = new ArrayList<>();
 
     @Getter
     private final File file;
@@ -24,8 +29,6 @@ public class AbstractFit {
     @Getter
     ConfigFit configFit;
 
-    SortedMap<Long, File> drawGames = new TreeMap<>();
-    SortedMap<Long, File> winLostGames = new TreeMap<>();
 
     public AbstractFit(String configFile) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(ConfigFit.class);
@@ -35,35 +38,47 @@ public class AbstractFit {
 
     public void run(TrainFile trainFile, Map<String, StatisticsFit> statistics) {
         retrieveAllFiles();
-        log.info("winLostGames  games:{}", winLostGames.size());
-        log.info("Drawn         games:{}", drawGames.size());
-        winLostGames.values().stream().forEach(file -> {
-            try {
-                trainFile.train(file, statistics);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        drawGames.values().stream().forEach(file -> {
-            try {
-                trainFile.train(file, statistics);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        log.info("winLostGames  games:{}", sequences.stream().mapToDouble(sequence -> sequence.winLostGames.size()).sum());
+        log.info("Drawn         games:{}", sequences.stream().mapToDouble(sequence -> sequence.drawGames.size()).sum());
+        sequences.stream()
+                .forEach(sequence -> {
+                    sequence.winLostGames.values().forEach(file -> {
+                        try {
+                            trainFile.train(file, statistics);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    sequence.drawGames.values().forEach(file -> {
+                        try {
+                            trainFile.train(file, statistics);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+                });
     }
 
     private void retrieveAllFiles() {
-        this.configFit
+        List<ConfigSet> configSets = this.configFit
                 .getConfigSets()
                 .stream()
-                .filter(configSet -> configSet.isEnable())
+                .filter(ConfigSet::isEnable)
                 .sorted()
+                .toList();
+        log.info("Sequences: {}", configSets
+                .stream()
+                .map(configSet -> String.format("[%s]", configSet.getSequence()))
+                .collect(Collectors.joining(",")));
+        configSets
                 .forEach(configSet -> {
+                    final Sequence sequence = new Sequence();
+                    sequences.add(sequence);
                     configSet.getConfigDirs().forEach(configDir -> {
                         File[] trainFiles = getFiles(configDir);
                         if (trainFiles != null) {
@@ -72,9 +87,9 @@ public class AbstractFit {
                                     TrainGame trainGame = TrainGame.load(file1);
                                     Double value = trainGame.getValue();
                                     if (value == -1.0 || value == 1.0) {
-                                        winLostGames.put(file1.lastModified(), file1);
+                                        sequence.winLostGames.put(file1.lastModified(), file1);
                                     } else if (value == 0.0) {
-                                        drawGames.put(file1.lastModified(), file1);
+                                        sequence.drawGames.put(file1.lastModified(), file1);
                                     } else
                                         throw new RuntimeException("Unidentified game value:" + value);
                                 } catch (IOException e) {
