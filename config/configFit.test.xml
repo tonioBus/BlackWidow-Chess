@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<fit updateLr="1E-4" fitChunk="40" nnReference="../AGZ_NN/AGZ.reference" simulation="true">
-    <configSets sequence="1" enable="true">
-        <configDirs directory="train" startNumber="11" endNumber="12"/>
-        <configDirs directory="train-rog" startNumber="11" endNumber="13"/>
-        <configDirs directory="train-grospc" startNumber="11" endNumber="14"/>
+<fit
+        updateLr="1E-4"
+        nnReference="../AGZ_NN/AGZ.reference"
+        fitChunk="20"
+        simulate="false"
+>
+    <!-- training 4 -> 2103024 -->
+    <configSets sequence="40" enable="true">
+        <configDirs directory="train" startNumber="1251" endNumber="1297"/>
+        <configDirs directory="train-rog" startNumber="539" endNumber="563"/>
+        <configDirs directory="train-grospc" startNumber="1539" endNumber="1593"/>
     </configSets>
-    <configSets sequence="1" enable="true">
-        <configDirs directory="train" startNumber="0" endNumber="1"/>
-        <configDirs directory="train-rog" startNumber="0" endNumber="2"/>
-        <configDirs directory="train-grospc" startNumber="0" endNumber="3"/>
+
+    <!-- training 3 -> 2003024 -->
+    <configSets sequence="30" enable="true">
+        <configDirs directory="train" startNumber="870" endNumber="1250"/>
+        <configDirs directory="train-rog" startNumber="363" endNumber="538"/>
+        <configDirs directory="train-grospc" startNumber="1034" endNumber="1538"/>
     </configSets>
-    <configSets sequence="2" enable="true">
-        <configDirs directory="train" startNumber="21" endNumber="22"/>
-        <configDirs directory="train-rog" startNumber="21" endNumber="23"/>
-        <configDirs directory="train-grospc" startNumber="21" endNumber="24"/>
+
+    <!-- training 2 -> 0303024 -->
+    <configSets sequence="20" enable="true">
+        <configDirs directory="train" startNumber="1" endNumber="869"/>
+        <configDirs directory="train-rog" startNumber="1" endNumber="362"/>
+        <configDirs directory="train-grospc" startNumber="1" endNumber="1033"/>
     </configSets>
+
+    <!-- simulation training -->
+    <configSets sequence="10" enable="true">
+        <configDirs directory="train-simul" startNumber="1" endNumber="1044"/>
+        <configDirs directory="train-simul-rog" startNumber="1" endNumber="782"/>
+        <configDirs directory="train-simul-grospc" startNumber="1" endNumber="1013"/>
+    </configSets>
+
+    <configSets sequence="0" enable="true">
+        <configDirs directory="06022024/train-simul" startNumber="1" endNumber="1009"/>
+        <configDirs directory="06022024/train-simul-rog" startNumber="1" endNumber="71"/>
+        <configDirs directory="06022024/train-simul-grospc" startNumber="1" endNumber="1903"/>
+    </configSets>
+
 </fit>

@@ -65,17 +65,17 @@ public class MainFitNNLc0 {
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
         nnWhite.setUpdateLr(updateLr, 1);
         final Map<String, StatisticsFit> statistics = new HashMap<>();
-        abstractFit.getConfigFit().getConfigSets()
-                .stream()
-                .filter(configSet -> configSet.isEnable())
-                .sorted()
-                .forEach(configSet -> {
-                    configSet.getConfigDirs().forEach(
-                            configDir -> {
-                                statistics.put(configDir.getDirectory(), new StatisticsFit(configDir.getStartNumber(), configDir.getEndNumber()));
-                            }
-                    );
-                });
+//        abstractFit.getConfigFit().getConfigSets()
+//                .stream()
+//                .filter(configSet -> configSet.isEnable())
+//                .sorted()
+//                .forEach(configSet -> {
+//                    configSet.getConfigDirs().forEach(
+//                            configDir -> {
+//                                statistics.put(configDir.getDirectory(), new StatisticsFit(configDir.getStartNumber(), configDir.getEndNumber()));
+//                            }
+//                    );
+//                });
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
