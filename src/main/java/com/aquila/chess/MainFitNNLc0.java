@@ -17,6 +17,7 @@ import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -66,17 +67,18 @@ public class MainFitNNLc0 {
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
         nnWhite.setUpdateLr(updateLr, 1);
         final Map<String, StatisticsFit> statistics = new HashMap<>();
-//        abstractFit.getConfigFit().getConfigSets()
-//                .stream()
-//                .filter(ConfigSet::isEnable)
-//                .sorted()
-//                .forEach(configSet -> {
-//                    configSet.getConfigDirs().forEach(
-//                            configDir -> {
-//                                statistics.put(configDir.getDirectory(), new StatisticsFit(configDir.getStartNumber(), configDir.getEndNumber()));
-//                            }
-//                    );
-//                });
+        abstractFit.getConfigFit().getConfigSets()
+                .stream()
+                .filter(ConfigSet::isEnable)
+                .sorted()
+                .forEach(configSet -> {
+                    configSet.getConfigDirs().forEach(
+                            configDir -> {
+                                log.info("add statistic for: {}", configDir.getDirectory());
+                                statistics.put(configDir.getDirectory(), new StatisticsFit(configDir.getStartNumber(), configDir.getEndNumber()));
+                            }
+                    );
+                });
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         final DeepLearningAGZ deepLearningWhite = DeepLearningAGZ
                 .builder()
@@ -87,10 +89,14 @@ public class MainFitNNLc0 {
                 .build();
         TrainFile trainFile = (file, statistics1) -> {
             log.info("train file:{}", file);
-            String parent = file.toPath().getParent().toString();
+            String parent = file.toPath().getParent().toString().replace('\\', '/');
             final TrainGame trainGame = TrainGame.load(file);
             try {
                 StatisticsFit statisticsFit = statistics.get(parent);
+                if (statisticsFit == null) {
+                    log.error("impossible to get statistic from:{}", parent);
+                    throw new RuntimeException("Stop learning");
+                }
                 deepLearningWhite.train(trainGame, abstractFit.getConfigFit().getFitChunk(), statisticsFit);
             } catch (TrainException e) {
                 log.error("TrainException: ", e);
@@ -123,7 +129,7 @@ public class MainFitNNLc0 {
         abstractFit.getConfigFit()
                 .getConfigSets()
                 .stream()
-                .filter(configSet -> configSet.isEnable())
+                .filter(ConfigSet::isEnable)
                 .sorted()
                 .forEach(configSet ->
                         log.info("Train done in directories:\n{}",
@@ -132,10 +138,7 @@ public class MainFitNNLc0 {
                                         .map(configDir -> configDir.getDirectory())
                                         .collect(Collectors.joining("\n- ", "- ", "")))
                 );
-        statistics.entrySet().forEach(entry -> {
-            String subDir = entry.getKey();
-            log.info("SUBDIR:{}\n{}", subDir, entry.getValue());
-        });
+        statistics.forEach((subDir, value) -> log.info("SUBDIR:{}\n{}", subDir, value));
     }
 
     public static String formatElapsedTime(long seconds) {

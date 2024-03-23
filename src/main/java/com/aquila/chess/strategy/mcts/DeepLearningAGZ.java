@@ -300,24 +300,24 @@ public class DeepLearningAGZ {
         log.info("NETWORK TO FIT[{}]: {}", nbCorrectStep, trainGame.getValue());
         int nbChunk = nbCorrectStep / fitChunk;
         int restChunk = nbCorrectStep % fitChunk;
-//        switch (trainGame.getValue().intValue()) {
-//            case 1 -> {
-//                statisticsFit.nbWin++;
-//            }
-//            case -1 -> {
-//                statisticsFit.nbLost++;
-//            }
-//            case 0 -> {
-//                statisticsFit.nbDrawn++;
-//            }
-//        }
+        switch (trainGame.getValue().intValue()) {
+            case 1 -> {
+                statisticsFit.nbWin++;
+            }
+            case -1 -> {
+                statisticsFit.nbLost++;
+            }
+            case 0 -> {
+                statisticsFit.nbDrawn++;
+            }
+        }
         for (int indexChunk = 0; indexChunk < nbChunk; indexChunk++) {
             trainChunk(indexChunk, fitChunk, trainGame, statisticsFit);
         }
         if (restChunk > 0) {
             trainChunk(nbChunk, restChunk, trainGame, statisticsFit);
         }
-        // statisticsFit.nbTrainGame++;
+        statisticsFit.nbTrainGame++;
     }
 
     private void trainChunk(final int indexChunk, final int chunkSize, final TrainGame trainGame, final StatisticsFit statisticsFit) throws TrainException {
@@ -346,10 +346,10 @@ public class DeepLearningAGZ {
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
         nn.fit(inputsForNN.getInputs(), policiesForNN, valuesForNN);
-        //statisticsFit.nbInputsFit += chunkSize;
+        statisticsFit.nbInputsFit += chunkSize;
         double score = nn.getScore();
-//        if (score < statisticsFit.scoreMin) statisticsFit.scoreMin = score;
-//        if (score > statisticsFit.scoreMax) statisticsFit.scoreMax = score;
+        if (score < statisticsFit.scoreMin) statisticsFit.scoreMin = score;
+        if (score > statisticsFit.scoreMax) statisticsFit.scoreMax = score;
         log.info("NETWORK score: {}", score);
         if ("NaN".equals(score + "")) {
             log.error("NN score not defined (0 / 0 ?), the saving is canceled :(");
