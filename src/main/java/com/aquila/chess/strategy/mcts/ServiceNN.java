@@ -26,7 +26,7 @@ public class ServiceNN {
     @Setter
     private int batchSize;
 
-    private int nbFeaturesPlanes;
+    private final int nbFeaturesPlanes;
 
     @Builder
     public ServiceNN(final DeepLearningAGZ deepLearningAGZ, int nbFeaturesPlanes, int batchSize) {
@@ -48,7 +48,7 @@ public class ServiceNN {
     /**
      * this will propagate only node not propagated (node.propagated)
      *
-     * @param nodes
+     * @param nodes collection of MCTSNode to add to the list of propagation
      */
     private void addNodeToPropagate(Collection<MCTSNode> nodes) {
         nodes.stream().filter(node -> node.getState() != MCTSNode.State.ROOT && !node.isPropagated()).forEach(node -> {
@@ -112,12 +112,6 @@ public class ServiceNN {
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
         System.out.printf("%d&", length);
-        outputsNN.stream().forEach(outputNN -> {
-            double sumPolicies = Arrays.stream(outputNN.policies).sum();
-            if (sumPolicies == 0) {
-                log.error("POLICIES SET TO NULL ");
-            }
-        });
         updateCacheValuesAndPoliciesWithInference(outputsNN);
     }
 
@@ -186,7 +180,7 @@ public class ServiceNN {
             node = node.getParent();
         } while (node != null && node.getState() != MCTSNode.State.ROOT);
         if (node != null) nodes2propagate.add(node);
-        return nodes2propagate.size() == 0 ? null : nodes2propagate;
+        return nodes2propagate;
     }
 
     private void createInputs(double[][][][] nbIn) {
@@ -203,7 +197,7 @@ public class ServiceNN {
      * @param outputsNN
      * @return propragated nodes
      */
-    private int updateCacheValuesAndPoliciesWithInference(final List<OutputNN> outputsNN) {
+    private void updateCacheValuesAndPoliciesWithInference(final List<OutputNN> outputsNN) {
         int index = 0;
         synchronized (batchJobs2Commit) {
             for (Map.Entry<Long, ServiceNNInputsJobs> entry : this.batchJobs2Commit.entrySet()) {
@@ -234,25 +228,24 @@ public class ServiceNN {
                 index++;
             }
         }
-        return index;
     }
 
     /**
      * Submit a NN Job that will be committed later
      *
-     * @param key          - the key of the CacheValue
-     * @param possibleMove - the concern move
-     * @param moveColor   - the color playing
-     * @param gameCopy
-     * @param isDirichlet
-     * @param isRootNode
+     * @param key          the key of the CacheValue
+     * @param possibleMove the concern move
+     * @param moveColor    the color playing
+     * @param mctsGame     the current MCTS Game
+     * @param isDirichlet  do we need to apply dirichlet to the policies
+     * @param isRootNode   is a Root node (starting MCTS search node)
      */
     protected void submit(final long key,
-                                       final Move possibleMove,
-                                       final Alliance moveColor,
-                                       final MCTSGame gameCopy,
-                                       final boolean isDirichlet,
-                                       final boolean isRootNode) {
+                          final Move possibleMove,
+                          final Alliance moveColor,
+                          final MCTSGame mctsGame,
+                          final boolean isDirichlet,
+                          final boolean isRootNode) {
         if (batchJobs2Commit.containsKey(key)) return;
         synchronized (nodesToPropagate) {
             if (nodesToPropagate.containsKey(key)) return;
@@ -269,7 +262,7 @@ public class ServiceNN {
         batchJobs2Commit.put(key, new ServiceNNInputsJobs(
                 possibleMove,
                 moveColor,
-                gameCopy,
+                mctsGame,
                 isDirichlet,
                 isRootNode));
         log.debug("SERVICENN.submit() batchJobs2Commit:{}", batchJobs2Commit.size());

@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
@@ -18,7 +17,7 @@ import static com.aquila.chess.strategy.mcts.MCTSNode.State.ROOT;
 @Slf4j
 public class CacheValue implements Serializable {
 
-    static final CacheValue getNotInitialized(final String label, final double initValue) {
+    static CacheValue getNotInitialized(final String label, final double initValue) {
         return new CacheValue(initValue, label, new double[PolicyUtils.MAX_POLICY_INDEX]);
     }
 

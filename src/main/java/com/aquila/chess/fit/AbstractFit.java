@@ -92,9 +92,7 @@ public class AbstractFit {
                                         sequence.drawGames.put(file1.lastModified(), file1);
                                     } else
                                         throw new RuntimeException("Unidentified game value:" + value);
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                } catch (ClassNotFoundException e) {
+                                } catch (IOException | ClassNotFoundException e) {
                                     throw new RuntimeException(e);
                                 }
                             });

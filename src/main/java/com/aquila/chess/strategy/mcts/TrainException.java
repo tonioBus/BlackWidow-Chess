@@ -2,9 +2,9 @@ package com.aquila.chess.strategy.mcts;
 
 import lombok.Getter;
 
+@Getter
 public class TrainException extends Exception {
 
-    @Getter
     final String label;
 
     public TrainException(final String msg, final String label) {

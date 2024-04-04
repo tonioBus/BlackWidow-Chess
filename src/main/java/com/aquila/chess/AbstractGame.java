@@ -19,35 +19,28 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 
+@Getter
 @Slf4j
 public abstract class AbstractGame {
 
     public static final int NUMBER_OF_MAX_STEPS = 500;
-    @Getter
+
     protected Move moveOpponent = null;
 
-    @Getter
     protected Strategy strategyWhite;
 
-    @Getter
     protected Strategy strategyBlack;
 
-    @Getter
     protected Strategy nextStrategy;
 
-    @Getter
     protected final InputsManager inputsManager;
 
-    @Getter
     protected final List<Move> moves = new ArrayList<>(127);
 
-    @Getter
     protected int nbMoveNoAttackAndNoPawn = 0;
 
-    @Getter
     protected Game.GameStatus status = Game.GameStatus.IN_PROGRESS;
 
-    @Getter
     protected Board board;
 
     public AbstractGame(InputsManager inputsManager, Board board) {
@@ -97,7 +90,7 @@ public abstract class AbstractGame {
     }
 
     public Move getLastMove() {
-        return this.getMoves().size() == 0 ? null : this.getMoves().get(this.getMoves().size() - 1);
+        return this.getMoves().isEmpty() ? null : this.getMoves().get(this.getMoves().size() - 1);
     }
 
     public Player getNextPlayer() {
@@ -127,6 +120,13 @@ public abstract class AbstractGame {
         return inputsManager.hashCode(inputRecord);
     }
 
+    /**
+     * Return the current status of the game.
+     *
+     * @param board the current board
+     * @param move  the current move
+     * @return {@link Game.GameStatus}
+     */
     public Game.GameStatus calculateStatus(final Board board, final Move move) {
         if (move != null) {
             if (!move.isAttack() &&
@@ -141,7 +141,8 @@ public abstract class AbstractGame {
         if (moves.size() >= NUMBER_OF_MAX_STEPS) return Game.GameStatus.DRAW_TOO_MUCH_STEPS;
         if (MovesUtils.is3MovesRepeat(moves)) return Game.GameStatus.DRAW_3;
         if (this.nbMoveNoAttackAndNoPawn >= 50) return Game.GameStatus.DRAW_50;
-        if (!isThereEnoughMaterials(board)) return Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
+        if (move != null && move.isAttack() && !isThereEnoughMaterials(board))
+            return Game.GameStatus.DRAW_NOT_ENOUGH_PIECES;
         return Game.GameStatus.IN_PROGRESS;
     }
 
@@ -166,9 +167,7 @@ public abstract class AbstractGame {
         final boolean blackHasOnly1knight = nbBlackPieces == 2 && nbBlackKnight == 1;
         final boolean blackHasOnly1Bishop = nbBlackPieces == 2 && nbBlackBishop == 1;
 
-        if ((whiteKingAlone || whiteHasOnly2knights || whiteHasOnly1knight || whiteHasOnly1Bishop) && (blackKingAlone || blackHasOnly2knights || blackHasOnly1knight || blackHasOnly1Bishop))
-            return false;
-        return true;
+        return (!whiteKingAlone && !whiteHasOnly2knights && !whiteHasOnly1knight && !whiteHasOnly1Bishop) || (!blackKingAlone && !blackHasOnly2knights && !blackHasOnly1knight && !blackHasOnly1Bishop);
     }
 
     /**
@@ -210,21 +209,12 @@ public abstract class AbstractGame {
         sb.append(String.format("[Black \"%s\"]\n", strategyBlack != null ? strategyBlack.getClass().getSimpleName() : "null"));
         String result = "*";
         if (this.status != null) {
-            switch (this.status) {
-                case WHITE_CHESSMATE:
-                    result = "0-1";
-                    break;
-                case BLACK_CHESSMATE:
-                    result = "1-0";
-                    break;
-                case DRAW_50:
-                case DRAW_TOO_MUCH_STEPS:
-                case PAT:
-                case DRAW_3:
-                case DRAW_NOT_ENOUGH_PIECES:
-                    result = "1/2-1/2";
-                    break;
-            }
+            result = switch (this.status) {
+                case WHITE_CHESSMATE -> "0-1";
+                case BLACK_CHESSMATE -> "1-0";
+                case DRAW_50, DRAW_TOO_MUCH_STEPS, PAT, DRAW_3, DRAW_NOT_ENOUGH_PIECES -> "1/2-1/2";
+                default -> result;
+            };
         }
         sb.append(String.format("[Result \"%s\"]\n", result)); // [Result "0-1"], [Result "1-0"], [Result "1/2-1/2"],
         movesToPGN(sb);
@@ -244,7 +234,7 @@ public abstract class AbstractGame {
                 sb.append("\n");
             }
             if ((i & 1) == 1) {
-                sb.append((i / 2 + 1) + ".");
+                sb.append((i / 2 + 1)).append(".");
             }
             final Move move = it.next();
             sb.append(toPGN(move));

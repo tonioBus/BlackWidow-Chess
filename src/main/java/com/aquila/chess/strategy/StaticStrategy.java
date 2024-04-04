@@ -24,7 +24,7 @@ public class StaticStrategy implements Strategy {
     private int sequenceNumber = 0;
 
     /**
-     * @param alliance    color of the player
+     * @param alliance color of the player
      * @param sequence algebraic moves (e2-e4) separated by semi-colon
      */
     public StaticStrategy(final Alliance alliance, final String sequence) {

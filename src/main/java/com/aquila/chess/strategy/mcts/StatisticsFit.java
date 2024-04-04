@@ -26,7 +26,7 @@ public class StatisticsFit {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        final StringBuilder sb = new StringBuilder();
         sb.append(String.format("\tstartGame: %d\n", startGame));
         sb.append(String.format("\tendGame: %d\n", endGame));
         sb.append(String.format("\tnbTrainGame: %d\n", nbTrainGame));
