@@ -5,7 +5,6 @@ import com.aquila.chess.strategy.mcts.OutputNN;
 import com.aquila.chess.strategy.mcts.UpdateLr;
 import com.aquila.chess.strategy.mcts.nnImpls.agz.DualResnetModel;
 import com.aquila.chess.strategy.mcts.utils.ConvertValueOutput;
-import com.aquila.chess.utils.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -37,7 +36,13 @@ public class NNDeep4j implements INN {
 
     public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes, final int numberResidualBlocks) {
         DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
-        Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
+        if (loadUpdater) {
+            log.info("TRAINING -> DataType:FLOAT16");
+            Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
+        } else {
+            log.info("PLAYING -> DataType:INT8");
+            Nd4j.setDefaultDataTypes(DataType.INT8, DataType.FLOAT16);
+        }
         Nd4j.getMemoryManager().togglePeriodicGc(true);
         Nd4j.getMemoryManager().setAutoGcWindow(5000);
         CudaEnvironment.getInstance().getConfiguration()

@@ -30,7 +30,7 @@ public class GameManager {
     private final int minNbGame;
 
     /**
-     * initiialise itself by reading the CSV file corresponding to all games played until now
+     * initialize itself by reading the CSV file corresponding to all games played until now
      *
      * @param filename
      * @param minNbGame

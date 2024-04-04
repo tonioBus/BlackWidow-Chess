@@ -158,7 +158,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
             selectedNode.decVirtualLoss();
             return returnEndOfSimulatedGame(selectedNode, depth, moveColor, selectedMove, gameStatus);
         }
-        // if (key != 0 && selectedNode.isSync()) {
         log.debug("ADD NODE TO PROPAGATE: selectedNode:{}", selectedNode);
         log.debug("\tparent:{}", opponentNode);
         this.deepLearning.getServiceNN().addNodeToPropagate(selectedNode);
@@ -323,14 +322,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         }
         final List<Move> bestMoves = new ArrayList<>();
 
-        String label = String.format("[S:%d|D:%d] ROOT-SELECTION:%s",
-                mctsGame.getNbStep(),
-                depth,
-                opponentNode.getMove() == null ? "Move(null)" : opponentNode.getMove().toString());
-//        deepLearning.addState(mctsGame,
-//                label,
-//                opponentNode,
-//                statistic);
+        String label;
         synchronized (moves) {
             for (final Move possibleMove : moves) {
                 int childVisits = 0;
@@ -353,7 +345,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
                     childVisits = child.getVisits();
                 }
                 log.debug("exploitation({})={}", possibleMove, exploitation);
-                policy = childNode == null ? 0 : childNode.policy; // policies[PolicyUtils.indexFromMove(possibleMove)];
+                policy = childNode == null ? 0 : childNode.policy;
                 if (log.isDebugEnabled()) {
                     log.debug("BATCH deepLearning.getPolicy({})", possibleMove);
                     log.debug("policy:{}", policy);
@@ -381,7 +373,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
                 statistic.maxRandomSelectionBestMoves = nbBestMoves;
             if (nbBestMoves < statistic.minRandomSelectionBestMoves)
                 statistic.minRandomSelectionBestMoves = nbBestMoves;
-            //////////////////////////////////////////////////////////////
             bestMove = getRandomMove(bestMoves, looseMoves);
         } else if (nbBestMoves == 0) {
             statistic.nbRandomSelection++;
