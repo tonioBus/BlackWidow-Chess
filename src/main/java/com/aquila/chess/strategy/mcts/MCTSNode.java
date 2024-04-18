@@ -495,9 +495,12 @@ public class MCTSNode {
     }
 
     public boolean equals(final MCTSNode mctsNode) {
-        return mctsNode.key == key &&
-                buildOrder == mctsNode.buildOrder &&
-                move == null ? true : move.toString().equals(mctsNode.move.toString());
+        boolean ret = mctsNode.key == key &&
+                buildOrder == mctsNode.buildOrder;
+        if (move == null || mctsNode.move == null) {
+            return ret && move == mctsNode.move;
+        }
+        return ret && move.toString().equals(mctsNode.move.toString());
     }
 
     /**
