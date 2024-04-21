@@ -22,7 +22,7 @@ public class MCTSStrategyConfig {
     private int steps = 800;
     private long millisPerStep = -1;
     private int batch = 256;
-    private boolean cpuAlgoNumberOfMoves = false;
+    private int cpuAlgoNumberOfMoves = -1;
 
     int seed = 1;
 
@@ -34,7 +34,7 @@ public class MCTSStrategyConfig {
         if (this.threads < 1) threads = Runtime.getRuntime().availableProcessors() - 4;
         this.batch = get(color + ".batch", Integer.class, batch);
         this.millisPerStep = get(color + ".millisPerStep", Long.class, millisPerStep);
-        this.cpuAlgoNumberOfMoves = get(color + ".cpuAlgoNumberOfMoves", Boolean.class, false);
+        this.cpuAlgoNumberOfMoves = get(color + ".cpuAlgoNumberOfMoves", Integer.class, -1);
     }
 
     private <T> T get(String property, Class<T> clazz, T defaultValue) {

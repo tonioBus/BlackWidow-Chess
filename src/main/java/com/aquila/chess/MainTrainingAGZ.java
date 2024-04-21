@@ -19,7 +19,9 @@ public class MainTrainingAGZ {
     static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
 
     private static final UpdateCpuct updateCpuctWithNbLegalMoves = (nbStep, nbLegalMoves) -> {
-        if (nbStep <= 30 || nbLegalMoves > 20) return 2.5;
+        if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
+            return 2.5;
+        }
         else return 0.0000025;
     };
 
@@ -66,16 +68,14 @@ public class MainTrainingAGZ {
             deepLearningBlack.clearAllCaches();
             long seed2 = System.nanoTime();
             log.info("SEED BLACK:{}", seed2);
-            log.info("WHITE isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isCpuAlgoNumberOfMoves());
-            log.info("BLACK isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isCpuAlgoNumberOfMoves());
+            log.info("WHITE isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves());
+            log.info("BLACK isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getCpuAlgoNumberOfMoves());
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
                     game,
                     Alliance.WHITE,
                     deepLearningWhite,
                     seed1,
-                    MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isCpuAlgoNumberOfMoves()
-                            ? updateCpuctWithNbLegalMoves
-                            : updateCpuct,
+                    updateCpuctWithNbLegalMoves,
                     -1)
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
@@ -86,9 +86,7 @@ public class MainTrainingAGZ {
                     Alliance.BLACK,
                     deepLearningBlack,
                     seed2,
-                    MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isCpuAlgoNumberOfMoves()
-                            ? updateCpuctWithNbLegalMoves
-                            : updateCpuct,
+                    updateCpuctWithNbLegalMoves,
                     -1)
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
