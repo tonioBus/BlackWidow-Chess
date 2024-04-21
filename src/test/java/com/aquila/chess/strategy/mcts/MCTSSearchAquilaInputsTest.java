@@ -34,7 +34,7 @@ public class MCTSSearchAquilaInputsTest {
 
     AquilaNNTest aquilaNNTest;
 
-    final UpdateCpuct updateCpuct = (nbStep) -> {
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         return 2.5;
     };
 

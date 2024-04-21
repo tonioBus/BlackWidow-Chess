@@ -18,7 +18,7 @@ public class MainTrainingAquila {
 
     static private final String NN_OPPONENT = "../AQUILA_NN/NN.partner";
 
-    private static final UpdateCpuct updateCpuct = nbStep -> {
+    private static final UpdateCpuct updateCpuct = (nbStep,nbMoves) -> {
         // return 2.5;
         if (nbStep <= 30) return 2.0;
         else return 0.000002;

@@ -32,7 +32,7 @@ public class SaveGameTest {
 
     static public final int NB_STEP = 2;
 
-    private static final UpdateCpuct updateCpuct = nbStep -> {
+    private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30) return 2.5;
         else return 0.0025;
     };

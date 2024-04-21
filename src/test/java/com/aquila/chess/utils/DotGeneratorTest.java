@@ -20,7 +20,7 @@ class DotGeneratorTest {
 
     DeepLearningAGZ deepLearningWhite;
     DeepLearningAGZ deepLearningBlack;
-    final UpdateCpuct updateCpuct = (nbStep) ->
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) ->
     {
         return Math.exp(-0.04 * nbStep) / 2;
     };

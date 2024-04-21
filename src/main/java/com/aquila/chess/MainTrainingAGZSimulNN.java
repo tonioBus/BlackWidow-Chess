@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingAGZSimulNN {
 
-    private static final UpdateCpuct updateCpuct = nbStep -> {
+    private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30) return 2.5;
         else return 0.00025;
     };

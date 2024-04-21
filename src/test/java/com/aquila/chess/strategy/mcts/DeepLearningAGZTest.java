@@ -31,7 +31,7 @@ class DeepLearningAGZTest {
             .train(true)
             .build();
 
-    final UpdateCpuct updateCpuct = (nbStep) -> Math.exp(-0.04 * nbStep) / 2;
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> Math.exp(-0.04 * nbStep) / 2;
 
     @Test
     void testPolicies() {

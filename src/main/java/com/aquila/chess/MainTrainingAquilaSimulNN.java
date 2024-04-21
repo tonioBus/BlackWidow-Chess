@@ -28,7 +28,7 @@ public class MainTrainingAquilaSimulNN {
         return 1e-3;
     };
 
-    private static final UpdateCpuct updateCpuct = nbStep -> {
+    private static final UpdateCpuct updateCpuct = (nbStep,nbMoves) -> {
         if (nbStep <= 30) return 2.0;
         else return 0.0025;
     };

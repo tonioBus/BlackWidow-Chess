@@ -18,7 +18,7 @@ import static com.chess.engine.classic.Alliance.WHITE;
 @Slf4j
 class MCTSInputsTest {
 
-    final UpdateCpuct updateCpuct = (nbStep) -> {
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         return 2.5; // Math.exp(-0.04 * nbStep) / 2;
     };
 

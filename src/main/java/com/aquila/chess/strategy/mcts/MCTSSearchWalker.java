@@ -77,7 +77,6 @@ public class MCTSSearchWalker implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         Thread.currentThread().setName(String.format("Worker:%d Submit:%d", numThread, nbSubmit));
-        cpuct = updateCpuct.update(mctsGame.getMoves().size());
         SearchResult searchResult = search(currentRoot, 0);
         if (searchResult == null) {
             log.debug("[{}] END SEARCH: NULL", nbStep);
@@ -315,6 +314,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
         MCTSNode child;
 
         final Collection<Move> moves = opponentNode.getChildMoves();
+        cpuct = updateCpuct.update(mctsGame.getMoves().size(), moves.size());
         if (log.isDebugEnabled()) {
             log.debug("MOVES:{}", moves.stream().map(move -> move.toString()).collect(Collectors.joining(",")));
             log.debug("graph:-----------------------------------\n{}\n-----------------------------------",

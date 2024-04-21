@@ -35,7 +35,7 @@ public class MCTSAquilaExerciceTest {
 
     public static int NB_THREAD = 8;
 
-    final UpdateCpuct updateCpuct = (nbStep) -> {
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         return 2; // Math.exp(-0.04 * nbStep) / 2;
     };
 

@@ -42,7 +42,7 @@ public class MainTrainingAGZTest {
         return 1e-3;
     };
 
-    private static final UpdateCpuct updateCpuct = nbStep -> {
+    private static final UpdateCpuct updateCpuct = (nbStep,nbMoves) -> {
         // return 2.5;
         if (nbStep <= 30) return 2.5;
         else return 0.0025;

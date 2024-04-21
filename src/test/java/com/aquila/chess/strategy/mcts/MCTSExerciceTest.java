@@ -35,7 +35,7 @@ public class MCTSExerciceTest {
 
     public static int NB_THREAD = 8;
 
-    final UpdateCpuct updateCpuct = (nbStep) -> {
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         return 0.5; // Math.exp(-0.04 * nbStep) / 2;
     };
 

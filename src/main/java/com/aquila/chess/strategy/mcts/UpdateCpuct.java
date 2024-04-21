@@ -7,6 +7,6 @@ package com.aquila.chess.strategy.mcts;
 @FunctionalInterface
 public interface UpdateCpuct {
 
-	double update(int nbStep);
+	double update(int nbStep, int nbLegalMoves);
 
 }
