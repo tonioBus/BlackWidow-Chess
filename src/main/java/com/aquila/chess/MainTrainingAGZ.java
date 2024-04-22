@@ -21,8 +21,7 @@ public class MainTrainingAGZ {
     private static final UpdateCpuct updateCpuctWithNbLegalMoves = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
             return 2.5;
-        }
-        else return 0.0000025;
+        } else return 0.0000025;
     };
 
     private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
@@ -80,7 +79,7 @@ public class MainTrainingAGZ {
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getThreads())
-                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isDirichlet());
+                    .withDirichlet((step) -> step <= MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getStepDirichlet());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -91,7 +90,7 @@ public class MainTrainingAGZ {
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
-                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
+                    .withDirichlet((step) -> step <= MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getStepDirichlet());
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             try {

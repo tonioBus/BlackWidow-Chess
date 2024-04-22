@@ -94,7 +94,7 @@ public class MainTrainingAGZTest {
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getThreads())
-                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().isDirichlet());
+                    .withDirichlet((step) -> step <= MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getStepDirichlet());
             final MCTSStrategy blackStrategy = new MCTSStrategy(
                     game,
                     Alliance.BLACK,
@@ -105,7 +105,7 @@ public class MainTrainingAGZTest {
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())
                     .withNbThread(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getThreads())
-                    .withDirichlet((step) -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().isDirichlet());
+                    .withDirichlet((step) -> step <= MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getStepDirichlet());
             game.setup(whiteStrategy, blackStrategy);
             Game.GameStatus gameStatus;
             do {

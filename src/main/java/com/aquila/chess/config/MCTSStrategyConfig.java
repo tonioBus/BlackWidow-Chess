@@ -17,7 +17,7 @@ public class MCTSStrategyConfig {
     @ToString.Exclude
     private final Properties properties;
 
-    private boolean dirichlet = true;
+    private int stepDirichlet = 30;
     private int threads = -1;
     private int steps = 800;
     private long millisPerStep = -1;
@@ -28,13 +28,13 @@ public class MCTSStrategyConfig {
 
     public MCTSStrategyConfig(String color, Properties properties) {
         this.properties = properties;
-        this.dirichlet = get(color + ".dirichlet", Boolean.class, dirichlet);
+        this.stepDirichlet = get(color + ".stepDirichlet", Integer.class, stepDirichlet);
         this.steps = get(color + ".steps", Integer.class, steps);
         this.threads = get(color + ".threads", Integer.class, threads);
         if (this.threads < 1) threads = Runtime.getRuntime().availableProcessors() - 4;
         this.batch = get(color + ".batch", Integer.class, batch);
         this.millisPerStep = get(color + ".millisPerStep", Long.class, millisPerStep);
-        this.cpuAlgoNumberOfMoves = get(color + ".cpuAlgoNumberOfMoves", Integer.class, -1);
+        this.cpuAlgoNumberOfMoves = get(color + ".cpuAlgoNumberOfMoves", Integer.class, cpuAlgoNumberOfMoves);
     }
 
     private <T> T get(String property, Class<T> clazz, T defaultValue) {
