@@ -73,7 +73,7 @@ public class CacheValue implements Serializable {
                     .forEach(node -> {
                         boolean isDirichlet = node.getState() == MCTSNode.State.ROOT;
                         isDirichlet = MCTSConfig.mctsConfig.isDirichlet(node.getMove()) && isDirichlet;
-                        log.debug("NORMALIZED move.size:{} dirichlet:{} node:{}", node.getChildMoves().size(), node.isDirichletDone(), node);
+                        log.debug("NORMALIZED[%d] move.size:{} dirichlet:{} node:{}", policies, node.getChildMoves().size(), node.isDirichletDone(), node);
                         node.updatePolicies(policies, isDirichlet);
                         node.dirichletDone = true;
                     });

@@ -355,7 +355,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                     double probability = (double) childNode.node.getVisits() / (double) stepNode.getVisits();
                     if (probability == 0 && childNode.getNode().getState() == MCTSNode.State.WIN)
                         probability = 1.0 / nbChilds;
-                    probabilities.put(index, probability);
+                    if (probability != 0) probabilities.put(index, probability);
                 });
         return probabilities;
     }

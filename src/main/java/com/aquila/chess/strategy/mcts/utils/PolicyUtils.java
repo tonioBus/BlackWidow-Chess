@@ -238,6 +238,7 @@ public class PolicyUtils {
                 entry.setValue(newP);
             });
             if (log.isWarnEnabled()) {
+                log.warn("SUM POLICIES:{}", Arrays.stream(policies).sum());
                 logPolicies("DIRICHLET", ret.values().stream().toList(), indexes, moves);
             }
         }
