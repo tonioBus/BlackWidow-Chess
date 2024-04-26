@@ -340,7 +340,7 @@ public class DeepLearningAGZ {
                     log.info("MAX POLICY[{}]={}", key, maxPolicy);
                     if(key==4229) {//FIXME
                         log.warn("Correcting 4229 policy");
-                        policies.put(4229, maxPolicy.getAsDouble() / 3.0);
+                        policies.put(4229, 0.001);
                         OptionalDouble maxPolicy1 = policies.values().stream().mapToDouble(policy -> policy).max();
                         if (maxPolicy1.isPresent()) {
                             log.info("CORRECTED MAX POLICY[{}]={}", key, maxPolicy1);
