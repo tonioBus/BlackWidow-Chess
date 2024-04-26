@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -333,6 +334,10 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             normalize(policies);
+            OptionalDouble maxPolicy = policies.values().stream().mapToDouble(policy -> policy).max();
+            if (maxPolicy.isPresent()) {
+                policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> log.info("MAX POLICY[{}]={}", key, maxPolicy));
+            } else log.error("max policies not present");
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);

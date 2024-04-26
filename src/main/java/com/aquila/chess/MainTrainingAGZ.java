@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingAGZ {
 
-    static private final String NN_REFERENCE = MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getNnReference(); // "../AGZ_NN/AGZ.reference";
+    static private final String NN_REFERENCE = MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getNnReference();
 
-    static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference(); // "../AGZ_NN/AGZ.partner";
+    static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference();
 
     private static final UpdateCpuct updateCpuctWithNbLegalMoves = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
