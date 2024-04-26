@@ -333,30 +333,23 @@ public class DeepLearningAGZ {
             OneStepRecord oneStepRecord = inputsList.get(gameRound);
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
-            normalize(policies);
             OptionalDouble maxPolicy = policies.values().stream().mapToDouble(policy -> policy).max();
             if (maxPolicy.isPresent()) {
                 policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> {
                     log.info("MAX POLICY[{}]={}", key, maxPolicy);
-                    if(key==4229) {//FIXME
-                        log.warn("Correcting 4229 policy");
-                        policies.put(4229, 0.001);
-                        OptionalDouble maxPolicy1 = policies.values().stream().mapToDouble(policy -> policy).max();
-                        if (maxPolicy1.isPresent()) {
-                            log.info("CORRECTED MAX POLICY[{}]={}", key, maxPolicy1);
-                        }
-                    }//END FIXME
                 });
             } else log.error("max policies not present");
+            //FIXME
+            policies.keySet().stream().filter(key -> policies.get(key) != 1.0).forEach(key -> policies.put(key, 0.1));
+            //END FIXME
+            normalize(policies);
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
             valuesForNN[stepInChunk][0] = ConvertValueOutput.convertTrainValueToSigmoid(actualRewards);
-            if (policies != null) {
-                for (Map.Entry<Integer, Double> entry : policies.entrySet()) {
-                    Integer indexFromMove = entry.getKey();
-                    Double previousPolicies = entry.getValue();
-                    policiesForNN[stepInChunk][indexFromMove] = previousPolicies;
-                }
+            for (Map.Entry<Integer, Double> entry : policies.entrySet()) {
+                Integer indexFromMove = entry.getKey();
+                Double previousPolicies = entry.getValue();
+                policiesForNN[stepInChunk][indexFromMove] = previousPolicies;
             }
         }
         log.info("NETWORK FIT[{}]: {}", chunkSize, value);
