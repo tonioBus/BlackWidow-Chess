@@ -14,15 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingAGZ {
 
-    static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
+    static private final String NN_REFERENCE = MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getNnReference(); // "../AGZ_NN/AGZ.reference";
 
-    static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
+    static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference(); // "../AGZ_NN/AGZ.partner";
 
     private static final UpdateCpuct updateCpuctWithNbLegalMoves = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
             return 2.5;
-        }
-        else return 0.0000025;
+        } else return 0.0000025;
     };
 
     private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
@@ -63,11 +62,13 @@ public class MainTrainingAGZ {
             final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
-            log.info("SEED WHITE:{}", seed1);
+            log.info("WHITE SEED:{}", seed1);
             deepLearningWhite.clearAllCaches();
+            log.info("WHITE NN:{}", deepLearningWhite.getNn().getFilename());
             deepLearningBlack.clearAllCaches();
             long seed2 = System.nanoTime();
-            log.info("SEED BLACK:{}", seed2);
+            log.info("BLACK SEED:{}", seed2 * 2);
+            log.info("BLACK NN:{}", deepLearningBlack.getNn().getFilename());
             log.info("WHITE isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves());
             log.info("BLACK isCpuAlgoNumberOfMoves:{}", MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getCpuAlgoNumberOfMoves());
             final MCTSStrategy whiteStrategy = new MCTSStrategy(
