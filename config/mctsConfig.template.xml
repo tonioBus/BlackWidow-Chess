@@ -2,20 +2,24 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <entry key="waitInSeconds">40</entry>
+    <entry key="dirichletNoise">0.3</entry>
+    <entry key="epsilon">0.25</entry>
     <!-- WHITE -->
-    <entry key="white.nnReference">../AGZ_NN/AGZ.reference</entry>
+    <entry key="white.nnReference">../AGZ_NN/AGZ.reference.todel</entry>
     <entry key="white.dirichlet">true</entry>
     <entry key="white.threads">8</entry>
     <entry key="white.steps">800</entry>
     <entry key="white.millisPerStep">-1</entry>
     <entry key="white.batch">164</entry>
     <entry key="white.cpuAlgoNumberOfMoves">-1</entry>
+    <entry key="white.maxCpuct">2.5</entry>
     <!-- BLACK -->
-    <entry key="black.nnReference">../AGZ_NN/AGZ.reference</entry>
+    <entry key="black.nnReference">../AGZ_NN/AGZ.partner</entry>
     <entry key="black.dirichlet">true</entry>
     <entry key="black.threads">8</entry>
     <entry key="black.steps">800</entry>
     <entry key="black.millisPerStep">-1</entry>
     <entry key="black.batch">164</entry>
     <entry key="black.cpuAlgoNumberOfMoves">-1</entry>
+    <entry key="black.maxCpuct">2.5</entry>
 </properties>

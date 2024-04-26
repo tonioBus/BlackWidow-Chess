@@ -29,6 +29,12 @@ public class MCTSConfig {
     private double fpuReduction = 0.0;
 
     @Getter
+    private double dirichletNoise = 0.3;
+
+    @Getter
+    private double epsilon = 0.25;
+
+    @Getter
     private MCTSStrategyConfig mctsWhiteStrategyConfig;
 
     @Getter
@@ -46,6 +52,8 @@ public class MCTSConfig {
             this.waitInSeconds = get("waitInSeconds", Integer.class, waitInSeconds);
             this.newNodeValue = get("newNodeValue", Double.class, newNodeValue);
             this.fpuReduction = get("fpuReduction", Double.class, fpuReduction);
+            this.dirichletNoise = get("dirichletNoise", Double.class, dirichletNoise);
+            this.epsilon = get("epsilon", Double.class, epsilon);
             mctsWhiteStrategyConfig = new MCTSStrategyConfig("white", properties);
             mctsBlackStrategyConfig = new MCTSStrategyConfig("black", properties);
         } catch (IOException e) {

@@ -1,5 +1,6 @@
 package com.aquila.chess.strategy.mcts.utils;
 
+import com.aquila.chess.config.MCTSConfig;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
@@ -22,7 +23,10 @@ public class PolicyUtils {
 
     static private final RandomStream stream;
 
-    static private final double DIRICHLET_NOISE = 0.3;
+    static private final double DIRICHLET_NOISE = MCTSConfig.mctsConfig.getDirichletNoise();
+
+    static private final double DIRICHLET_EPSILON = MCTSConfig.mctsConfig.getEpsilon();
+
     /**
      * return policy index from a move
      *
@@ -229,13 +233,12 @@ public class PolicyUtils {
             double[] alpha = new double[indexes.length];
             Arrays.fill(alpha, DIRICHLET_NOISE);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
-            double epsilon = 0.25;
             double[] d = new double[alpha.length];
             dirichletGen.nextPoint(d);
             AtomicInteger index = new AtomicInteger(0);
             ret.entrySet().forEach(entry -> {
                 double p = entry.getValue();
-                double newP = (1 - epsilon) * p + epsilon * d[index.getAndIncrement()];
+                double newP = (1 - DIRICHLET_EPSILON) * p + DIRICHLET_EPSILON * d[index.getAndIncrement()];
                 entry.setValue(newP);
             });
             if (log.isWarnEnabled()) {

@@ -18,15 +18,16 @@ public class MainTrainingAGZ {
 
     static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference();
 
-    private static final UpdateCpuct updateCpuctWithNbLegalMoves = (nbStep, nbLegalMoves) -> {
+    private static final UpdateCpuct updateCpuctWhite = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
-            return 2.5;
+            return MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getMaxCpuct();
         } else return 0.0000025;
     };
 
-    private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
-        if (nbStep <= 30) return 2.5;
-        else return 0.0000025;
+    private static final UpdateCpuct updateCpuctBlack = (nbStep, nbLegalMoves) -> {
+        if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getCpuAlgoNumberOfMoves()) {
+            return MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getMaxCpuct();
+        } else return 0.0000025;
     };
 
     private static final Dirichlet dirichlet = nbStep -> true;
@@ -76,7 +77,7 @@ public class MainTrainingAGZ {
                     Alliance.WHITE,
                     deepLearningWhite,
                     seed1,
-                    updateCpuctWithNbLegalMoves,
+                    updateCpuctWhite,
                     -1)
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps())
@@ -87,7 +88,7 @@ public class MainTrainingAGZ {
                     Alliance.BLACK,
                     deepLearningBlack,
                     seed2,
-                    updateCpuctWithNbLegalMoves,
+                    updateCpuctBlack,
                     -1)
                     .withTrainGame(trainGame)
                     .withNbSearchCalls(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps())

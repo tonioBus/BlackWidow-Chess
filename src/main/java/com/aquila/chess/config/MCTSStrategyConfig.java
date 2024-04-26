@@ -24,6 +24,7 @@ public class MCTSStrategyConfig {
     private long millisPerStep = -1;
     private int batch = 256;
     private int cpuAlgoNumberOfMoves = -1;
+    private double maxCpuct = 2.5;
 
     int seed = 1;
 
@@ -37,6 +38,7 @@ public class MCTSStrategyConfig {
         this.batch = get(color + ".batch", Integer.class, batch);
         this.millisPerStep = get(color + ".millisPerStep", Long.class, millisPerStep);
         this.cpuAlgoNumberOfMoves = get(color + ".cpuAlgoNumberOfMoves", Integer.class, -1);
+        this.maxCpuct = get(color + ".maxCpuct", Double.class, maxCpuct);
     }
 
     private <T> T get(String property, Class<T> clazz, T defaultValue) {
