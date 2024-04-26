@@ -22,6 +22,7 @@ public class PolicyUtils {
 
     static private final RandomStream stream;
 
+    static private final double DIRICHLET_NOISE = 0.3;
     /**
      * return policy index from a move
      *
@@ -226,7 +227,7 @@ public class PolicyUtils {
                 logPolicies("ORIGINAL ", ret.values().stream().toList(), indexes, moves);
             }
             double[] alpha = new double[indexes.length];
-            Arrays.fill(alpha, 0.3);
+            Arrays.fill(alpha, DIRICHLET_NOISE);
             DirichletGen dirichletGen = new DirichletGen(stream, alpha);
             double epsilon = 0.25;
             double[] d = new double[alpha.length];

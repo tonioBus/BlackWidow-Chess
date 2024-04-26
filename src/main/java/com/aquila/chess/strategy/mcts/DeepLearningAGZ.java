@@ -336,7 +336,17 @@ public class DeepLearningAGZ {
             normalize(policies);
             OptionalDouble maxPolicy = policies.values().stream().mapToDouble(policy -> policy).max();
             if (maxPolicy.isPresent()) {
-                policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> log.info("MAX POLICY[{}]={}", key, maxPolicy));
+                policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> {
+                    log.info("MAX POLICY[{}]={}", key, maxPolicy);
+                    if(key==4229) {//FIXME
+                        log.warn("Correcting 4229 policy");
+                        policies.put(4229, maxPolicy.getAsDouble() / 3.0);
+                        OptionalDouble maxPolicy1 = policies.values().stream().mapToDouble(policy -> policy).max();
+                        if (maxPolicy1.isPresent()) {
+                            log.info("CORRECTED MAX POLICY[{}]={}", key, maxPolicy1);
+                        }
+                    }//END FIXME
+                });
             } else log.error("max policies not present");
             Alliance moveColor = oneStepRecord.moveColor();
             double actualRewards = getActualRewards(value, moveColor);
