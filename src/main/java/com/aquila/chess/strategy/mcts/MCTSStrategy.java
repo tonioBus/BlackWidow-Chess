@@ -117,11 +117,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
+        double cpuct = this.updateCpuct.update(this.nbStep, possibleMoves.size());
         this.nbStep++;
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         int whiteValue = mctsGame.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         int blackValue = mctsGame.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
-        log.info("[{}] Using as FPU: {}", this.getAlliance(), this.parentReward);
+        log.info("[{}] Using as FPU: {}   CPUCT:{}", this.getAlliance(), this.parentReward, cpuct);
         log.info("[{}] PIECES VALUES | WHITE:{} <-> {}:BLACK --> RATIO:{} ", this.getAlliance(), whiteValue, blackValue, mctsGame.ratioPlayer());
         log.info("[{}] Childs:{} nextPlay() -> {}", this.getAlliance(), directRoot != null ? directRoot.getNumberOfAllNodes() : 0, move);
         log.info("[{}] -------------------------------------------------------", this.getAlliance());

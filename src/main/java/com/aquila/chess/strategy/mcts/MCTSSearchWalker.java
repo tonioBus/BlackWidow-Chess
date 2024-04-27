@@ -122,7 +122,7 @@ public class MCTSSearchWalker implements Callable<Integer> {
 
             // expansion
             if (selectedNode == null) {
-                key = mctsGame.hashCode( selectedMove);
+                key = mctsGame.hashCode(selectedMove);
                 CacheValue cacheValue = deepLearning.getBatchedValue(key, selectedMove, statistic);
                 log.debug("MCTS SEARCH EXPANSION KEY[{}] MOVE:{} CACHE VALUE:{}", key, selectedMove, cacheValue);
                 log.debug("BEGIN synchronized 1.1 ({})", opponentNode);
@@ -385,13 +385,13 @@ public class MCTSSearchWalker implements Callable<Integer> {
      * From https://colab.research.google.com/github/es2mac/SwiftDigger/blob/master/TetrisField.ipynb
      *
      * @param opponentNode
-     * @param puctConstant
+     * @param cpuct
      * @param childVisits
      * @param policy
      * @return
      */
-    static public double exploration(final MCTSNode opponentNode, double puctConstant, int childVisits, double policy) {
-        return puctConstant * policy * Math.sqrt(opponentNode.getVisits()) / (1 + childVisits);
+    static public double exploration(final MCTSNode opponentNode, double cpuct, int childVisits, double policy) {
+        return cpuct * policy * Math.sqrt(opponentNode.getVisits()) / (1 + childVisits);
     }
 
     public SearchResult returnEndOfSimulatedGame(final MCTSNode node,
