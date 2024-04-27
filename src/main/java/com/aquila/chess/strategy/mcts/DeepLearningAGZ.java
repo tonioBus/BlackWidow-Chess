@@ -340,7 +340,7 @@ public class DeepLearningAGZ {
                 });
             } else log.error("max policies not present");
             //FIXME
-            policies.keySet().stream().filter(key -> policies.get(key) != 1.0).forEach(key -> policies.put(key, 0.1));
+            // policies.keySet().stream().filter(key -> policies.get(key) != 1.0).forEach(key -> policies.put(key, 0.1));
             //END FIXME
             normalize(policies);
             Alliance moveColor = oneStepRecord.moveColor();
