@@ -39,6 +39,7 @@ import java.util.Map;
 /**
  * Provides input blocks for dual residual or convolutional neural networks
  * for Chess move prediction.
+ * Using example from https://github.com/eclipse/deeplearning4j-examples.git
  * Modifications for chess: Anthony Bussani
  *
  * @author Max Pumperla
@@ -180,7 +181,7 @@ public class DL4JAlphaGoZeroBuilder {
 
     /**
      * Policy head, predicts next moves, so
-     * outputs a vector of 8 * 8 = 64 values.
+     * outputs a vector of 8 * 8 * 73 = 64 values.
      */
     public String addPolicyHead(final String inName, final boolean useActivation) {
         final String convName = "policy_head_conv_";
