@@ -17,7 +17,6 @@ import org.nd4j.jita.conf.CudaEnvironment;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.factory.Nd4j;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -90,7 +89,7 @@ public class MainFitNNLc0 {
         TrainFile trainFile = (file, statistics1) -> {
             log.info("train file:{}", file);
             String parent = file.toPath().getParent().toString().replace('\\', '/');
-            final TrainGame trainGame = TrainGame.load(file);
+            final TrainGame trainGame = TrainGame.load(file, TrainGame.MarshallingType.JSON);
             try {
                 StatisticsFit statisticsFit = statistics.get(parent);
                 if (statisticsFit == null) {

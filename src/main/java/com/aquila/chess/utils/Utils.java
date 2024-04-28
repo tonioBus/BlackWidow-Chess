@@ -7,18 +7,14 @@ import com.chess.engine.classic.Alliance;
 import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.pieces.Piece;
-import com.chess.engine.classic.player.Player;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.nd4j.linalg.api.ops.Op;
-import org.nd4j.linalg.api.ops.impl.transforms.strict.Log;
-import umontreal.ssj.rng.MRG32k3a;
-import umontreal.ssj.rng.RandomStream;
 
 import java.lang.management.RuntimeMXBean;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @author bussa
@@ -111,6 +107,15 @@ public class Utils {
             output[i] = input[i];
         }
         return output;
+    }
+
+    private static final Pattern pattern = Pattern.compile("-?\\d+");
+
+    public static boolean isInteger(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        return pattern.matcher(strNum).matches();
     }
 }
 

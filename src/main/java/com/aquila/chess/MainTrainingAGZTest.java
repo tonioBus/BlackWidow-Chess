@@ -120,7 +120,7 @@ public class MainTrainingAGZTest {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            final String filename = trainGame.saveBatch(trainDir, gameStatus);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus, TrainGame.MarshallingType.JSON);
             Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
             if (status == Status.SWITCHING) {
                 final Path reference = Paths.get(NN_REFERENCE);

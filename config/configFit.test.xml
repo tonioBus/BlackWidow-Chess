@@ -3,7 +3,7 @@
         updateLr="1E-4"
         nnReference="../AGZ_NN/AGZ.reference"
         fitChunk="20"
-        simulate="false"
+        simulate="true"
 >
     <!-- training 4 -> 2103024 -->
     <configSets sequence="40" enable="true">

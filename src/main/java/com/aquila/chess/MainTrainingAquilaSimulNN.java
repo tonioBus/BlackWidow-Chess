@@ -98,7 +98,7 @@ public class MainTrainingAquilaSimulNN {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            final String filename = trainGame.saveBatch(trainDir, gameStatus);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus, TrainGame.MarshallingType.JSON);
         }
     }
 

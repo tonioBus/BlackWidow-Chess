@@ -179,7 +179,7 @@ public class MainFitNNAquila implements Runnable {
             log.info("load game:{}", filename);
             Thread.currentThread().setName(filename);
             try {
-                TrainGame trainGame = TrainGame.load(subDir, numGame);
+                TrainGame trainGame = TrainGame.load(subDir, numGame, TrainGame.MarshallingType.JSON);
                 if(filters == null || Arrays.stream(filters).mapToDouble(Double::valueOf).filter(filter -> filter==trainGame.getValue()).count()==0)
                     deepLearningWhite.train(trainGame, 40, statisticsFit);
                 else statisticsFit.listFilteredTrain.add(""+numGame);

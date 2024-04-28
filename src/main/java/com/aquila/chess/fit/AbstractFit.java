@@ -80,11 +80,11 @@ public class AbstractFit {
                     final Sequence sequence = new Sequence();
                     sequences.add(sequence);
                     configSet.getConfigDirs().forEach(configDir -> {
-                        File[] trainFiles = getFiles(configDir);
+                        File[] trainFiles = getFiles(configDir, TrainGame.MarshallingType.JSON);
                         if (trainFiles != null) {
                             Arrays.stream(trainFiles).forEach(file1 -> {
                                 try {
-                                    TrainGame trainGame = TrainGame.load(file1);
+                                    TrainGame trainGame = TrainGame.load(file1, TrainGame.MarshallingType.JSON);
                                     Double value = trainGame.getValue();
                                     if (value == -1.0 || value == 1.0) {
                                         sequence.winLostGames.put(file1.lastModified(), file1);
@@ -101,12 +101,13 @@ public class AbstractFit {
                 });
     }
 
-    private static File[] getFiles(ConfigDir configDir) {
+    private static File[] getFiles(ConfigDir configDir, TrainGame.MarshallingType marshallingType) {
         File file = new File(configDir.getDirectory());
         FileFilter filters = pathname -> {
             try {
                 String filename = pathname.toPath().getFileName().toString();
-                int fileNum = Integer.parseInt(filename);
+                if (!TrainGame.isCorrectFilename(filename, marshallingType)) return false;
+                int fileNum = TrainGame.getNum(filename, marshallingType);
                 return pathname.canRead() &&
                         pathname.isFile() &&
                         fileNum >= configDir.getStartNumber() &&

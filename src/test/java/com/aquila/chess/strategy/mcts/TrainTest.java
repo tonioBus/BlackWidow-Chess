@@ -71,8 +71,6 @@ public class TrainTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
     void testTrain(int seed) throws Exception {
-        List<Game> games = new ArrayList<>();
-        List<Integer> savedGames = new ArrayList<>();
         final Board board = Board.createStandardBoard();
         final Game game = Game.builder().inputsManager(inputsManager).board(board).build();
         final TrainGame trainGame = new TrainGame();
@@ -127,9 +125,9 @@ public class TrainTest {
             log.error("game moves:{} <-> {} train moves", game.getMoves().size(), trainGame.getOneStepRecordList().size());
             fail();
         }
-        final String filename = trainGame.saveBatch("train-test", gameStatus);
-        final int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        final String filename = trainGame.saveBatch("train-test", gameStatus, TrainGame.MarshallingType.JSON);
+        final int num = Integer.valueOf(Paths.get(filename).getFileName().toString().replaceAll(".json", ""));
+        TrainGame loadTrainGame = TrainGame.load("train-test", num, TrainGame.MarshallingType.JSON);
         StatisticsFit statisticsFit = new StatisticsFit(seed, seed);
         try {
             deepLearningWhite.train(loadTrainGame, FIT_CHUNK, statisticsFit);
@@ -141,9 +139,9 @@ public class TrainTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"train-test-load/10"})
+    @ValueSource(strings = {"train-test-load/10.json"})
     void testLoad(String fileName) throws IOException, ClassNotFoundException, TrainException {
-        TrainGame trainGame = TrainGame.load(new File(fileName));
+        TrainGame trainGame = TrainGame.load(new File(fileName), TrainGame.MarshallingType.JSON);
         StatisticsFit statisticsFit = new StatisticsFit(1, 1);
         deepLearningWhite.train(trainGame, FIT_CHUNK, statisticsFit);
         log.info("statistics:{}", statisticsFit);
@@ -152,7 +150,7 @@ public class TrainTest {
     @Test
     @Disabled
     void testPunctualLoad() throws IOException, ClassNotFoundException, TrainException {
-        TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060);
+        TrainGame trainGame = TrainGame.load("train-aquila-grospc", 1060, TrainGame.MarshallingType.JSON);
         StatisticsFit statisticsFit = new StatisticsFit(1060, 1060);
         deepLearningWhite.train(trainGame, FIT_CHUNK, statisticsFit);
         log.info("statistics:{}", statisticsFit);

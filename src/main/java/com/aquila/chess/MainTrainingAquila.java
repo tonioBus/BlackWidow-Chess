@@ -101,7 +101,7 @@ public class MainTrainingAquila {
             log.info("#########################################################################");
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
-            final String filename = trainGame.saveBatch(trainDir, gameStatus);
+            final String filename = trainGame.saveBatch(trainDir, gameStatus, TrainGame.MarshallingType.JSON);
             gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
             if (!gameManager.stopDetected(false)) {
                 log.info("Waiting for {} seconds (param: waitInSeconds)", MCTSConfig.mctsConfig.getWaitInSeconds());

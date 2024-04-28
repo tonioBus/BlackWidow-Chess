@@ -89,9 +89,9 @@ public class SaveGameTest {
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        final String filename = trainGame.saveBatch("train-test", gameStatus);
-        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        final String filename = trainGame.saveBatch("train-test", gameStatus, TrainGame.MarshallingType.JSON);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString().replaceAll(".json", ""));
+        TrainGame loadTrainGame = TrainGame.load("train-test", num, TrainGame.MarshallingType.JSON);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(game.getMoves().size(), loadTrainGame.getOneStepRecordList().size() + 1);
@@ -152,9 +152,9 @@ public class SaveGameTest {
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        final String filename = trainGame.saveBatch("train-test", gameStatus);
-        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        final String filename = trainGame.saveBatch("train-test", gameStatus, TrainGame.MarshallingType.JSON);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString().replaceAll(".json", ""));
+        TrainGame loadTrainGame = TrainGame.load("train-test", num, TrainGame.MarshallingType.JSON);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(game.getMoves().size() - 1, loadTrainGame.getOneStepRecordList().size());
@@ -224,9 +224,9 @@ public class SaveGameTest {
         log.info("#########################################################################");
         log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus, game);
         log.info("#########################################################################");
-        final String filename = trainGame.saveBatch("train-test", gameStatus);
-        int num = Integer.valueOf(Paths.get(filename).getFileName().toString());
-        TrainGame loadTrainGame = TrainGame.load("train-test", num);
+        final String filename = trainGame.saveBatch("train-test", gameStatus, TrainGame.MarshallingType.JSON);
+        int num = Integer.valueOf(Paths.get(filename).getFileName().toString().replaceAll(".json", ""));
+        TrainGame loadTrainGame = TrainGame.load("train-test", num, TrainGame.MarshallingType.JSON);
         // we play 5 times + the first position:
         // 0) Initial,  1) First move, etc ...
         assertEquals(game.getMoves().size(), loadTrainGame.getOneStepRecordList().size() + 1);
@@ -236,7 +236,7 @@ public class SaveGameTest {
     @Test
     @Order(3)
     public void testLoadTraining() throws IOException, ClassNotFoundException {
-        TrainGame trainGame = TrainGame.load("train-test", 1);
+        TrainGame trainGame = TrainGame.load("train-test", 1, TrainGame.MarshallingType.JSON);
         trainGame.getOneStepRecordList().forEach(oneStepRecord -> log.info("board(0):\n{}", oneStepRecord));
     }
 

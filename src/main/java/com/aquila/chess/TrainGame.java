@@ -2,9 +2,11 @@ package com.aquila.chess;
 
 import com.aquila.chess.strategy.mcts.ResultGame;
 import com.aquila.chess.strategy.mcts.inputs.OneStepRecord;
+import com.aquila.chess.utils.Utils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.nd4j.shade.jackson.databind.ObjectMapper;
 import org.nd4j.shade.protobuf.common.io.PatternFilenameFilter;
 
 import java.io.*;
@@ -18,6 +20,10 @@ public class TrainGame implements Serializable {
 
     static final long serialVersionUID = -2638786203240540104L;
 
+    public enum MarshallingType {POJO, JSON}
+
+    ;
+
     @Getter
     private int num;
 
@@ -28,6 +34,8 @@ public class TrainGame implements Serializable {
     @Getter
     LinkedList<OneStepRecord> oneStepRecordList = new LinkedList<>();
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private static void createTrainDir(String trainDir) {
         Path path = Paths.get(trainDir);
         try {
@@ -37,25 +45,58 @@ public class TrainGame implements Serializable {
         }
     }
 
-    public static TrainGame load(String trainDir, int num) throws IOException, ClassNotFoundException {
+    public static String getFileName(String trainDir, int num, MarshallingType marshallingType) {
+        return String.format("%s/%s%s", trainDir, num, marshallingType == MarshallingType.JSON ? ".json" : "");
+    }
+
+    public static TrainGame load(String trainDir, int num, MarshallingType marshallingType) throws IOException, ClassNotFoundException {
         FileInputStream fileInputStream
-                = new FileInputStream(trainDir + "/" + num);
-        ObjectInputStream objectInputStream
-                = new ObjectInputStream(fileInputStream);
-        TrainGame ret = (TrainGame) objectInputStream.readObject();
+                = new FileInputStream(getFileName(trainDir, num, marshallingType));
+        TrainGame ret = null;
+        switch (marshallingType) {
+            case POJO -> {
+                ObjectInputStream objectInputStream
+                        = new ObjectInputStream(fileInputStream);
+                ret = (TrainGame) objectInputStream.readObject();
+                objectInputStream.close();
+            }
+            case JSON -> ret = objectMapper.readValue(fileInputStream, TrainGame.class);
+        }
         ret.num = num;
-        objectInputStream.close();
         return ret;
     }
 
-    public static TrainGame load(File file) throws IOException, ClassNotFoundException {
+    public static boolean isCorrectFilename(final String filename, MarshallingType marshallingType) {
+        return switch (marshallingType) {
+            case POJO -> Utils.isInteger(filename);
+            case JSON -> filename.endsWith(".json");
+        };
+    }
+
+    public static int getNum(String filename, MarshallingType marshallingType) {
+        Path path = Paths.get(filename);
+        String gameName = path.getFileName().toString();
+        return switch (marshallingType) {
+            case POJO -> Integer.parseInt(gameName);
+            case JSON -> Integer.parseInt(gameName.replaceAll(".json", ""));
+        };
+    }
+
+    public static TrainGame load(File file, MarshallingType marshallingType) throws
+            IOException, ClassNotFoundException {
         FileInputStream fileInputStream
                 = new FileInputStream(file);
-        ObjectInputStream objectInputStream
-                = new ObjectInputStream(fileInputStream);
-        TrainGame ret = (TrainGame) objectInputStream.readObject();
-        ret.num = Integer.parseInt(file.toPath().getFileName().toString());
-        objectInputStream.close();
+        TrainGame ret = null;
+        switch (marshallingType) {
+            case POJO -> {
+                ObjectInputStream objectInputStream
+                        = new ObjectInputStream(fileInputStream);
+                ret = (TrainGame) objectInputStream.readObject();
+                objectInputStream.close();
+            }
+            case JSON -> ret = objectMapper.readValue(fileInputStream, TrainGame.class);
+        }
+        ret.num = getNum(file.getName(), marshallingType);
         return ret;
     }
 
@@ -68,17 +109,26 @@ public class TrainGame implements Serializable {
      * @return the saved file name
      * @throws IOException
      */
-    public String save(String trainDir, int num, final ResultGame resultGame) throws IOException {
-        createTrainDir(trainDir);
+    public String save(String trainDir, int num, final ResultGame resultGame, MarshallingType marshallingType) throws
+            IOException {
         this.value = resultGame.reward;
-        String filename = trainDir + "/" + num;
+        return save(trainDir, num, marshallingType);
+    }
+
+    public String save(String trainDir, int num, MarshallingType marshallingType) throws IOException {
+        createTrainDir(trainDir);
+        String filename = getFileName(trainDir, num, marshallingType);
         FileOutputStream fileOutputStream
                 = new FileOutputStream(filename);
-        ObjectOutputStream objectOutputStream
-                = new ObjectOutputStream(fileOutputStream);
-        objectOutputStream.writeObject(this);
-        objectOutputStream.flush();
-        objectOutputStream.close();
+        switch (marshallingType) {
+            case POJO -> {
+                ObjectOutputStream objectOutputStream
+                        = new ObjectOutputStream(fileOutputStream);
+                objectOutputStream.writeObject(this);
+            }
+            case JSON -> objectMapper.writeValue(fileOutputStream, this);
+        }
+        fileOutputStream.close();
         return filename;
     }
 
@@ -91,23 +141,27 @@ public class TrainGame implements Serializable {
         };
     }
 
-    public String saveBatch(String trainDir, Game.GameStatus gameStatus) throws IOException {
+    public String saveBatch(String trainDir, Game.GameStatus gameStatus, MarshallingType marshallingType) throws
+            IOException {
         ResultGame resultGame = getResultGame(gameStatus);
-        final int numGames = maxGame(trainDir + "/") + 1;
+        final int numGames = maxGame(trainDir + "/", marshallingType) + 1;
         log.info("SAVING Batch (game number: {}) ... (do not stop the jvm)", numGames);
         log.info("Result: {}   Game size: {} inputsList(s)", resultGame.reward, getOneStepRecordList().size());
-        final String filename = save(trainDir, numGames, resultGame);
+        final String filename = save(trainDir, numGames, resultGame, marshallingType);
         log.info("SAVE DONE in {}", filename);
         clear();
         return filename;
     }
 
-    private int maxGame(String path) {
+    private int maxGame(String path, MarshallingType marshallingType) {
         File dataDirectory = new File(path);
         int max = 0;
+        String suffix = marshallingType == MarshallingType.JSON ? ".json" : "";
         if (dataDirectory.canRead()) {
-            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+"))) {
-                int currentNumber = Integer.valueOf(file.getName()).intValue();
+            for (File file : dataDirectory.listFiles(new PatternFilenameFilter("[0-9]+" + suffix))) {
+                String fileName = file.getName();
+                if (marshallingType == MarshallingType.JSON) fileName = fileName.replaceAll(".json", "");
+                int currentNumber = Integer.valueOf(fileName).intValue();
                 if (currentNumber > max) max = currentNumber;
             }
         }
