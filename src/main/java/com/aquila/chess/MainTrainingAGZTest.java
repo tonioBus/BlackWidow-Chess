@@ -2,7 +2,6 @@ package com.aquila.chess;
 
 import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.manager.GameManager;
-import com.aquila.chess.manager.Record.Status;
 import com.aquila.chess.manager.Sequence;
 import com.aquila.chess.strategy.mcts.*;
 import com.aquila.chess.strategy.mcts.inputs.InputsManager;
@@ -121,27 +120,7 @@ public class MainTrainingAGZTest {
             log.info("END OF game [{}] :\n{}\n{}", gameManager.getNbGames(), gameStatus.toString(), game);
             log.info("#########################################################################");
             final String filename = trainGame.saveBatch(trainDir, gameStatus, TrainGame.MarshallingType.JSON);
-            Status status = gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
-            if (status == Status.SWITCHING) {
-                final Path reference = Paths.get(NN_REFERENCE);
-                final Path opponent = Paths.get(NN_OPPONENT);
-                SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy_hh-mm-ss");
-                final Path backupOpponent = Paths.get(NN_OPPONENT + "_" + format.format(new Date()));
-                log.info("BACKUP PARTNER {} -> {}", opponent, backupOpponent);
-                if (opponent.toFile().canRead()) {
-                    Files.copy(opponent, backupOpponent, StandardCopyOption.REPLACE_EXISTING);
-                }
-                Files.copy(reference, opponent, StandardCopyOption.REPLACE_EXISTING);
-                log.info("Switching DP {} <-> {}", reference, opponent);
-                nnBlack.close();
-                nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
-                deepLearningBlack = DeepLearningAGZ.builder()
-                        .nn(nnBlack)
-                        .inputsManager(inputsManager)
-                        .train(false)
-                        .build();
-                deepLearningBlack.setUpdateLr(updateLr, gameManager.getNbGames());
-            }
+            gameManager.endGame(game, deepLearningWhite.getScore(), gameStatus, sequence, filename);
         }
     }
 }

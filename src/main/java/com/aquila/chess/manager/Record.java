@@ -14,11 +14,6 @@ public class Record {
     static final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL,
             new Locale("EN", "en"));
 
-    public enum Status {
-        NORMAL, SWITCHING
-    }
-
-    public final Status status;
     public int totalWhiteWin = 0;
     public int totalBlackWin = 0;
     public int totalDrawn = 0;
@@ -40,8 +35,7 @@ public class Record {
     public String png;
 
     public Record(String[] recordSz) throws ParseException {
-        int i = 0;
-        this.status = Status.valueOf(recordSz[i++]);
+        int i = 1;
         this.intermediateNbGame = Integer.parseInt(recordSz[i++]);
         this.totalWhiteWin = Integer.parseInt(recordSz[i++]);
         this.totalBlackWin = Integer.parseInt(recordSz[i++]);
@@ -63,25 +57,18 @@ public class Record {
         this.png = recordSz[i++];
     }
 
-    public Record(final Record lastRecord, final Status status, final int intermediateNbGame, final Game.GameStatus gameStatus, final Sequence sequence,
+    public Record(final Record lastRecord, final int intermediateNbGame, final Game.GameStatus gameStatus, final Sequence sequence,
                   Game game, double nnScore, String filename) throws NoSuchAlgorithmException {
         long endDate = System.currentTimeMillis();
-        this.status = status;
         switch (gameStatus) {
             case WHITE_CHESSMATE -> this.blackWin = 1;
             case BLACK_CHESSMATE -> this.whiteWin = 1;
             case DRAW_50, DRAW_TOO_MUCH_STEPS, DRAW_3, DRAW_NOT_ENOUGH_PIECES, PAT -> this.drawn = 1;
         }
         if (lastRecord != null) {
-            if (status == Status.SWITCHING) {
-                this.intermediateWhiteWin = this.whiteWin;
-                this.intermediateBlackWin = this.blackWin;
-                this.intermediateDrawn = this.drawn;
-            } else {
-                this.intermediateWhiteWin = lastRecord.intermediateWhiteWin + this.whiteWin;
-                this.intermediateBlackWin = lastRecord.intermediateBlackWin + this.blackWin;
-                this.intermediateDrawn = lastRecord.intermediateDrawn + this.drawn;
-            }
+            this.intermediateWhiteWin = lastRecord.intermediateWhiteWin + this.whiteWin;
+            this.intermediateBlackWin = lastRecord.intermediateBlackWin + this.blackWin;
+            this.intermediateDrawn = lastRecord.intermediateDrawn + this.drawn;
             this.totalWhiteWin = lastRecord.totalWhiteWin + this.whiteWin;
             this.totalBlackWin = lastRecord.totalBlackWin + this.blackWin;
             this.totalDrawn = lastRecord.totalDrawn + this.drawn;
@@ -112,7 +99,7 @@ public class Record {
 
     public String[] toArray() {
         List<String> records = new ArrayList<>();
-        records.add(this.status.toString());
+        records.add("NORMAL");
         records.add(String.valueOf(this.intermediateNbGame));
         records.add(String.valueOf(this.totalWhiteWin));
         records.add(String.valueOf(this.totalBlackWin));

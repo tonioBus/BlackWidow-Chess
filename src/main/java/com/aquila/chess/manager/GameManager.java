@@ -1,7 +1,6 @@
 package com.aquila.chess.manager;
 
 import com.aquila.chess.Game;
-import com.aquila.chess.manager.Record.Status;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -65,13 +64,12 @@ public class GameManager {
         return new Sequence();
     }
 
-    public Status endGame(final Game game, final double nnScore, final Game.GameStatus gameStatus, final Sequence sequence, String trainFileName)
+    public void endGame(final Game game, final double nnScore, final Game.GameStatus gameStatus, final Sequence sequence, String trainFileName)
             throws IOException, NoSuchAlgorithmException {
-        Status retStatus = Status.NORMAL;
 
         this.intermediateNbGame++;
         this.nbGames++;
-        Record record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, trainFileName);
+        Record record = new Record(lastRecord, this.intermediateNbGame, gameStatus, sequence, game, nnScore, trainFileName);
         log.info("Intermediate: whites:{} blacks:{} drawn:{} percentage White win:{} %"//
                 , record.intermediateWhiteWin//
                 , record.intermediateBlackWin//
@@ -83,11 +81,6 @@ public class GameManager {
             log.warn(String.format(
                     "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n%%%% PERCENTAGE: %d (%d <-> %d)\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
                     record.percentage, record.whiteWin, record.blackWin));
-            if (record.percentage >= this.maxPercentage) {
-                retStatus = Status.SWITCHING;
-                this.intermediateNbGame = 1;
-                record = new Record(lastRecord, retStatus, this.intermediateNbGame, gameStatus, sequence, game, nnScore, trainFileName);
-            }
         }
         FileWriter fileWriter = new FileWriter(filename, true);
         try (CSVWriter writer = new CSVWriter(fileWriter)) {
@@ -95,7 +88,6 @@ public class GameManager {
         }
         fileWriter.close();
         this.lastRecord = record;
-        return retStatus;
     }
 
     public int getNbGames() {
