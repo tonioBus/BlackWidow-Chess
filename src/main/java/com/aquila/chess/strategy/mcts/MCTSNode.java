@@ -50,6 +50,7 @@ public class MCTSNode {
     private final transient Thread creator;
 
     @Getter
+    @Setter
     private int visits = 0;
 
     @Getter

@@ -240,6 +240,11 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             }
             if (mctsNode.getState() == MCTSNode.State.WIN) {
                 bestNodes.clear();
+                int maxSteps = switch (opponentNode.getColorState()) {
+                    case WHITE -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps();
+                    case BLACK -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps();
+                };
+                mctsNode.setVisits(maxSteps + mctsNode.getVisits());
                 bestNodes.add(mctsNode);
                 break;
             }
