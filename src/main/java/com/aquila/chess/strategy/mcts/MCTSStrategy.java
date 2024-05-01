@@ -225,9 +225,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
     public MCTSNode findBestReward(final MCTSNode opponentNode, final Collection<Move> currentPossibleMoves) {
         assert !currentPossibleMoves.isEmpty();
         log.warn("[{}] FINDBEST MCTS: {}", this.getAlliance(), opponentNode);
+        final List<MCTSNode> bestNodes = new ArrayList<>();
+        final List<MCTSNode> initializeNodes = opponentNode.getChildsAsCollection().stream().filter(node -> node != null).collect(Collectors.toList());
         double maxExpectedReward = Double.NEGATIVE_INFINITY;
-        List<MCTSNode> bestNodes = new ArrayList<>();
-        List<MCTSNode> initializeNodes = opponentNode.getChildsAsCollection().stream().filter(node -> node != null).collect(Collectors.toList());
+        int maxVisits = Integer.MIN_VALUE;
         for (MCTSNode mctsNode : initializeNodes) {
             final Move currentMove = mctsNode.getMove();
             if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(currentMove.toString())).findFirst().isEmpty()) {
@@ -242,14 +243,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 bestNodes.add(mctsNode);
                 break;
             }
-            double expectedReward = mctsNode.getExpectedReward(false);
-            if (expectedReward > maxExpectedReward) {
-                maxExpectedReward = expectedReward;
-                bestNodes.clear();
-                bestNodes.add(mctsNode);
-            } else if (expectedReward == maxExpectedReward) {
-                bestNodes.add(mctsNode);
-            }
+            maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestNodes);
+            // maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;
@@ -282,6 +277,30 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 "[{}] State: {}:{}% Step:{} nbChilds:{} nbBests:{} | RetNode:{}",
                 getAlliance(), state, percentGood, nbStep, nbChilds, nbBests, ret);
         return ret;
+    }
+
+    double retrieveBestNodesWithExpectedRewards(final MCTSNode mctsNode, double maxExpectedReward, final List<MCTSNode> bestNodes) {
+        double expectedReward = mctsNode.getExpectedReward(false);
+        if (expectedReward > maxExpectedReward) {
+            maxExpectedReward = expectedReward;
+            bestNodes.clear();
+            bestNodes.add(mctsNode);
+        } else if (expectedReward == maxExpectedReward) {
+            bestNodes.add(mctsNode);
+        }
+        return maxExpectedReward;
+    }
+
+    int retrieveBestNodesWithBestVisits(final MCTSNode mctsNode, int maxVisits, final List<MCTSNode> bestNodes) {
+        int currentVisits = mctsNode.getVisits();
+        if (currentVisits > maxVisits) {
+            maxVisits = currentVisits;
+            bestNodes.clear();
+            bestNodes.add(mctsNode);
+        } else if (currentVisits == maxVisits) {
+            bestNodes.add(mctsNode);
+        }
+        return maxVisits;
     }
 
     private Move getRandomMove(Collection<Move> currentPossibleMoves) {
