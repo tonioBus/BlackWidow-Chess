@@ -1,6 +1,7 @@
 package com.aquila.chess.strategy.mcts.utils;
 
 import com.aquila.chess.config.MCTSConfig;
+import com.aquila.chess.strategy.mcts.MCTSNode;
 import com.chess.engine.classic.board.BoardUtils;
 import com.chess.engine.classic.board.Move;
 import com.chess.engine.classic.pieces.Piece;
@@ -247,6 +248,35 @@ public class PolicyUtils {
             }
         }
         return ret;
+    }
+
+    public static void logPolicies(MCTSNode parent, final Collection<Move> moves) {
+        int maxVisits = 0;
+        MCTSNode maxVisitsNode = null;
+        double maxPolicie = 0.0;
+        MCTSNode maxPolicyNode = null;
+
+        Set<Map.Entry<Move, MCTSNode.ChildNode>> entries = parent.getChildNodes().entrySet();
+        int currentVisit;
+        for (Map.Entry<Move, MCTSNode.ChildNode> entry : entries) {
+            if (entry.getValue().getNode() == null) {
+                log.warn("No Node defined for {}", entry.getKey());
+                currentVisit = 0;
+            } else {
+                currentVisit = entry.getValue().getNode().getVisits();
+            }
+            if (currentVisit > maxVisits) {
+                maxVisits = currentVisit;
+                maxVisitsNode = entry.getValue().getNode();
+            }
+            double currentPolicy = entry.getValue().getPolicy();
+            if (currentPolicy > maxPolicie) {
+                maxPolicie = currentPolicy;
+                maxPolicyNode = entry.getValue().getNode();
+            }
+        }
+        log.info("Max Visits Node:{} Visits:{}", maxVisitsNode != null ? maxVisitsNode.getMove() : "N / A", maxVisits);
+        log.info("Max Policy Node:{} Visits:{}", maxPolicyNode != null ? maxPolicyNode.getMove() : "N / A", maxPolicie);
     }
 
     public static void logPolicies(String label, final List<Double> subPolicies, int[] indexes, Collection<Move> moves) {
