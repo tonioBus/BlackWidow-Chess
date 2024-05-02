@@ -38,6 +38,14 @@ public class AbstractFit {
 
     public void run(TrainFile trainFile, Map<String, StatisticsFit> statistics) {
         retrieveAllFiles();
+        sequences.stream().forEach(sequence -> {
+            sequence.winLostGames.entrySet().stream().forEach(entry -> {
+                log.info("winLostGames [{}] -> [{}]", entry.getKey(), entry.getValue());
+            });
+            sequence.drawGames.entrySet().stream().forEach(entry -> {
+                log.info("drawGames [{}] -> [{}]", entry.getKey(), entry.getValue());
+            });
+        });
         log.info("winLostGames  games:{}", sequences.stream().mapToDouble(sequence -> sequence.winLostGames.size()).sum());
         log.info("Drawn         games:{}", sequences.stream().mapToDouble(sequence -> sequence.drawGames.size()).sum());
         sequences.stream()
@@ -84,21 +92,41 @@ public class AbstractFit {
                         if (trainFiles != null) {
                             Arrays.stream(trainFiles).forEach(file1 -> {
                                 try {
+                                    long offset = 0;
+                                    long index = getIndex(file1.lastModified(), offset);
+                                    log.info("load file: {} -> {}", file1.toPath(), index);
                                     TrainGame trainGame = TrainGame.load(file1, TrainGame.MarshallingType.JSON);
                                     Double value = trainGame.getValue();
                                     if (value == -1.0 || value == 1.0) {
-                                        sequence.winLostGames.put(file1.lastModified(), file1);
+                                        while (sequence.winLostGames.containsKey(index)) {
+                                            offset++;
+                                            index = getIndex(file1.lastModified(), offset);
+                                        }
+                                        sequence.winLostGames.put(index, file1);
+                                        log.info("winLostGames adding file [{}] to index:{}", file1, index);
                                     } else if (value == 0.0) {
-                                        sequence.drawGames.put(file1.lastModified(), file1);
-                                    } else
+                                        while (sequence.drawGames.containsKey(index)) {
+                                            offset++;
+                                            index = getIndex(file1.lastModified(), offset);
+                                        }
+                                        sequence.drawGames.put(index, file1);
+                                        log.info("drawGames adding file [{}] to index:{}", file1, index);
+                                    } else {
+                                        log.error("{} -> Unidentified game value: {}", file1.toPath(), value);
                                         throw new RuntimeException("Unidentified game value:" + value);
+                                    }
                                 } catch (IOException | ClassNotFoundException e) {
+                                    log.error("Can not read train file", e);
                                     throw new RuntimeException(e);
                                 }
                             });
                         }
                     });
                 });
+    }
+
+    private long getIndex(long lastModified, long offset) {
+        return lastModified * 1000 + offset;
     }
 
     private static File[] getFiles(ConfigDir configDir, TrainGame.MarshallingType marshallingType) {
@@ -113,6 +141,7 @@ public class AbstractFit {
                         fileNum >= configDir.getStartNumber() &&
                         fileNum <= configDir.getEndNumber();
             } catch (NumberFormatException e) {
+                log.error(pathname.getAbsolutePath(), e);
                 return false;
             }
         };

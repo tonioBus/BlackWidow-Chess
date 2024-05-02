@@ -376,7 +376,7 @@ public class DeepLearningAGZ {
             sum += policy;
         }
         if (policyMap.size() > 0 && sum == 0) {
-            final double policy = 0.0;
+            final double policy = 1.0 / policyMap.size();
             log.warn("toDistribution(): sum of policies(nb:{})==0 correction:{}", policyMap.size(), policy);
             for (Map.Entry<Integer, Double> policyEntry : policyMap.entrySet()) {
                 policyEntry.setValue(policy);
