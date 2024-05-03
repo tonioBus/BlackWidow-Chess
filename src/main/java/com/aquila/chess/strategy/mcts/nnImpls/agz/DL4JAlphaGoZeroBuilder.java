@@ -181,7 +181,7 @@ public class DL4JAlphaGoZeroBuilder {
 
     /**
      * Policy head, predicts next moves, so
-     * outputs a vector of 8 * 8 * 73 = 64 values.
+     * outputs a vector of 8 * 8 * 73
      */
     public String addPolicyHead(final String inName, final boolean useActivation) {
         final String convName = "policy_head_conv_";
@@ -189,14 +189,20 @@ public class DL4JAlphaGoZeroBuilder {
         final String actName = "policy_head_relu_";
         final String denseName = "policy_head_output_";
 
+        /**
+         *       self.conv1 = nn.Conv2d(256, 128, kernel_size=1) # policy head
+         *         self.bn1 = nn.BatchNorm2d(128)
+         *         self.logsoftmax = nn.LogSoftmax(dim=1)
+         *         self.fc = nn.Linear(8*8*128, 8*8*73)
+         */
         conf.addLayer(convName, new ConvolutionLayer.Builder().kernelSize(kernelSize).stride(strides)
-                .convolutionMode(convolutionMode).cudnnAlgoMode(AlgoMode.PREFER_FASTEST).nOut(2).nIn(256).build(), inName);
-        conf.addLayer(bnName, new BatchNormalization.Builder().nOut(2).build(), convName);
+                .convolutionMode(convolutionMode).cudnnAlgoMode(AlgoMode.PREFER_FASTEST).nOut(128).nIn(256).build(), inName);
+        conf.addLayer(bnName, new BatchNormalization.Builder().nOut(128).build(), convName);
         conf.addLayer(actName, new ActivationLayer.Builder().activation(Activation.RELU).build(), bnName);
-        conf.addLayer(denseName, new OutputLayer.Builder().nIn(2 * 8 * 8).nOut(8 * 8 * 73).build(), actName);
+        conf.addLayer(denseName, new OutputLayer.Builder().nIn(128 * 8 * 8).nOut(8 * 8 * 73).build(), actName);
 
         final Map<String, InputPreProcessor> preProcessorMap = new HashMap<String, InputPreProcessor>();
-        preProcessorMap.put(denseName, new CnnToFeedForwardPreProcessor(8, 8, 3));
+        preProcessorMap.put(denseName, new CnnToFeedForwardPreProcessor(8, 8, 73));
         conf.setInputPreProcessors(preProcessorMap);
         return denseName;
     }
