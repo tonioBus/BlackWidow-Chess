@@ -28,7 +28,7 @@ public class ConvertTrainFile implements Runnable {
                 TrainGame trainGame = TrainGame.load(trainDir, num, TrainGame.MarshallingType.POJO);
                 trainGame.save(trainDir, num, TrainGame.MarshallingType.JSON);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                log.error("Error with file:" + num, e);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
