@@ -17,13 +17,14 @@ public class ConvertTrainFile implements Runnable {
     @CommandLine.Option(names = {"-lg", "--lastGame"})
     private int lastGame = 0;
 
-    private static final String TRAIN_DIR = "train";
+    @CommandLine.Option(names = {"-dir", "--trainDir"})
+    private String trainDir = "train";
 
     @Override
     public void run() {
         for (int num = firstGame; num <= lastGame; num++) {
             try {
-                log.info("Converting {}", TrainGame.getFileName(TRAIN_DIR, num, TrainGame.MarshallingType.POJO));
+                log.info("Converting {}", TrainGame.getFileName(trainDir, num, TrainGame.MarshallingType.POJO));
                 TrainGame trainGame = TrainGame.load("train", num, TrainGame.MarshallingType.POJO);
                 trainGame.save("train", num, TrainGame.MarshallingType.JSON);
             } catch (IOException e) {
