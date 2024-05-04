@@ -19,13 +19,13 @@ public class MainTrainingAGZ {
     static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference();
 
     private static final UpdateCpuct updateCpuctWhite = (nbStep, nbLegalMoves) -> {
-        if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
+        if (nbStep < 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
             return MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getMaxCpuct();
         } else return 0.0000025;
     };
 
     private static final UpdateCpuct updateCpuctBlack = (nbStep, nbLegalMoves) -> {
-        if (nbStep <= 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getCpuAlgoNumberOfMoves()) {
+        if (nbStep < 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getCpuAlgoNumberOfMoves()) {
             return MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getMaxCpuct();
         } else return 0.0000025;
     };

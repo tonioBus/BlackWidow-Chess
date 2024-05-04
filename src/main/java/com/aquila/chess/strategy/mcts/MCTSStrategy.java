@@ -27,7 +27,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
 
     @Getter
     private MCTSGame mctsGame;
-    private int nbStep = 0;
+    // private int nbStep = 0;
     @Setter
     protected int nbThreads;
     private final long timeMillisPerStep;
@@ -117,8 +117,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             trainGame.add(lastOneStepRecord);
         }
         currentGameStatus = this.mctsGame.play(move);
-        double cpuct = this.updateCpuct.update(this.nbStep, possibleMoves.size());
-        this.nbStep++;
+        double cpuct = this.updateCpuct.update(this.mctsGame.getNbStep(), possibleMoves.size());
+        // this.nbStep++;
         log.info("[{}] -------------------------------------------------------", this.getAlliance());
         int whiteValue = mctsGame.getPlayer(Alliance.WHITE).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
         int blackValue = mctsGame.getPlayer(Alliance.BLACK).getActivePieces().stream().mapToInt(Piece::getPieceValue).sum();
@@ -167,7 +167,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             throws InterruptedException {
         statistic.clearEachStep();
         IMCTSSearch mctsSearchMultiThread = new MCTSSearchMultiThread(
-                this.nbStep,
+                this.mctsGame.getNbStep(),
                 this.nbThreads,
                 this.timeMillisPerStep,
                 this.nbSearchCalls,
@@ -280,7 +280,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         double percentGood = (nbBests * 100.0) / nbChilds;
         log.warn(
                 "[{}] State: {}:{}% Step:{} nbChilds:{} nbBests:{} | RetNode:{}",
-                getAlliance(), state, percentGood, nbStep, nbChilds, nbBests, ret);
+                getAlliance(), state, percentGood, mctsGame.getNbStep(), nbChilds, nbBests, ret);
         return ret;
     }
 
