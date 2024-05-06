@@ -22,11 +22,7 @@ public class GameManager {
     private final File file;
     private Record lastRecord = null;
 
-    private final int maxPercentage;
-
     private int intermediateNbGame;
-
-    private final int minNbGame;
 
     /**
      * initialize itself by reading the CSV file corresponding to all games played until now
@@ -36,10 +32,8 @@ public class GameManager {
      * @param maxPercentage
      * @throws IOException
      */
-    public GameManager(String filename, int minNbGame, int maxPercentage)
+    public GameManager(String filename)
             throws IOException {
-        this.minNbGame = minNbGame;
-        this.maxPercentage = maxPercentage;
         this.filename = filename;
         file = new File(filename);
         if (file.canRead()) {
@@ -75,13 +69,6 @@ public class GameManager {
                 , record.intermediateBlackWin//
                 , record.intermediateDrawn//
                 , record.percentage);
-        if ((record.intermediateWhiteWin + record.intermediateBlackWin) >= this.minNbGame ||
-                (((record.intermediateWhiteWin + record.intermediateBlackWin) >= this.minNbGame / 2) &&
-                        record.percentage >= 65)) {
-            log.warn(String.format(
-                    "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n%%%% PERCENTAGE: %d (%d <-> %d)\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
-                    record.percentage, record.whiteWin, record.blackWin));
-        }
         FileWriter fileWriter = new FileWriter(filename, true);
         try (CSVWriter writer = new CSVWriter(fileWriter)) {
             writer.writeNext(record.toArray());

@@ -43,7 +43,7 @@ public class SaveGameTest {
     @ValueSource(ints = {4, 6, 12})
     @Order(0)
     void testSaveGameLc0(int nbStep) throws Exception {
-        GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
+        GameManager gameManager = new GameManager("sequences-todel.csv");
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         InputsManager inputsManager = new Lc0InputsManagerImpl();
@@ -107,7 +107,7 @@ public class SaveGameTest {
     @ValueSource(ints = {6, 12, 30})
     @Order(1)
     void testSaveGameAquila(int nbStep) throws Exception {
-        GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
+        GameManager gameManager = new GameManager("sequences-todel.csv");
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         InputsManager inputsManager = new AquilaInputsManagerImpl();
@@ -170,7 +170,7 @@ public class SaveGameTest {
     @ValueSource(ints = {2, 3, 4, 5, 6})
     @Order(2)
     void testIntermediateSaveGame(int nbStep) throws Exception {
-        GameManager gameManager = new GameManager("sequences-todel.csv", 40, 55);
+        GameManager gameManager = new GameManager("sequences-todel.csv");
         INN nnWhite = new NNSimul(1);
         INN nnBlack = new NNSimul(1);
         InputsManager inputsManager = new Lc0InputsManagerImpl();

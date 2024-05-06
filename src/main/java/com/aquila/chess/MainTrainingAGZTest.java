@@ -54,7 +54,7 @@ public class MainTrainingAGZTest {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv", 40000, 55);
+        GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv");
         InputsManager inputsManager = new Lc0InputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
         INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);

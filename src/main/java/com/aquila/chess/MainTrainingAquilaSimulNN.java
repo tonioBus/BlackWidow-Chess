@@ -39,7 +39,7 @@ public class MainTrainingAquilaSimulNN {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AQUILA_NN/sequences-aquila.csv", 40, 55);
+        GameManager gameManager = new GameManager("../AQUILA_NN/sequences-aquila.csv");
         INN nnWhite = new NNSimul(1);
         // deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         INN nnBlack = new NNSimul(2);

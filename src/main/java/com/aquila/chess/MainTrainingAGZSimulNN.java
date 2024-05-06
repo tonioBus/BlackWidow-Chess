@@ -25,7 +25,7 @@ public class MainTrainingAGZSimulNN {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AGZ_NN/sequences-simul.csv", 40000, 55);
+        GameManager gameManager = new GameManager("../AGZ_NN/sequences-simul.csv");
         INN nnWhite = new NNSimul(1);
         while (!gameManager.stopDetected(true)) {
             InputsManager inputsManager = new Lc0InputsManagerImpl();

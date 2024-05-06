@@ -31,7 +31,7 @@ public class MainTrainingAquila {
 
     @SuppressWarnings("InfiniteLoopStatement")
     public static void main(final String[] args) throws Exception {
-        GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv", 400000, 55);
+        GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv");
         if (gameManager.stopDetected(true)) System.exit(-1);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
         INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
