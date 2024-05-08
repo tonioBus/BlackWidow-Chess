@@ -37,7 +37,7 @@ public class MCTSSearchLc0InputsTest {
 
     Lc0NNTest lc0NnTest;
 
-    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> 2.5;
+    final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> 0.000025;
 
     @BeforeEach
     public void init() {

@@ -36,7 +36,7 @@ public class MCTSExerciceTest {
     public static int NB_THREAD = 8;
 
     final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
-        return 0.5; // Math.exp(-0.04 * nbStep) / 2;
+        return 0.000025; // Math.exp(-0.04 * nbStep) / 2;
     };
 
     private static final Dirichlet dirichlet = game -> false;

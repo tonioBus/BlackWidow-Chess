@@ -31,7 +31,7 @@ class Lc0InputsManagerImplTest {
 
     private static final UpdateCpuct updateCpuct = (nbStep, nbLegalMoves) -> {
         if (nbStep <= 30) return 2.5;
-        else return 0.0025;
+        else return 0.000025;
     };
 
     private static final Dirichlet dirichlet = nbStep -> false; // nbStep <= 30;

@@ -248,8 +248,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 bestNodes.add(mctsNode);
                 break;
             }
-            maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestNodes);
-            // maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
+            // maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestNodes);
+            maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;

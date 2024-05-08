@@ -196,7 +196,6 @@ public class SaveGameTest {
                 .withNbThread(1)
                 .withNbSearchCalls(NB_STEP)
                 .withDirichlet(dirichlet);
-        // .withNbThread(1);
         final MCTSStrategy blackStrategy = new MCTSStrategy(game, Alliance.BLACK, deepLearningBlack, seed, updateCpuct, -1)
                 .withTrainGame(trainGame)
                 .withNbThread(1)
