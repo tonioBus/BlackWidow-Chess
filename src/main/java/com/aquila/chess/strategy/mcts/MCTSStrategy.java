@@ -250,33 +250,30 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 break;
             }
             maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestExpectedRewardsNodes);
-            maxVisits = retrieveBestNodesWithBestVisitsAndBestExpectedRewards(mctsNode, maxVisits, bestNodes);
+            maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;
-        if (nbBests > 1) {
-            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
-            log.error("[{}] WARNING in MCTS Best Search Move RANDOM from {} bests moves", getAlliance(), nbBests);
-            log.error("[{}] Moves: {}", getAlliance(), bestNodes.stream().map(node -> node.getMove())
-                    .collect(Collectors.toList()));
-            log.error("[{}] This could happen when we have the choices between many way to loose or win", getAlliance());
-            log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
-            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
-            ret = getRandomNodes(bestNodes);
-        } else if (nbBests == 0) {
+        if (nbBests == 0) {
             log.error("[{}] NO BEST NODES, opponentNode:{}", getAlliance(), opponentNode);
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             log.error("[{}] parent: {}", getAlliance(), DotGenerator.toString(opponentNode, 10));
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             return null;
+        } else if (nbBests > 1) {
+            Collections.shuffle(bestNodes);
+            Optional<MCTSNode> maxNode = bestNodes.stream().max(Comparator.comparingDouble(o -> o.getExpectedReward(false)));
+            ret = maxNode.get();
+            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
+            log.info("Choosing best rewards among best nodes: {}", ret);
+            bestNodes.clear();
+            bestNodes.add(ret);
         } else {
             ret = bestNodes.get(0);
         }
         String state = "MEDIUM";
         int nbChilds = opponentNode.getNumberOfChilds();
-        if (nbBests == 1 && nbChilds >= 1)
-            state = "GOOD";
-        else if (nbBests == nbChilds)
+        if (nbBests == nbChilds && nbBests > 1)
             state = "BAD";
         double percentGood = (nbBests * 100.0) / nbChilds;
         log.warn(
@@ -303,7 +300,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return maxExpectedReward;
     }
 
-    int retrieveBestNodesWithBestVisitsAndBestExpectedRewards(final MCTSNode mctsNode, int maxVisits, final List<MCTSNode> bestNodes) {
+    int retrieveBestNodesWithBestVisits(final MCTSNode mctsNode, int maxVisits, final List<MCTSNode> bestNodes) {
         int currentVisits = mctsNode.getVisits();
         if (currentVisits > maxVisits) {
             maxVisits = currentVisits;
@@ -311,12 +308,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             bestNodes.add(mctsNode);
         } else if (currentVisits == maxVisits) {
             bestNodes.add(mctsNode);
-        }
-        Optional<MCTSNode> maxNode = bestNodes.stream().max(Comparator.comparingDouble(o -> o.getExpectedReward(false)));
-        if (maxNode.isPresent()) {
-            bestNodes.clear();
-            bestNodes.add(maxNode.get());
-            return 1;
         }
         return maxVisits;
     }
