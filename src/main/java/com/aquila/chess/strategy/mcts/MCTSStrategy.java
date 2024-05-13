@@ -250,7 +250,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 break;
             }
             maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestExpectedRewardsNodes);
-            maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
+            maxVisits = retrieveBestNodesWithBestVisitsAndBestExpectedRewards(mctsNode, maxVisits, bestNodes);
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;
@@ -303,7 +303,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         return maxExpectedReward;
     }
 
-    int retrieveBestNodesWithBestVisits(final MCTSNode mctsNode, int maxVisits, final List<MCTSNode> bestNodes) {
+    int retrieveBestNodesWithBestVisitsAndBestExpectedRewards(final MCTSNode mctsNode, int maxVisits, final List<MCTSNode> bestNodes) {
         int currentVisits = mctsNode.getVisits();
         if (currentVisits > maxVisits) {
             maxVisits = currentVisits;
@@ -311,6 +311,12 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             bestNodes.add(mctsNode);
         } else if (currentVisits == maxVisits) {
             bestNodes.add(mctsNode);
+        }
+        Optional<MCTSNode> maxNode = bestNodes.stream().max(Comparator.comparingDouble(o -> o.getExpectedReward(false)));
+        if (maxNode.isPresent()) {
+            bestNodes.clear();
+            bestNodes.add(maxNode.get());
+            return 1;
         }
         return maxVisits;
     }
