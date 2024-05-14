@@ -261,11 +261,14 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
             return null;
         } else if (nbBests > 1) {
+            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
+            log.info("TOO MANY BEST NODES:{}", bestNodes.stream()
+                    .map(node -> String.format("[%s %f]", node.getMove().toString(), node.getExpectedReward(false)))
+                    .collect(Collectors.joining(",")));
             Collections.shuffle(bestNodes);
             Optional<MCTSNode> maxNode = bestNodes.stream().max(Comparator.comparingDouble(o -> o.getExpectedReward(false)));
             ret = maxNode.get();
-            log.error("[{}] !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAlliance());
-            log.info("Choosing best rewards among best nodes: {}", ret);
+            log.info("CHOOSE Best rewards among best nodes: {}", ret.getMove());
             bestNodes.clear();
             bestNodes.add(ret);
         } else {
