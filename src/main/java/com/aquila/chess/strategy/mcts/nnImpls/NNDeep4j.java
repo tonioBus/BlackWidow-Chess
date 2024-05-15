@@ -50,18 +50,18 @@ public class NNDeep4j implements INN {
                 .allowMultiGPU(false) //
                 .setFirstMemory(AllocationStatus.DEVICE)
                 .setAllocationModel(Configuration.AllocationModel.CACHE_ALL)
-                .setMaximumDeviceMemoryUsed(0.90) //
+                .setMaximumDeviceMemoryUsed(0.94) //
                 .setMemoryModel(Configuration.MemoryModel.IMMEDIATE) //
                 // cross-device access is used for faster model averaging over pcie
                 .allowCrossDeviceAccess(false) //
-                .setNumberOfGcThreads(4)
+                .setNumberOfGcThreads(8)
                 // .setMaximumBlockSize(-1)
                 .setMaximumGridSize(256)
                 // .setMaximumDeviceCacheableLength(8L * 1024 * 1024 * 1024L)  // (6L * 1024 * 1024 * 1024L) //
                 // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
                 //.setMaximumHostCache(8L * 1024 * 1024 * 1024L)
-                .setNoGcWindowMs(100)
+                .setNoGcWindowMs(0)
                 .enableDebug(false)
                 .setVerbose(false);
         this.numberResidualBlocks = numberResidualBlocks;
