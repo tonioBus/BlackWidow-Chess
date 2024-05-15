@@ -61,7 +61,7 @@ public class NNDeep4j implements INN {
                 // .setMaximumDeviceCache(8L * 1024 * 1024 * 1024L) //
                 .setMaximumHostCacheableLength(-1) // (6L * 1024 * 1024 * 1024L) //
                 //.setMaximumHostCache(8L * 1024 * 1024 * 1024L)
-                .setNoGcWindowMs(0)
+                .setNoGcWindowMs(1)
                 .enableDebug(false)
                 .setVerbose(false);
         this.numberResidualBlocks = numberResidualBlocks;
