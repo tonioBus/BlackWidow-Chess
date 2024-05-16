@@ -18,7 +18,7 @@ public class AbstractFit {
 
     class Sequence {
         SortedMap<Long, File> drawGames = new TreeMap<>();
-        SortedMap<Long, File> winLostGames = new TreeMap<>();
+        SortedMap<Long, File> winLostGames = drawGames; //new TreeMap<>();
     }
 
     final List<Sequence> sequences = new ArrayList<>();
