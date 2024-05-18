@@ -9,7 +9,7 @@ public class TestConvertOutput {
 
     @ParameterizedTest
     @ValueSource(floats = {0, 0.2F, 0.5F, 0.6F, 1})
-    public void testConvert(float value) {
+    public void testConvert(double value) {
         log.info("convert({}) -> {}", value, value * 2.0 - 1.0);
     }
 }

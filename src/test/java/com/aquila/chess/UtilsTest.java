@@ -80,7 +80,7 @@ public class UtilsTest {
         for (int i = 0; i < policies.length; i++) {
             p = policies[i];
             double newP = (1 - epsilon) * p + epsilon * d[index];
-            policies[i] = (float) newP;
+            policies[i] = newP;
             index++;
             sb.append(String.format("[%f]", policies[i]));
         }

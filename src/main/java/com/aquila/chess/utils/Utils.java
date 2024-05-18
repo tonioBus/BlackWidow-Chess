@@ -99,7 +99,7 @@ public class Utils {
         return sb.toString().hashCode();
     }
 
-    public static double[] convertFloatsToDoubles(float[] input)
+    public static double[] convertFloatsToDoubles(double[] input)
     {
         double[] output = new double[input.length];
         for (int i = 0; i < input.length; i++)
