@@ -228,29 +228,34 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
         final List<MCTSNode> bestNodes = new ArrayList<>();
         final List<MCTSNode> bestExpectedRewardsNodes = new ArrayList<>();
         final List<MCTSNode> initializeNodes = opponentNode.getChildsAsCollection().stream().filter(node -> node != null).collect(Collectors.toList());
-        double maxExpectedReward = Double.NEGATIVE_INFINITY;
-        int maxVisits = Integer.MIN_VALUE;
-        for (MCTSNode mctsNode : initializeNodes) {
-            final Move currentMove = mctsNode.getMove();
-            if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(currentMove.toString())).findFirst().isEmpty()) {
-                log.error("move:{} not in possible.\n - Board moves:{}.\n - MCTSTree nodes:{}",
-                        currentMove,
-                        currentPossibleMoves,
-                        initializeNodes.stream().map(node -> node.getMove()).collect(Collectors.toList()));
-                assert false; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
+        final int maxSteps = switch (opponentNode.getColorState()) {
+            case WHITE -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps();
+            case BLACK -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps();
+        };
+        initializeNodes.stream().filter(mctsNode -> mctsNode.getState() == MCTSNode.State.WIN).forEach(mctsNode -> {
+            mctsNode.setVisits(maxSteps);
+            bestNodes.add(mctsNode);
+        });
+        if(bestNodes.isEmpty()) {
+            double maxExpectedReward = Double.NEGATIVE_INFINITY;
+            int maxVisits = Integer.MIN_VALUE;
+            for (MCTSNode mctsNode : initializeNodes) {
+                final Move currentMove = mctsNode.getMove();
+                if (currentPossibleMoves.stream().filter(move1 -> move1.toString().equals(currentMove.toString())).findFirst().isEmpty()) {
+                    log.error("move:{} not in possible.\n - Board moves:{}.\n - MCTSTree nodes:{}",
+                            currentMove,
+                            currentPossibleMoves,
+                            initializeNodes.stream().map(node -> node.getMove()).collect(Collectors.toList()));
+                    assert false; // FIXME throw new RuntimeException(String.format("move:%s not in possible move:%s", currentMove, currentPossibleMoves));
+                }
+                if (mctsNode.getState() == MCTSNode.State.WIN) {
+                    bestNodes.clear();
+                    bestNodes.add(mctsNode);
+                    break;
+                }
+                maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestExpectedRewardsNodes);
+                maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
             }
-            if (mctsNode.getState() == MCTSNode.State.WIN) {
-                bestNodes.clear();
-                int maxSteps = switch (opponentNode.getColorState()) {
-                    case WHITE -> MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getSteps();
-                    case BLACK -> MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getSteps();
-                };
-                mctsNode.setVisits(maxSteps + mctsNode.getVisits());
-                bestNodes.add(mctsNode);
-                break;
-            }
-            maxExpectedReward = retrieveBestNodesWithExpectedRewards(mctsNode, maxExpectedReward, bestExpectedRewardsNodes);
-            maxVisits = retrieveBestNodesWithBestVisits(mctsNode, maxVisits, bestNodes);
         }
         int nbBests = bestNodes.size();
         MCTSNode ret;

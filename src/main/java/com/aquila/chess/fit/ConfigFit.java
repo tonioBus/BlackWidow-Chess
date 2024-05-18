@@ -18,14 +18,14 @@ public class ConfigFit {
     @XmlAttribute(required = true)
     private double updateLr;
 
-    @XmlAttribute(required = false)
+    @XmlAttribute()
     private int fitChunk = 40;
 
     @XmlAttribute(required = true)
     private String nnReference;
 
     @XmlAttribute
-    private boolean simulation;
+    private boolean simulation = false;
 
     @XmlElement(required = true)
     private List<ConfigSet> configSets;
