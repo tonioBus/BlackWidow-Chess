@@ -78,12 +78,13 @@ public class NNDeep4j implements INN {
         if (loadUpdater) {
             // network = network.convertDataType(DataType.FLOAT);
             network.getConfiguration().setDataType(DataType.FLOAT);
+            network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         } else {
             network = network.convertDataType(DataType.FLOAT16);
             network.getConfiguration().setDataType(DataType.INT8);
+            network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.ENABLED);
         }
         network.setListeners(new PerformanceListener(1));
-        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
         log.info("Model datatype:{}", network.getConfiguration().getDataType());
         log.debug("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
