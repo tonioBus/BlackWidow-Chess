@@ -38,7 +38,7 @@ public class NNDeep4j implements INN {
         DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
         if (loadUpdater) {
             log.info("TRAINING -> DataType:FLOAT16");
-            Nd4j.setDefaultDataTypes(DataType.FLOAT16, DataType.FLOAT16);
+            Nd4j.setDefaultDataTypes(DataType.FLOAT, DataType.FLOAT);
         } else {
             log.info("PLAYING -> DataType:INT8");
             Nd4j.setDefaultDataTypes(DataType.INT8, DataType.FLOAT16);
@@ -75,11 +75,17 @@ public class NNDeep4j implements INN {
         if (network == null) {
             network = DualResnetModel.getModel(numberResidualBlocks, nbFeaturePlanes);
         }
+        if (loadUpdater) {
+            network = network.convertDataType(DataType.FLOAT);
+            network.getConfiguration().setDataType(DataType.FLOAT);
+        } else {
+            network = network.convertDataType(DataType.FLOAT16);
+            network.getConfiguration().setDataType(DataType.INT8);
+        }
         network.setListeners(new PerformanceListener(1));
-        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
+        network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
         log.info("Model datatype:{}", network.getConfiguration().getDataType());
-        // network.getConfiguration().setDataType(DataType.INT16);
         log.debug("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
     }
 
