@@ -6,19 +6,22 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.nd4j.common.primitives.Atomic;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class AbstractFit {
 
-    class Sequence {
+    class Sequence implements Serializable {
         SortedMap<Long, File> drawGames = new TreeMap<>();
-        SortedMap<Long, File> winLostGames = drawGames; //new TreeMap<>();
+        SortedMap<Long, File> winLostGames = new TreeMap<>();
     }
 
     final List<Sequence> sequences = new ArrayList<>();
@@ -85,12 +88,18 @@ public class AbstractFit {
                 .collect(Collectors.joining(",")));
         configSets
                 .forEach(configSet -> {
-                    final Sequence sequence = new Sequence();
-                    sequences.add(sequence);
                     configSet.getConfigDirs().forEach(configDir -> {
                         File[] trainFiles = getFiles(configDir, TrainGame.MarshallingType.JSON);
+                        final int chunkSize = configSet.getChunkSize();
                         if (trainFiles != null) {
-                            Arrays.stream(trainFiles).forEach(file1 -> {
+                            int nbFiles = 0;
+                            Sequence sequence = null;
+                            for (File file1 : trainFiles) {
+                                if (nbFiles > chunkSize) nbFiles = 0;
+                                if (nbFiles == 0) {
+                                    sequence = new Sequence();
+                                    sequences.add(sequence);
+                                }
                                 try {
                                     long offset = 0;
                                     long index = getIndex(file1.lastModified(), offset);
@@ -115,11 +124,12 @@ public class AbstractFit {
                                         log.error("{} -> Unidentified game value: {}", file1.toPath(), value);
                                         throw new RuntimeException("Unidentified game value:" + value);
                                     }
+                                    nbFiles++;
                                 } catch (IOException | ClassNotFoundException e) {
                                     log.error("Can not read train file", e);
                                     throw new RuntimeException(e);
                                 }
-                            });
+                            }
                         }
                     });
                 });

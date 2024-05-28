@@ -21,6 +21,9 @@ public class ConfigSet implements Comparable<ConfigSet> {
     @XmlAttribute(required = true)
     private int sequence;
 
+    @XmlAttribute(required = false)
+    private int chunkSize = 10;
+
     @XmlAttribute(required = true)
     private boolean enable;
 

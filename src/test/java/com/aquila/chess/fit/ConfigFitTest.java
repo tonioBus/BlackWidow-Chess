@@ -38,7 +38,7 @@ class ConfigFitTest {
         configDirs.add(configDir0);
         configDirs.add(configDir1);
         configDirs.add(configDir2);
-        ConfigSet configSet = new ConfigSet(configDirs, 0, true);
+        ConfigSet configSet = new ConfigSet(configDirs, 0, 10, true);
         List<ConfigSet> configSets = new ArrayList<>();
         configSets.add(configSet);
         ConfigFit configFit = new ConfigFit(
