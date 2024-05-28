@@ -269,6 +269,7 @@ public class DeepLearningAGZ {
                         oneStepRecord.policies());
                 ret.add(newOneStepRecord);
             }
+            ret.getLast().policies().clear();
         } catch (TrainException e) {
             throw e;
         } catch (RuntimeException e) {
@@ -334,11 +335,13 @@ public class DeepLearningAGZ {
             inputsForNN.add(oneStepRecord);
             Map<Integer, Double> policies = inputsList.get(gameRound).policies();
             OptionalDouble maxPolicy = policies.values().stream().mapToDouble(policy -> policy).max();
-            if (maxPolicy.isPresent()) {
-                policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> {
-                    log.info("MAX POLICY[{}]={}", key, maxPolicy);
-                });
-            } else log.error("max policies not present");
+            if (!maxPolicy.isPresent()) {
+                log.error("max policies not present");
+            } else {
+//                policies.keySet().stream().filter(key -> policies.get(key) == maxPolicy.getAsDouble()).forEach(key -> {
+//                    log.info("MAX POLICY[{}]={}", key, maxPolicy);
+//                });
+            }
             //FIXME
             // policies.keySet().stream().filter(key -> policies.get(key) != 1.0).forEach(key -> policies.put(key, 0.1));
             //END FIXME
