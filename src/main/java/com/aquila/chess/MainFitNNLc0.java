@@ -60,7 +60,6 @@ public class MainFitNNLc0 {
         } else {
             nnWhite = new NNDeep4j(abstractFit.getConfigFit().getNnReference(), true, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
             settingsCuda();
-            ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         }
         log.info("SET UPDATE LR:{}", abstractFit.getConfigFit().getUpdateLr());
         UpdateLr updateLr = nbGames -> abstractFit.getConfigFit().getUpdateLr();
