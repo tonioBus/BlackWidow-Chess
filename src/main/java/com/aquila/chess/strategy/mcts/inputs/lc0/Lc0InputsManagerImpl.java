@@ -70,15 +70,15 @@ public class Lc0InputsManagerImpl extends InputsManager {
         final Alliance moveColor = inputRecord.moveColor();
         final var inputs = new double[Lc0InputsManagerImpl.FEATURES_PLANES][BoardUtils.NUM_TILES_PER_ROW][BoardUtils.NUM_TILES_PER_ROW];
         //if (move != null && !move.isInitMove())
-            // if we move, the moveColor will be the complementary of the player that just moved
-            this.createInputs(
-                    inputs,
-                    new InputRecord(
-                            abstractGame,
-                            inputRecord.moves(),
-                            inputRecord.move(),
-                            moveColor)
-            );
+        // if we move, the moveColor will be the complementary of the player that just moved
+        this.createInputs(
+                inputs,
+                new InputRecord(
+                        abstractGame,
+                        inputRecord.moves(),
+                        inputRecord.move(),
+                        moveColor)
+        );
 //        else
 //            this.createInputs(
 //                    inputs,
@@ -258,24 +258,22 @@ public class Lc0InputsManagerImpl extends InputsManager {
                     inputs[destinationOffset + 24 + offsetBlack][x][yIndex] = 1;
                 }
             }
-            // [130-131] king liberty (only when in chess)
+            // [130-131] king liberty (only the opposite player king)
             // + 26 + 1  -> 130
-//            if (currentPiece.getPieceType() == Piece.PieceType.KING) {
-//                Player player = switch (inputRecord.moveColor()) {
-//                    case WHITE -> board.whitePlayer();
-//                    case BLACK -> board.blackPlayer();
-//                };
-//                if (player.isInCheck()) {
-//                    int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
-//                    for (Move move : legalMoves) {
-//                        Move.MoveStatus status = player.makeMove(move).getMoveStatus();
-//                        if (status == Move.MoveStatus.DONE) {
-//                            Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
-//                            inputs[destinationOffset + 26 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
-//                        }
-//                    }
-//                }
-//            }
+            if (currentPiece.getPieceType() == Piece.PieceType.KING && inputRecord.moveColor() != currentPiece.getPieceAllegiance()) {
+                Player player = switch (inputRecord.moveColor()) {
+                    case WHITE -> board.whitePlayer();
+                    case BLACK -> board.blackPlayer();
+                };
+                int offsetBlack = currentPiece.getPieceAllegiance() == Alliance.BLACK ? 1 : 0;
+                for (Move move : legalMoves) {
+                    Move.MoveStatus status = player.makeMove(move).getMoveStatus();
+                    if (status == Move.MoveStatus.DONE) {
+                        Coordinate coordinateKingMoves = Coordinate.destinationCoordinate(move);
+                        inputs[destinationOffset + 26 + offsetBlack][coordinateKingMoves.getXInput()][coordinateKingMoves.getYInput()] = 1;
+                    }
+                }
+            }
         }
         // + 28 (1 + 1 planes) -> 132
         destinationOffset = 132; // 104 + 12 + 12 + 2 + 2 = 104 + 28 -> 132

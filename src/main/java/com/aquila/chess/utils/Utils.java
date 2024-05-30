@@ -30,7 +30,7 @@ public class Utils {
      * @see <a href="https://stackoverflow.com/questions/5393403/can-a-java-application-detect-that-a-debugger-is-attached">stackoverflow.com</a>
      * @return true if a debugger is attached to the current JVM
      */
-     static {
+    static {
         // Get ahold of the Java Runtime Environment (JRE) management interface
         RuntimeMXBean runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
         // Get the command line arguments that we were originally passed in
@@ -91,7 +91,7 @@ public class Utils {
         StringBuffer sb = new StringBuffer();
         for (int position = 0; position < BoardUtils.NUM_TILES; position++) {
             Piece piece = board.getPiece(position);
-            if (piece != null) { //  && piece.getPieceAllegiance() == alliance) {
+            if (piece != null && piece.getPieceAllegiance() == alliance) {
                 sb.append(String.format("%s=%d", piece.getPieceType(), position));
             }
         }
@@ -99,11 +99,9 @@ public class Utils {
         return sb.toString().hashCode();
     }
 
-    public static double[] convertFloatsToDoubles(double[] input)
-    {
+    public static double[] convertFloatsToDoubles(double[] input) {
         double[] output = new double[input.length];
-        for (int i = 0; i < input.length; i++)
-        {
+        for (int i = 0; i < input.length; i++) {
             output[i] = input[i];
         }
         return output;

@@ -383,7 +383,6 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             log.error(msg);
             throw new RuntimeException(msg);
         }
-        int nbChilds = stepNode.getChildNodes().size();
         stepNode.getChildNodes()
                 .values()
                 .stream()
@@ -391,9 +390,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 .forEach(childNode -> {
                     int index = PolicyUtils.indexFromMove(childNode.node.getMove());
                     double probability = (double) childNode.node.getVisits() / (double) stepNode.getVisits();
-                    if (probability == 0 && childNode.getNode().getState() == MCTSNode.State.WIN)
-                        probability = 1.0 / nbChilds;
-                    if (probability != 0) probabilities.put(index, probability);
+                    if (probability > 0.0) probabilities.put(index, probability);
                 });
         return probabilities;
     }

@@ -146,6 +146,7 @@ public class ServiceNN {
                         for (int nbPropragation = 0; nbPropragation < nbPropagation2Apply; nbPropragation++) {
                             nbPropagate += node2propagate.propagateOneTime(value2propagate);
                         }
+                        node.setNbPropagationsToExecute(0);
                     }
                 }
                 node.setPropagated(true);
