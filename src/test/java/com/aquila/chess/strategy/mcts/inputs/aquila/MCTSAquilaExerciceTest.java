@@ -2,6 +2,7 @@ package com.aquila.chess.strategy.mcts.inputs.aquila;
 
 import com.aquila.chess.Game;
 import com.aquila.chess.Helper;
+import com.aquila.chess.config.MCTSConfig;
 import com.aquila.chess.strategy.RandomStrategy;
 import com.aquila.chess.strategy.StaticStrategy;
 import com.aquila.chess.strategy.Strategy;
