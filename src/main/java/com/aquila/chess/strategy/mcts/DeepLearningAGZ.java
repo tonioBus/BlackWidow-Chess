@@ -108,23 +108,6 @@ public class DeepLearningAGZ {
                 .build();
     }
 
-    public static DeepLearningAGZ initNNFile(InputsManager inputsManager, final DeepLearningAGZ deepLearningWhite, final DeepLearningAGZ deepLearningBlack, int nbGames, UpdateLr updateLr) throws IOException {
-        File nnWhiteFile = new File(deepLearningWhite.getFilename());
-        File nnBlackFile = new File(deepLearningBlack.getFilename());
-        if (!nnWhiteFile.isFile()) deepLearningWhite.nn.save();
-        final DeepLearningAGZ retDeepLearningBlack;
-        if (!nnBlackFile.isFile()) {
-            Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
-            NNDeep4j nnBlack = new NNDeep4j(deepLearningBlack.getFilename(), false, inputsManager.getNbFeaturesPlanes(),
-                    ((NNDeep4j) deepLearningBlack.nn).numberResidualBlocks);
-            retDeepLearningBlack = new DeepLearningAGZ(nnBlack, deepLearningWhite);
-            if (updateLr != null) deepLearningBlack.setUpdateLr(updateLr, nbGames);
-        } else {
-            retDeepLearningBlack = deepLearningBlack;
-        }
-        return retDeepLearningBlack;
-    }
-
     public void clearAllCaches() {
         serviceNN.clearAll();
         cacheValues.clearCache();

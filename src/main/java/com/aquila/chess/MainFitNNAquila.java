@@ -101,7 +101,12 @@ public class MainFitNNAquila implements Runnable {
     public void run() {
         checkArguments();
         InputsManager inputsManager = new AquilaInputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
+        INN nnWhite = null;
+        try {
+            nnWhite = new NNDeep4j(NN_REFERENCE, true, inputsManager.getNbFeaturesPlanes(), 20);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         settingsCuda();
         ((ComputationGraph) nnWhite.getNetwork()).getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         log.info("SET UPDATE LR:{}", updateLrConstant);

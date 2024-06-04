@@ -23,6 +23,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,13 +35,13 @@ public class NNDeep4j implements INN {
 
     private ComputationGraph network;
 
-    public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes, final int numberResidualBlocks) {
+    public NNDeep4j(final String filename, final boolean loadUpdater, final int nbFeaturePlanes, final int numberResidualBlocks) throws IOException {
         DataTypeUtil.setDTypeForContext(DataType.FLOAT16);
         if (loadUpdater) {
-            log.info("TRAINING -> DataType:FLOAT16");
+            log.info("[{}] TRAINING -> DataType:FLOAT16", filename);
             Nd4j.setDefaultDataTypes(DataType.FLOAT, DataType.FLOAT);
         } else {
-            log.info("PLAYING -> DataType:INT8");
+            log.info("[{}] PLAYING -> DataType:INT8", filename);
             Nd4j.setDefaultDataTypes(DataType.INT8, DataType.FLOAT16);
         }
         Nd4j.getMemoryManager().togglePeriodicGc(true);
@@ -65,7 +66,7 @@ public class NNDeep4j implements INN {
                 .enableDebug(false)
                 .setVerbose(false);
         this.numberResidualBlocks = numberResidualBlocks;
-        log.info("getMaximumDeviceCache: {}", CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
+        log.info("[{}] getMaximumDeviceCache: {}", filename, CudaEnvironment.getInstance().getConfiguration().getMaximumDeviceCache());
         this.filename = filename;
         try {
             network = load(loadUpdater);
@@ -74,6 +75,7 @@ public class NNDeep4j implements INN {
         }
         if (network == null) {
             network = DualResnetModel.getModel(numberResidualBlocks, nbFeaturePlanes);
+            network.save(new File(filename));
         }
         if (loadUpdater) {
             network.getConfiguration().setDataType(DataType.FLOAT);
@@ -85,8 +87,16 @@ public class NNDeep4j implements INN {
         }
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
-        log.info("Model datatype:{}", network.getConfiguration().getDataType());
-        log.debug("LOADED ComputationGraph: {}", ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
+        log.info("[{}] Model datatype:{}", filename, network.getConfiguration().getDataType());
+        log.debug("[{}] LOADED ComputationGraph: {}", filename, ToStringBuilder.reflectionToString(network.getConfiguration(), ToStringStyle.JSON_STYLE));
+    }
+
+    public static void retrieveOrCopyBlackNN(String whiteFilename, String blackFilename) throws IOException {
+        File nnWhiteFile = new File(whiteFilename);
+        File nnBlackFile = new File(blackFilename);
+        if (!nnBlackFile.isFile()) {
+            Files.copy(nnWhiteFile.toPath(), nnBlackFile.toPath());
+        }
     }
 
     public void train(boolean train) {
@@ -112,9 +122,9 @@ public class NNDeep4j implements INN {
     @Override
     public void updateLr(int nbGames) {
         double lr = updateLr.update(nbGames);
-        log.info("[{}] Setting learning rate: {}", nbGames, lr);
+        log.info("[{}] {} Setting learning rate: {}", filename, nbGames, lr);
         this.setLR(lr);
-        log.info("[{}] Getting learning rate: {}", nbGames, this.getLR());
+        log.info("[{}] {} Getting learning rate: {}", filename, nbGames, this.getLR());
     }
 
     private ComputationGraph load(final boolean loadUpdater) throws IOException {

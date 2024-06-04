@@ -12,19 +12,12 @@ import com.chess.engine.classic.board.Board;
 import com.chess.engine.classic.board.Move;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 @Slf4j
 public class MainTrainingAGZTest {
 
-    static private final String NN_REFERENCE = "../AGZ_NN/AGZ.reference";
+    static private final String NN_WHITE = "../AGZ_NN/AGZ.reference";
 
-    static private final String NN_OPPONENT = "../AGZ_NN/AGZ.partner";
+    static private final String NN_BLACK = "../AGZ_NN/AGZ.partner";
     private static final int BATCH_SIZE = 50000;
     static public final int NB_STEP = 800;
 
@@ -56,8 +49,9 @@ public class MainTrainingAGZTest {
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv");
         InputsManager inputsManager = new Lc0InputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
+        INN nnWhite = new NNDeep4j(NN_WHITE, false, inputsManager.getNbFeaturesPlanes(), 20);
+        NNDeep4j.retrieveOrCopyBlackNN(NN_WHITE, NN_BLACK);
+        INN nnBlack = new NNDeep4j(NN_BLACK, false, inputsManager.getNbFeaturesPlanes(), 20);
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -70,7 +64,6 @@ public class MainTrainingAGZTest {
                 .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                 .train(false)
                 .build();
-        deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), updateLr);
         deepLearningWhite.setUpdateLr(updateLr, gameManager.getNbGames());
         while (true) {
             final Board board = Board.createBoard("kh1,pg6", "pa4,kg3", Alliance.BLACK);

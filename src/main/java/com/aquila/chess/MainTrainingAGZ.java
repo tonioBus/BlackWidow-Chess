@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingAGZ {
 
-    static private final String NN_REFERENCE = MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getNnReference();
+    static private final String NN_WHITE = MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getNnReference();
 
-    static private final String NN_OPPONENT = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference();
+    static private final String NN_BLACK = MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getNnReference();
 
     private static final UpdateCpuct updateCpuctWhite = (nbStep, nbLegalMoves) -> {
         if (nbStep < 30 || nbLegalMoves > MCTSConfig.mctsConfig.getMctsWhiteStrategyConfig().getCpuAlgoNumberOfMoves()) {
@@ -38,8 +38,9 @@ public class MainTrainingAGZ {
     public static void main(final String[] args) throws Exception {
         GameManager gameManager = new GameManager("../AGZ_NN/sequences.csv");
         if (gameManager.stopDetected(true)) System.exit(-1);
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
+        final INN nnWhite = new NNDeep4j(NN_WHITE, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
+        NNDeep4j.retrieveOrCopyBlackNN(NN_WHITE, NN_BLACK);
+        final INN nnBlack = new NNDeep4j(NN_BLACK, false, Lc0InputsManagerImpl.FEATURES_PLANES, 20);
         while (!gameManager.stopDetected(true)) {
             final InputsManager inputsManager = new Lc0InputsManagerImpl();
             DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
@@ -54,7 +55,6 @@ public class MainTrainingAGZ {
                     .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                     .train(false)
                     .build();
-            deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()
                     .inputsManager(inputsManager)
@@ -63,8 +63,8 @@ public class MainTrainingAGZ {
             final TrainGame trainGame = new TrainGame();
             Sequence sequence = gameManager.createSequence();
             long seed1 = System.currentTimeMillis();
-            log.info("WHITE SEED:{}", seed1);
             deepLearningWhite.clearAllCaches();
+            log.info("WHITE SEED:{}", seed1);
             log.info("WHITE NN:{}", deepLearningWhite.getNn().getFilename());
             deepLearningBlack.clearAllCaches();
             long seed2 = System.nanoTime();

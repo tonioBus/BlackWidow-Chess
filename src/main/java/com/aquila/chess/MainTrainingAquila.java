@@ -14,11 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MainTrainingAquila {
 
-    static private final String NN_REFERENCE = "../AQUILA_NN/NN.reference";
+    static private final String NN_WHITE = "../AQUILA_NN/NN.reference";
 
-    static private final String NN_OPPONENT = "../AQUILA_NN/NN.partner";
+    static private final String NN_BLACK = "../AQUILA_NN/NN.partner";
 
-    private static final UpdateCpuct updateCpuct = (nbStep,nbMoves) -> {
+    private static final UpdateCpuct updateCpuct = (nbStep, nbMoves) -> {
         // return 2.5;
         if (nbStep <= 30) return 2.0;
         else return 0.000002;
@@ -34,8 +34,9 @@ public class MainTrainingAquila {
         GameManager gameManager = new GameManager("../AQUILA_NN/sequences.csv");
         if (gameManager.stopDetected(true)) System.exit(-1);
         final InputsManager inputsManager = new AquilaInputsManagerImpl();
-        INN nnWhite = new NNDeep4j(NN_REFERENCE, false, inputsManager.getNbFeaturesPlanes(), 20);
-        INN nnBlack = new NNDeep4j(NN_OPPONENT, false, inputsManager.getNbFeaturesPlanes(), 20);
+        INN nnWhite = new NNDeep4j(NN_WHITE, false, inputsManager.getNbFeaturesPlanes(), 20);
+        NNDeep4j.retrieveOrCopyBlackNN(NN_WHITE, NN_BLACK);
+        INN nnBlack = new NNDeep4j(NN_BLACK, false, inputsManager.getNbFeaturesPlanes(), 20);
         DeepLearningAGZ deepLearningWhite = DeepLearningAGZ.builder()
                 .nn(nnWhite)
                 .inputsManager(inputsManager)
@@ -48,7 +49,6 @@ public class MainTrainingAquila {
                 .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                 .train(false)
                 .build();
-        deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
         while (!gameManager.stopDetected(true)) {
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()

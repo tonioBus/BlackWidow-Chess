@@ -53,7 +53,6 @@ public class MainAGZvsBasic {
                     .batchSize(MCTSConfig.mctsConfig.getMctsBlackStrategyConfig().getBatch())
                     .train(false)
                     .build();
-            deepLearningBlack = DeepLearningAGZ.initNNFile(inputsManager, deepLearningWhite, deepLearningBlack, gameManager.getNbGames(), null);
             final Board board = Board.createStandardBoard();
             final Game game = Game.builder()
                     .inputsManager(inputsManager)

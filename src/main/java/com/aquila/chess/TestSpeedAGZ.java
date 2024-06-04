@@ -14,6 +14,7 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class TestSpeedAGZ {
 
     static private final String NN_TEST = "../AGZ_NN/AGZ.reference";
 
-    public void run() {
+    public void run() throws IOException {
         final Board board = Board.createStandardBoard();
         final Lc0InputsManagerImpl inputManager = new Lc0InputsManagerImpl();
         final Game game = Game.builder().inputsManager(inputManager).board(board).build();
