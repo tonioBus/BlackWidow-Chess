@@ -236,7 +236,7 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
             mctsNode.setVisits(maxSteps);
             bestNodes.add(mctsNode);
         });
-        if(bestNodes.isEmpty()) {
+        if (bestNodes.isEmpty()) {
             double maxExpectedReward = Double.NEGATIVE_INFINITY;
             int maxVisits = Integer.MIN_VALUE;
             for (MCTSNode mctsNode : initializeNodes) {
@@ -399,6 +399,10 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                                                     final Alliance alliance,
                                                     final MCTSNode directParent) {
         Map<Integer, Double> policies = calculatePolicies(directParent, move);
+        if (policies.isEmpty()) {
+            log.error("Sum Policies == 0 for node:{}", directParent);
+            log.info("Parent tree:\n{}", DotGenerator.toString(directParent, 5));
+        }
         OneStepRecord lastOneStepRecord = new OneStepRecord(
                 null,
                 move.toString(),
