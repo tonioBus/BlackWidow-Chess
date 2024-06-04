@@ -79,9 +79,11 @@ public class NNDeep4j implements INN {
         }
         if (loadUpdater) {
             network.getConfiguration().setDataType(DataType.FLOAT);
+            network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.NONE);
             network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         } else {
             network.getConfiguration().setDataType(DataType.INT8);
+            network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
             network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.ENABLED);
         }
         network.setListeners(new PerformanceListener(1));
