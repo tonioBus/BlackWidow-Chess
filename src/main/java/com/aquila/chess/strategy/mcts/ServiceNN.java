@@ -112,7 +112,8 @@ public class ServiceNN {
         System.out.print("#");
         final List<OutputNN> outputsNN = this.deepLearningAGZ.nn.outputs(nbIn, length);
         System.out.printf("%d&", length);
-        System.out.printf("[%f]", outputsNN.stream().mapToDouble(outputNN -> outputNN.value).sum() / outputsNN.size());
+        System.out.printf("[%f|%f]", outputsNN.stream().mapToDouble(outputNN -> outputNN.value).min().getAsDouble(),
+                outputsNN.stream().mapToDouble(outputNN -> outputNN.value).max().getAsDouble());
         updateCacheValuesAndPoliciesWithInference(outputsNN);
     }
 

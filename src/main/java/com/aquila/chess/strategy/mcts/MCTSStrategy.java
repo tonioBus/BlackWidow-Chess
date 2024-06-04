@@ -205,8 +205,8 @@ public class MCTSStrategy extends FixMCTSTreeStrategy {
                 this.deepLearning.getCacheValues().getLostCacheValue().getNbNodes(),
                 this.deepLearning.getCacheValues().getDrawnCacheValue().getNbNodes()));
         this.deepLearning.getCacheValues().clearNodes();// clearCache();
-        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} - BESTNODES.visits:{} - BESTNODES.value:{} - BESTNODES.reward:{} - BESTNODE.ref:{}", this.getAlliance(), nbNumberSearchCalls,
-                length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false), bestNode.getCacheValue().hashCode());
+        log.warn("[{}] nbSearch calls:{} - term:{} ms - speed:{} calls/s visitsRoot:{} - BESTNODES.visits:{} - BESTNODES.value:{} - BESTNODES.reward:{}", this.getAlliance(), nbNumberSearchCalls,
+                length, speed, directRoot.getVisits(), bestNode.getVisits(), bestNode.getCacheValue().getValue(), bestNode.getExpectedReward(false));
         final Optional<Move> optionalMove = currentPossibleMoves.parallelStream().filter(move -> move.toString().equals(bestNode.getMove().toString())).findAny();
         if (optionalMove.isEmpty()) {
             log.warn(
