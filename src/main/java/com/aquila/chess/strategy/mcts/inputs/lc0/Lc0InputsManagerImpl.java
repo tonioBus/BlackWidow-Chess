@@ -79,15 +79,6 @@ public class Lc0InputsManagerImpl extends InputsManager {
                         inputRecord.move(),
                         moveColor)
         );
-//        else
-//            this.createInputs(
-//                    inputs,
-//                    new InputRecord(
-//                            abstractGame,
-//                            inputRecord.moves(),
-//                            inputRecord.move(),
-//                            moveColor)
-//            );
         return new Lc0InputsFullNN(inputs);
     }
 
