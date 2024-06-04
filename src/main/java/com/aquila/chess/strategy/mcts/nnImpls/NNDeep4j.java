@@ -81,7 +81,6 @@ public class NNDeep4j implements INN {
             network.getConfiguration().setDataType(DataType.FLOAT);
             network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.ENABLED);
         } else {
-            network = network.convertDataType(DataType.FLOAT16);
             network.getConfiguration().setDataType(DataType.INT8);
             network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.ENABLED);
         }
