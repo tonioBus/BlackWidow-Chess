@@ -29,6 +29,7 @@ import org.deeplearning4j.nn.conf.layers.ConvolutionLayer.AlgoMode;
 import org.deeplearning4j.nn.conf.preprocessor.CnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
@@ -105,14 +106,11 @@ public class DL4JAlphaGoZeroBuilder {
 
         this.conf = new NeuralNetConfiguration.Builder()
                 .cudnnAlgoMode(ConvolutionLayer.AlgoMode.PREFER_FASTEST)
+                .dataType(DataType.FLOAT16)
                 .updater(new Sgd())
                 .weightInit(WeightInit.LECUN_NORMAL)
                 .graphBuilder().setInputTypes(InputType.convolutional(8, 8, nbFeaturesPLanes));
     }
-
-    // public DL4JAlphaZeroBuilder() {
-    //    this(new int[]{3, 3}, new int[]{1, 1}, ConvolutionMode.Same);
-    //}
 
     public void addInputs(final String name) {
         conf.addInputs(name);
