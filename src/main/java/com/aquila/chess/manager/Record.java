@@ -93,7 +93,7 @@ public class Record {
         this.round = sequence.nbStep;
         this.nnScore = nnScore;
         String first6moves = game.getMoves().stream().limit(6).map(Object::toString).collect(Collectors.joining(","));
-        this.gameSha1 = String.format("%d seconds / round %s %s %s", durationSeconds / round, filename, first6moves, Utils.toSha1(game.toPGN()));
+        this.gameSha1 = String.format("%d ms / round - %s - %s - %s", durationSeconds / round, filename, first6moves, Utils.toSha1(game.toPGN()));
         this.png = Base64.getEncoder().encodeToString(game.toPGN().getBytes());
     }
 

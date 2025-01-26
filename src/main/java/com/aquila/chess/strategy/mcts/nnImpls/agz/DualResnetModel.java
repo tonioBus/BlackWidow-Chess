@@ -19,6 +19,7 @@ package com.aquila.chess.strategy.mcts.nnImpls.agz;
 
 import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.graph.ComputationGraph;
+import org.nd4j.linalg.api.buffer.DataType;
 
 /**
  * Define and load an AlphaGo Zero dual ResNet architecture
