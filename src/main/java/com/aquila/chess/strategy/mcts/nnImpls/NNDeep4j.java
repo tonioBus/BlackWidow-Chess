@@ -77,6 +77,7 @@ public class NNDeep4j implements INN {
             network = DualResnetModel.getModel(numberResidualBlocks, nbFeaturePlanes);
             network.save(new File(filename));
         }
+        log.info("[{}] DataType Before Overload: {}", filename, network.getConfiguration().getDataType());
         if (loadUpdater) {
             network.getConfiguration().setDataType(DataType.FLOAT);
             network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.NONE);
@@ -85,6 +86,7 @@ public class NNDeep4j implements INN {
             network.getConfiguration().setDataType(DataType.INT8);
             network.getConfiguration().setTrainingWorkspaceMode(WorkspaceMode.NONE);
             network.getConfiguration().setInferenceWorkspaceMode(WorkspaceMode.ENABLED);
+            // network = network.convertDataType(DataType.FLOAT);
         }
         network.setListeners(new PerformanceListener(1));
         network.getConfiguration().setCacheMode(CacheMode.DEVICE);
